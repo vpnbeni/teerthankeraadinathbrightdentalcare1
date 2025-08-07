@@ -1,0 +1,496 @@
+import { describe, it, expect, beforeEach, afterEach } from "@jest/globals";
+import AvailabilitySettings from "../../models/AvailabilitySettings.js";
+import User from "../../models/User.js";
+
+describe("AvailabilitySettings Model", () => {
+  let testUser;
+
+  beforeEach(async () => {
+    // Create a test user
+    testUser = await User.create({
+      name: "Test Admin",
+      email: "admin@test.com",
+      phone: "1234567890",
+      password: "hashedpassword",
+      role: "admin",
+    });
+  });
+
+  describe("Schema Validation", () => {
+    it("should create settings with valid data", async () => {
+      const settingsData = {
+        workingDays: [1, 2, 3, 4, 5],
+        defaultTimeSlots: [
+          {
+            startTime: "09:00",
+            endTime: "10:00",
+            maxBookings: 1,
+            isActive: true,
+          },
+        ],
+        breakTimes: [
+          {
+            startTime: "12:00",
+            endTime: "13:00",
+            name: "Lunch Break",
+            isActive: true,
+          },
+        ],
+        updatedBy: testUser._id,
+      };
+
+      const settings = new AvailabilitySettings(settingsData);
+      await expect(settings.save()).resolves.toBeDefined();
+    });
+
+    it("should reject empty working days", async () => {
+      const settingsData = {
+        workingDays: [],
+        defaultTimeSlots: [
+          {
+            startTime: "09:00",
+            endTime: "10:00",
+            maxBookings: 1,
+          },
+        ],
+      };
+
+      const settings = new AvailabilitySettings(settingsData);
+      await expect(settings.save()).rejects.toThrow(
+        "Must have at least 1 and at most 7 working days"
+      );
+    });
+
+    it("should reject invalid working day numbers", async () => {
+      const settingsData = {
+        workingDays: [1, 2, 8], // 8 is invalid
+        defaultTimeSlots: [
+          {
+            startTime: "09:00",
+            endTime: "10:00",
+            maxBookings: 1,
+          },
+        ],
+      };
+
+      const settings = new AvailabilitySettings(settingsData);
+      await expect(settings.save()).rejects.toThrow(
+        "Working days must be integers between 0 (Sunday) and 6 (Saturday)"
+      );
+    });
+
+    it("should reject duplicate working days", async () => {
+      const settingsData = {
+        workingDays: [1, 2, 2], // Duplicate 2
+        defaultTimeSlots: [
+          {
+            startTime: "09:00",
+            endTime: "10:00",
+            maxBookings: 1,
+          },
+        ],
+      };
+
+      const settings = new AvailabilitySettings(settingsData);
+      await expect(settings.save()).rejects.toThrow(
+        "Working days cannot contain duplicates"
+      );
+    });
+
+    it("should reject overlapping default time slots", async () => {
+      const settingsData = {
+        workingDays: [1, 2, 3, 4, 5],
+        defaultTimeSlots: [
+          {
+            startTime: "09:00",
+            endTime: "10:30",
+            maxBookings: 1,
+          },
+          {
+            startTime: "10:00",
+            endTime: "11:00",
+            maxBookings: 1,
+          },
+        ],
+      };
+
+      const settings = new AvailabilitySettings(settingsData);
+      await expect(settings.save()).rejects.toThrow(
+        "Default time slots cannot overlap"
+      );
+    });
+
+    it("should reject overlapping break times", async () => {
+      const settingsData = {
+        workingDays: [1, 2, 3, 4, 5],
+        defaultTimeSlots: [
+          {
+            startTime: "09:00",
+            endTime: "10:00",
+            maxBookings: 1,
+          },
+        ],
+        breakTimes: [
+          {
+            startTime: "12:00",
+            endTime: "13:30",
+            name: "Lunch",
+          },
+          {
+            startTime: "13:00",
+            endTime: "14:00",
+            name: "Extended Lunch",
+          },
+        ],
+      };
+
+      const settings = new AvailabilitySettings(settingsData);
+      await expect(settings.save()).rejects.toThrow(
+        "Break times cannot overlap"
+      );
+    });
+
+    it("should reject invalid time slot duration", async () => {
+      const settingsData = {
+        workingDays: [1, 2, 3, 4, 5],
+        defaultTimeSlots: [
+          {
+            startTime: "09:00",
+            endTime: "09:10", // Less than 15 minutes
+            maxBookings: 1,
+          },
+        ],
+      };
+
+      const settings = new AvailabilitySettings(settingsData);
+      await expect(settings.save()).rejects.toThrow(
+        "Time slot must be at least 15 minutes long"
+      );
+    });
+
+    it("should reject advance booking days less than auto-generate days", async () => {
+      const settingsData = {
+        workingDays: [1, 2, 3, 4, 5],
+        defaultTimeSlots: [
+          {
+            startTime: "09:00",
+            endTime: "10:00",
+            maxBookings: 1,
+          },
+        ],
+        advanceBookingDays: 15,
+        autoGenerateDaysAhead: 30,
+      };
+
+      const settings = new AvailabilitySettings(settingsData);
+      await expect(settings.save()).rejects.toThrow(
+        "Advance booking days cannot be less than auto-generate days ahead"
+      );
+    });
+  });
+
+  describe("Static Methods", () => {
+    it("should get or create default settings", async () => {
+      const settings = await AvailabilitySettings.getSettings();
+
+      expect(settings).toBeDefined();
+      expect(settings._id).toBe("availability_settings");
+      expect(settings.workingDays).toEqual([1, 2, 3, 4, 5, 6]);
+      expect(settings.defaultTimeSlots).toHaveLength(6);
+      expect(settings.breakTimes).toHaveLength(1);
+    });
+
+    it("should return existing settings if they exist", async () => {
+      // Create settings first
+      await AvailabilitySettings.create({
+        _id: "availability_settings",
+        workingDays: [1, 2, 3],
+        defaultTimeSlots: [
+          {
+            startTime: "10:00",
+            endTime: "11:00",
+            maxBookings: 2,
+            isActive: true,
+          },
+        ],
+        breakTimes: [],
+      });
+
+      const settings = await AvailabilitySettings.getSettings();
+      expect(settings.workingDays).toEqual([1, 2, 3]);
+      expect(settings.defaultTimeSlots[0].maxBookings).toBe(2);
+    });
+
+    it("should validate settings data", () => {
+      const validSettings = {
+        workingDays: [1, 2, 3, 4, 5],
+        defaultTimeSlots: [
+          { startTime: "09:00", endTime: "10:00", maxBookings: 1 },
+        ],
+        advanceBookingDays: 30,
+        autoGenerateDaysAhead: 15,
+      };
+
+      const result = AvailabilitySettings.validateSettings(validSettings);
+      expect(result.isValid).toBe(true);
+      expect(result.errors).toHaveLength(0);
+    });
+
+    it("should return validation errors for invalid settings", () => {
+      const invalidSettings = {
+        workingDays: [],
+        defaultTimeSlots: [],
+        advanceBookingDays: 10,
+        autoGenerateDaysAhead: 20,
+      };
+
+      const result = AvailabilitySettings.validateSettings(invalidSettings);
+      expect(result.isValid).toBe(false);
+      expect(result.errors).toContain(
+        "At least one working day must be specified"
+      );
+      expect(result.errors).toContain(
+        "At least one default time slot must be specified"
+      );
+      expect(result.errors).toContain(
+        "Advance booking days cannot be less than auto-generate days ahead"
+      );
+    });
+  });
+
+  describe("Instance Methods", () => {
+    let settings;
+
+    beforeEach(async () => {
+      settings = await AvailabilitySettings.create({
+        _id: "availability_settings",
+        workingDays: [1, 2, 3, 4, 5], // Monday to Friday
+        defaultTimeSlots: [
+          {
+            startTime: "09:00",
+            endTime: "10:00",
+            maxBookings: 1,
+            isActive: true,
+          },
+          {
+            startTime: "14:00",
+            endTime: "15:00",
+            maxBookings: 1,
+            isActive: true,
+          },
+        ],
+        breakTimes: [
+          {
+            startTime: "12:00",
+            endTime: "13:00",
+            name: "Lunch Break",
+            isActive: true,
+          },
+        ],
+        holidays: [
+          {
+            date: new Date("2024-12-25"),
+            name: "Christmas",
+            isRecurring: true,
+            isActive: true,
+          },
+          {
+            date: new Date("2024-07-04"),
+            name: "Independence Day",
+            isRecurring: false,
+            isActive: true,
+          },
+        ],
+        businessRules: {
+          maxBookingsPerDay: 10,
+          maxBookingsPerSlot: 1,
+          allowSameDayBooking: false,
+          allowWeekendBooking: false,
+        },
+        minimumNoticeHours: 24,
+        advanceBookingDays: 30,
+      });
+    });
+
+    it("should check if date is working day", () => {
+      const monday = new Date("2024-12-02"); // Monday
+      const saturday = new Date("2024-12-07"); // Saturday
+      const sunday = new Date("2024-12-08"); // Sunday
+
+      expect(settings.isWorkingDay(monday)).toBe(true);
+      expect(settings.isWorkingDay(saturday)).toBe(false);
+      expect(settings.isWorkingDay(sunday)).toBe(false);
+    });
+
+    it("should check if date is holiday", () => {
+      const christmas2024 = new Date("2024-12-25");
+      const christmas2025 = new Date("2025-12-25"); // Recurring
+      const independenceDay = new Date("2024-07-04");
+      const independenceDay2025 = new Date("2025-07-04"); // Not recurring
+      const regularDay = new Date("2024-12-01");
+
+      expect(settings.isHoliday(christmas2024)).toBe(true);
+      expect(settings.isHoliday(christmas2025)).toBe(true); // Recurring
+      expect(settings.isHoliday(independenceDay)).toBe(true);
+      expect(settings.isHoliday(independenceDay2025)).toBe(false); // Not recurring
+      expect(settings.isHoliday(regularDay)).toBe(false);
+    });
+
+    it("should get available time slots excluding break times", () => {
+      const availableSlots = settings.getAvailableTimeSlots();
+
+      expect(availableSlots).toHaveLength(2);
+      expect(availableSlots[0].startTime).toBe("09:00");
+      expect(availableSlots[1].startTime).toBe("14:00");
+    });
+
+    it("should validate booking against business rules", () => {
+      const today = new Date();
+      const tomorrow = new Date(today);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      const weekend = new Date("2024-12-07"); // Saturday
+
+      // Same day booking (not allowed)
+      const sameDayResult = settings.validateBooking(today, "10:00", 0);
+      expect(sameDayResult.isValid).toBe(false);
+      expect(sameDayResult.errors).toContain("Same-day booking is not allowed");
+
+      // Weekend booking (not allowed)
+      const weekendResult = settings.validateBooking(weekend, "10:00", 0);
+      expect(weekendResult.isValid).toBe(false);
+      expect(weekendResult.errors).toContain("Weekend booking is not allowed");
+
+      // Valid booking
+      const validResult = settings.validateBooking(tomorrow, "10:00", 0);
+      expect(validResult.isValid).toBe(true);
+      expect(validResult.errors).toHaveLength(0);
+    });
+
+    it("should add holiday", async () => {
+      const holidayData = {
+        date: new Date("2024-12-31"),
+        name: "New Year's Eve",
+        isRecurring: true,
+      };
+
+      await settings.addHoliday(holidayData, testUser._id);
+
+      expect(settings.holidays).toHaveLength(3);
+      expect(settings.holidays[2].name).toBe("New Year's Eve");
+      expect(settings.updatedBy.toString()).toBe(testUser._id.toString());
+    });
+
+    it("should remove holiday", async () => {
+      const holidayId = settings.holidays[0]._id;
+      await settings.removeHoliday(holidayId, testUser._id);
+
+      expect(settings.holidays).toHaveLength(1);
+      expect(settings.updatedBy.toString()).toBe(testUser._id.toString());
+    });
+
+    it("should add break time", async () => {
+      const breakTimeData = {
+        startTime: "15:00",
+        endTime: "15:30",
+        name: "Afternoon Break",
+      };
+
+      await settings.addBreakTime(breakTimeData, testUser._id);
+
+      expect(settings.breakTimes).toHaveLength(2);
+      expect(settings.breakTimes[1].name).toBe("Afternoon Break");
+    });
+
+    it("should reject overlapping break time", async () => {
+      const overlappingBreakTime = {
+        startTime: "12:30",
+        endTime: "13:30",
+        name: "Overlapping Break",
+      };
+
+      await expect(
+        settings.addBreakTime(overlappingBreakTime, testUser._id)
+      ).rejects.toThrow("Break time overlaps with existing break: Lunch Break");
+    });
+
+    it("should update business rules", async () => {
+      const newRules = {
+        maxBookingsPerDay: 15,
+        allowSameDayBooking: true,
+      };
+
+      await settings.updateBusinessRules(newRules, testUser._id);
+
+      expect(settings.businessRules.maxBookingsPerDay).toBe(15);
+      expect(settings.businessRules.allowSameDayBooking).toBe(true);
+      expect(settings.businessRules.allowWeekendBooking).toBe(false); // Unchanged
+    });
+
+    it("should update notification settings", async () => {
+      const newSettings = {
+        notifyOnNewBooking: false,
+        adminEmail: "newemail@test.com",
+      };
+
+      await settings.updateNotificationSettings(newSettings, testUser._id);
+
+      expect(settings.notificationSettings.notifyOnNewBooking).toBe(false);
+      expect(settings.notificationSettings.adminEmail).toBe(
+        "newemail@test.com"
+      );
+    });
+  });
+
+  describe("Time Slot Overlap Detection", () => {
+    let settings;
+
+    beforeEach(async () => {
+      settings = await AvailabilitySettings.getSettings();
+    });
+
+    it("should detect overlapping time slots", () => {
+      const slot1 = { startTime: "09:00", endTime: "10:30" };
+      const slot2 = { startTime: "10:00", endTime: "11:00" };
+      const slot3 = { startTime: "11:00", endTime: "12:00" };
+
+      expect(settings.timeSlotsOverlap(slot1, slot2)).toBe(true);
+      expect(settings.timeSlotsOverlap(slot2, slot3)).toBe(false);
+      expect(settings.timeSlotsOverlap(slot1, slot3)).toBe(false);
+    });
+
+    it("should handle edge cases for time slot overlap", () => {
+      const slot1 = { startTime: "09:00", endTime: "10:00" };
+      const slot2 = { startTime: "10:00", endTime: "11:00" };
+
+      // Adjacent slots should not overlap
+      expect(settings.timeSlotsOverlap(slot1, slot2)).toBe(false);
+    });
+  });
+
+  describe("Time Conversion", () => {
+    let settings;
+
+    beforeEach(async () => {
+      settings = await AvailabilitySettings.getSettings();
+    });
+
+    it("should convert time string to minutes", () => {
+      expect(settings.timeToMinutes("09:00")).toBe(540);
+      expect(settings.timeToMinutes("12:30")).toBe(750);
+      expect(settings.timeToMinutes("00:00")).toBe(0);
+      expect(settings.timeToMinutes("23:59")).toBe(1439);
+    });
+  });
+
+  describe("Version Control", () => {
+    it("should increment version on save", async () => {
+      const settings = await AvailabilitySettings.getSettings();
+      const initialVersion = settings.version;
+
+      settings.workingDays = [1, 2, 3];
+      await settings.save();
+
+      expect(settings.version).toBe(initialVersion + 1);
+    });
+  });
+});

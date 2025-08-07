@@ -1,0 +1,13 @@
+{
+  "servers": [
+    {
+      "name": "playwright",
+      "command": "npx",
+      "args": [
+        "--shell=\"C:\\Program Files\\Git\\bin\\bash.exe\"",
+        "@playwright/mcp"
+      ],
+      "type": "stdio"
+    }
+  ]
+}

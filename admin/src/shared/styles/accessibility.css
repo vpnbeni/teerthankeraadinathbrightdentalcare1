@@ -1,0 +1,853 @@
+/* ==========================================================================
+   Accessibility Styles for Admin Panel
+   ========================================================================== */
+
+/* Skip Links */
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 6px;
+  background: #000;
+  color: #fff;
+  padding: 8px;
+  text-decoration: none;
+  border-radius: 0 0 4px 4px;
+  z-index: 9999;
+  font-size: 14px;
+  font-weight: 500;
+  transition: top 0.3s ease;
+}
+
+.skip-link:focus {
+  top: 0;
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+
+/* Focus Management */
+.focus-visible *:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.focus-visible button:focus,
+.focus-visible input:focus,
+.focus-visible select:focus,
+.focus-visible textarea:focus,
+.focus-visible a:focus,
+.focus-visible [tabindex]:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+/* High Contrast Mode */
+.high-contrast {
+  --tw-bg-gray-50: #ffffff;
+  --tw-bg-gray-100: #f0f0f0;
+  --tw-bg-gray-200: #e0e0e0;
+  --tw-bg-white: #ffffff;
+  --tw-text-gray-600: #000000;
+  --tw-text-gray-700: #000000;
+  --tw-text-gray-800: #000000;
+  --tw-text-gray-900: #000000;
+  --tw-border-gray-200: #000000;
+  --tw-border-gray-300: #000000;
+}
+
+.high-contrast button {
+  border: 2px solid #000000 !important;
+  font-weight: 600 !important;
+}
+
+.high-contrast input,
+.high-contrast select,
+.high-contrast textarea {
+  border: 2px solid #000000 !important;
+  background: #ffffff !important;
+  color: #000000 !important;
+}
+
+.high-contrast a {
+  text-decoration: underline !important;
+  font-weight: 600 !important;
+}
+
+.high-contrast .bg-primary,
+.high-contrast .bg-blue-600,
+.high-contrast .bg-indigo-600 {
+  background-color: #000000 !important;
+  color: #ffffff !important;
+  border: 2px solid #ffffff !important;
+}
+
+.high-contrast .text-primary,
+.high-contrast .text-blue-600,
+.high-contrast .text-indigo-600 {
+  color: #000000 !important;
+}
+
+/* Reduced Motion */
+.reduce-motion *,
+.reduce-motion *::before,
+.reduce-motion *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
+
+.reduce-motion .animate-spin,
+.reduce-motion .animate-pulse,
+.reduce-motion .animate-bounce {
+  animation: none !important;
+}
+
+/* Font Size Scaling */
+.font-small {
+  font-size: 87.5%; /* 14px base */
+}
+
+.font-normal {
+  font-size: 100%; /* 16px base */
+}
+
+.font-large {
+  font-size: 112.5%; /* 18px base */
+}
+
+.font-xlarge {
+  font-size: 125%; /* 20px base */
+}
+
+/* Responsive Typography */
+@media (max-width: 768px) {
+  .font-small {
+    font-size: 93.75%;
+  } /* 15px */
+  .font-normal {
+    font-size: 106.25%;
+  } /* 17px */
+  .font-large {
+    font-size: 118.75%;
+  } /* 19px */
+  .font-xlarge {
+    font-size: 131.25%;
+  } /* 21px */
+}
+
+/* Screen Reader Only Content */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.sr-only-focusable:focus {
+  position: static;
+  width: auto;
+  height: auto;
+  padding: inherit;
+  margin: inherit;
+  overflow: visible;
+  clip: auto;
+  white-space: normal;
+}
+
+/* Keyboard Navigation Indicators */
+.keyboard-nav-active {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Touch Target Sizing */
+@media (pointer: coarse) {
+  button,
+  input[type="button"],
+  input[type="submit"],
+  input[type="reset"],
+  input[type="checkbox"],
+  input[type="radio"],
+  select,
+  a {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  .touch-target {
+    min-height: 44px;
+    min-width: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+/* Mobile Responsive Enhancements */
+@media (max-width: 640px) {
+  /* Larger tap targets on mobile */
+  .mobile-tap-target {
+    min-height: 48px;
+    padding: 12px 16px;
+  }
+
+  /* Better spacing for mobile */
+  .mobile-spacing > * + * {
+    margin-top: 16px;
+  }
+
+  /* Mobile-friendly form fields */
+  input,
+  select,
+  textarea {
+    font-size: 16px; /* Prevents zoom on iOS */
+    padding: 12px;
+  }
+
+  /* Mobile navigation improvements */
+  .mobile-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: white;
+    border-top: 1px solid #e5e7eb;
+    padding: 8px;
+    z-index: 50;
+  }
+
+  .mobile-nav button {
+    flex: 1;
+    padding: 12px 8px;
+    text-align: center;
+    border-radius: 8px;
+    transition: background-color 0.2s;
+  }
+
+  .mobile-nav button:hover,
+  .mobile-nav button:focus {
+    background-color: #f3f4f6;
+  }
+}
+
+/* Tablet Responsive Enhancements */
+@media (min-width: 641px) and (max-width: 1024px) {
+  /* Tablet-specific layouts */
+  .tablet-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 24px;
+  }
+
+  /* Tablet sidebar */
+  .tablet-sidebar {
+    width: 280px;
+    position: fixed;
+    left: -280px;
+    top: 0;
+    height: 100vh;
+    background: white;
+    transition: left 0.3s ease;
+    z-index: 40;
+  }
+
+  .tablet-sidebar.open {
+    left: 0;
+  }
+
+  .tablet-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 30;
+  }
+}
+
+/* Color Contrast Enhancements */
+.contrast-enhanced {
+  --text-primary: #000000;
+  --text-secondary: #333333;
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8f9fa;
+  --border-primary: #000000;
+  --focus-ring: #0066cc;
+}
+
+/* Error and Success States with Better Contrast */
+.error-state {
+  color: #dc2626;
+  background-color: #fef2f2;
+  border-color: #fecaca;
+}
+
+.success-state {
+  color: #059669;
+  background-color: #f0fdf4;
+  border-color: #bbf7d0;
+}
+
+.warning-state {
+  color: #d97706;
+  background-color: #fffbeb;
+  border-color: #fed7aa;
+}
+
+/* Loading States */
+.loading-skeleton {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+}
+
+.reduce-motion .loading-skeleton {
+  background: #f0f0f0;
+  animation: none;
+}
+
+@keyframes loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* Print Styles */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+
+  .print-break-before {
+    page-break-before: always;
+  }
+
+  .print-break-after {
+    page-break-after: always;
+  }
+
+  .print-break-inside-avoid {
+    page-break-inside: avoid;
+  }
+
+  /* Ensure good contrast in print */
+  * {
+    color: #000 !important;
+    background: transparent !important;
+  }
+
+  a[href]:after {
+    content: " (" attr(href) ")";
+  }
+}
+
+/* Dark Mode Support (if needed) */
+@media (prefers-color-scheme: dark) {
+  .auto-dark {
+    --tw-bg-white: #1f2937;
+    --tw-bg-gray-50: #111827;
+    --tw-bg-gray-100: #1f2937;
+    --tw-text-gray-900: #f9fafb;
+    --tw-text-gray-800: #f3f4f6;
+    --tw-text-gray-700: #e5e7eb;
+    --tw-border-gray-200: #374151;
+    --tw-border-gray-300: #4b5563;
+  }
+}
+
+/* Animation Utilities */
+.fade-in {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.slide-in-right {
+  animation: slideInRight 0.3s ease-in-out;
+}
+
+.slide-in-left {
+  animation: slideInLeft 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+/* Utility Classes for Accessibility */
+.visually-hidden {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+.visually-hidden-focusable:focus {
+  position: static !important;
+  width: auto !important;
+  height: auto !important;
+  padding: inherit !important;
+  margin: inherit !important;
+  overflow: visible !important;
+  clip: auto !important;
+  white-space: normal !important;
+}
+
+/* Focus trap for modals */
+.focus-trap {
+  position: relative;
+}
+
+.focus-trap::before,
+.focus-trap::after {
+  content: "";
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Responsive utilities */
+.responsive-text {
+  font-size: clamp(0.875rem, 2.5vw, 1.125rem);
+  line-height: 1.6;
+}
+
+.responsive-heading {
+  font-size: clamp(1.25rem, 4vw, 2rem);
+  line-height: 1.3;
+}
+
+/* Custom scrollbar for better accessibility */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e0 #f7fafc;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #f7fafc;
+  border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #cbd5e0;
+  border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #a0aec0;
+}
+
+/* Ensure minimum contrast ratios */
+.text-contrast-aa {
+  color: #000000; /* 21:1 contrast ratio */
+}
+
+.text-contrast-aaa {
+  color: #000000; /* 21:1 contrast ratio */
+}
+
+.bg-contrast-aa {
+  background-color: #ffffff;
+  color: #000000;
+}
+
+.bg-contrast-aaa {
+  background-color: #ffffff;
+  color: #000000;
+}
+
+/* Enhanced mobile accessibility */
+.mobile-tap-target {
+  min-height: 44px;
+  min-width: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (pointer: coarse) {
+  .mobile-tap-target {
+    min-height: 48px;
+    min-width: 48px;
+  }
+}
+
+/* Enhanced focus indicators for admin components */
+.admin-focus:focus {
+  outline: 2px solid #346870;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.admin-focus:focus-visible {
+  outline: 2px solid #346870;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Table accessibility enhancements */
+.accessible-table {
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.accessible-table th {
+  position: sticky;
+  top: 0;
+  background: white;
+  z-index: 10;
+}
+
+.accessible-table th:focus,
+.accessible-table td:focus {
+  outline: 2px solid #346870;
+  outline-offset: -2px;
+  position: relative;
+  z-index: 1;
+}
+
+/* Modal accessibility enhancements */
+.modal-backdrop {
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+@supports not (backdrop-filter: blur(4px)) {
+  .modal-backdrop {
+    background-color: rgba(0, 0, 0, 0.6);
+  }
+}
+
+/* Form accessibility improvements */
+.form-field-group {
+  position: relative;
+}
+
+.form-field-group .error-message {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin-top: 0.25rem;
+  font-size: 0.875rem;
+  color: #dc2626;
+  background: white;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  z-index: 10;
+}
+
+/* Enhanced button states */
+.btn-loading {
+  position: relative;
+  color: transparent;
+}
+
+.btn-loading::after {
+  content: "";
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  top: 50%;
+  left: 50%;
+  margin-left: -8px;
+  margin-top: -8px;
+  border: 2px solid transparent;
+  border-top-color: currentColor;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Skip links enhancement */
+.skip-links {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 9999;
+}
+
+.skip-links a {
+  position: absolute;
+  left: -9999px;
+  padding: 8px 16px;
+  background: #346870;
+  color: white;
+  text-decoration: none;
+  border-radius: 0 0 4px 4px;
+  font-weight: 500;
+  transition: left 0.3s ease;
+}
+
+.skip-links a:focus {
+  left: 8px;
+  top: 8px;
+}
+
+/* Responsive navigation */
+@media (max-width: 1024px) {
+  .nav-mobile {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: white;
+    z-index: 50;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+  }
+
+  .nav-mobile.open {
+    transform: translateX(0);
+  }
+}
+
+/* Enhanced contrast mode */
+.high-contrast .accessible-table th,
+.high-contrast .accessible-table td {
+  border: 2px solid #000000 !important;
+}
+
+.high-contrast .modal-backdrop {
+  background-color: rgba(0, 0, 0, 0.9) !important;
+}
+
+.high-contrast .btn-loading::after {
+  border-top-color: #ffffff !important;
+}
+
+/* Improved error states */
+.field-error {
+  border-color: #dc2626 !important;
+  box-shadow: 0 0 0 1px #dc2626 !important;
+}
+
+.field-error:focus {
+  border-color: #dc2626 !important;
+  box-shadow: 0 0 0 2px #dc2626 !important;
+}
+
+/* Success states */
+.field-success {
+  border-color: #16a34a !important;
+  box-shadow: 0 0 0 1px #16a34a !important;
+}
+
+/* Loading states */
+.loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+/* Responsive grid improvements */
+.responsive-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 640px) {
+  .responsive-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .responsive-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (min-width: 1280px) {
+  .responsive-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* Card accessibility */
+.accessible-card {
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.2s ease;
+}
+
+.accessible-card:hover {
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.accessible-card:focus-within {
+  box-shadow: 0 0 0 2px #346870;
+}
+
+/* Announcement region */
+.sr-announcement {
+  position: absolute;
+  left: -10000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+/* Tooltip accessibility */
+.tooltip {
+  position: relative;
+}
+
+.tooltip[aria-describedby] {
+  cursor: help;
+}
+
+.tooltip-content {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1f2937;
+  color: white;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.25rem;
+  font-size: 0.875rem;
+  white-space: nowrap;
+  z-index: 50;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+
+.tooltip:hover .tooltip-content,
+.tooltip:focus .tooltip-content {
+  opacity: 1;
+}
+
+/* Breadcrumb accessibility */
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+}
+
+.breadcrumb-separator {
+  color: #6b7280;
+  user-select: none;
+}
+
+.breadcrumb a {
+  color: #346870;
+  text-decoration: none;
+}
+
+.breadcrumb a:hover {
+  text-decoration: underline;
+}
+
+.breadcrumb [aria-current="page"] {
+  color: #374151;
+  font-weight: 500;
+}
+
+/* Enhanced mobile styles */
+@media (max-width: 768px) {
+  .mobile-stack > * {
+    width: 100% !important;
+    margin-bottom: 0.5rem;
+  }
+
+  .mobile-hide {
+    display: none !important;
+  }
+
+  .mobile-full {
+    width: 100% !important;
+  }
+
+  .mobile-center {
+    text-align: center !important;
+  }
+
+  .mobile-padding {
+    padding: 1rem !important;
+  }
+
+  .mobile-margin {
+    margin: 0.5rem !important;
+  }
+}
+
+/* Print accessibility */
+@media print {
+  .no-print,
+  .skip-links,
+  .mobile-menu,
+  .tooltip-content {
+    display: none !important;
+  }
+
+  .print-break {
+    page-break-before: always;
+  }
+
+  .print-avoid-break {
+    page-break-inside: avoid;
+  }
+}

@@ -1,0 +1,413 @@
+/* Accessibility CSS Utilities */
+
+/* Screen reader only content */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Skip links */
+.skip-links a {
+  position: absolute;
+  left: -9999px;
+  z-index: 999999;
+  padding: 8px 16px;
+  background: #346870;
+  color: white;
+  text-decoration: none;
+  border-radius: 4px;
+}
+
+.skip-links a:focus {
+  left: 6px;
+  top: 6px;
+}
+
+/* High contrast mode */
+.high-contrast {
+  --primary: #000000;
+  --primary-dark: #000000;
+  --secondary: #ffffff;
+  --text-primary: #000000;
+  --text-secondary: #ffffff;
+  --border-color: #000000;
+  --bg-primary: #ffffff;
+  --bg-secondary: #000000;
+}
+
+.high-contrast * {
+  border-color: var(--border-color) !important;
+}
+
+.high-contrast button,
+.high-contrast input,
+.high-contrast select,
+.high-contrast textarea {
+  border: 2px solid var(--border-color) !important;
+}
+
+.high-contrast a {
+  color: #0000ee !important;
+  text-decoration: underline !important;
+}
+
+.high-contrast a:visited {
+  color: #551a8b !important;
+}
+
+.high-contrast a:hover,
+.high-contrast a:focus {
+  color: #ff0000 !important;
+  background-color: #ffff00 !important;
+}
+
+/* Reduced motion */
+.reduce-motion *,
+.reduce-motion *::before,
+.reduce-motion *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
+
+/* Font size adjustments */
+.font-small {
+  font-size: 14px;
+}
+
+.font-normal {
+  font-size: 16px;
+}
+
+.font-large {
+  font-size: 18px;
+}
+
+.font-xlarge {
+  font-size: 20px;
+}
+
+/* Focus visible styles */
+.focus-visible *:focus {
+  outline: 2px solid #346870 !important;
+  outline-offset: 2px !important;
+}
+
+.focus-visible button:focus,
+.focus-visible input:focus,
+.focus-visible select:focus,
+.focus-visible textarea:focus,
+.focus-visible a:focus {
+  box-shadow: 0 0 0 2px #346870 !important;
+}
+
+/* Keyboard navigation indicators */
+.keyboard-navigation *:focus {
+  outline: 2px solid #346870;
+  outline-offset: 2px;
+}
+
+/* Touch target improvements */
+@media (pointer: coarse) {
+  button,
+  input[type="button"],
+  input[type="submit"],
+  input[type="reset"],
+  a {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+/* Responsive text scaling */
+@media (max-width: 640px) {
+  .font-small {
+    font-size: 12px;
+  }
+  .font-normal {
+    font-size: 14px;
+  }
+  .font-large {
+    font-size: 16px;
+  }
+  .font-xlarge {
+    font-size: 18px;
+  }
+}
+
+@media (max-width: 480px) {
+  .font-small {
+    font-size: 11px;
+  }
+  .font-normal {
+    font-size: 13px;
+  }
+  .font-large {
+    font-size: 15px;
+  }
+  .font-xlarge {
+    font-size: 17px;
+  }
+}
+
+/* Print styles for accessibility */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+
+  a[href]:after {
+    content: " (" attr(href) ")";
+  }
+
+  abbr[title]:after {
+    content: " (" attr(title) ")";
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg-primary: #1a1a1a;
+    --bg-secondary: #2d2d2d;
+    --text-primary: #ffffff;
+    --text-secondary: #cccccc;
+    --border-color: #404040;
+  }
+}
+
+/* Animations that respect reduced motion */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes bounceIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+  70% {
+    transform: scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.animate-slide-in {
+  animation: slideIn 0.3s ease-in-out;
+}
+
+.animate-bounce-in {
+  animation: bounceIn 0.5s ease-in-out;
+}
+
+/* Respect user's motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-in,
+  .animate-slide-in,
+  .animate-bounce-in {
+    animation: none;
+  }
+}
+
+/* Color contrast improvements */
+.contrast-high {
+  filter: contrast(150%);
+}
+
+/* Focus indicators for different input types */
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus,
+input[type="tel"]:focus,
+input[type="url"]:focus,
+input[type="search"]:focus,
+textarea:focus,
+select:focus {
+  border-color: #346870;
+  box-shadow: 0 0 0 1px #346870;
+}
+
+/* Error states with better contrast */
+.error input,
+.error textarea,
+.error select {
+  border-color: #dc2626;
+  box-shadow: 0 0 0 1px #dc2626;
+}
+
+.error input:focus,
+.error textarea:focus,
+.error select:focus {
+  border-color: #dc2626;
+  box-shadow: 0 0 0 2px #dc2626;
+}
+
+/* Success states */
+.success input,
+.success textarea,
+.success select {
+  border-color: #16a34a;
+  box-shadow: 0 0 0 1px #16a34a;
+}
+
+/* Loading states */
+.loading {
+  cursor: wait;
+}
+
+.loading * {
+  pointer-events: none;
+}
+
+/* Disabled states */
+.disabled,
+[disabled] {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Mobile-specific accessibility improvements */
+@media (max-width: 768px) {
+  /* Larger touch targets */
+  button,
+  input,
+  select,
+  textarea,
+  a {
+    min-height: 48px;
+  }
+
+  /* Better spacing for mobile */
+  .mobile-spacing > * + * {
+    margin-top: 1rem;
+  }
+
+  /* Improved form layouts */
+  .form-mobile label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+  }
+
+  .form-mobile input,
+  .form-mobile textarea,
+  .form-mobile select {
+    width: 100%;
+    padding: 0.75rem;
+    font-size: 16px; /* Prevents zoom on iOS */
+  }
+}
+
+/* Safe area support for devices with notches */
+@supports (padding: max(0px)) {
+  .safe-area-inset-top {
+    padding-top: max(1rem, env(safe-area-inset-top));
+  }
+
+  .safe-area-inset-bottom {
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  }
+
+  .safe-area-inset-left {
+    padding-left: max(1rem, env(safe-area-inset-left));
+  }
+
+  .safe-area-inset-right {
+    padding-right: max(1rem, env(safe-area-inset-right));
+  }
+}
+
+/* Utility classes for common accessibility patterns */
+.visually-hidden {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+.focusable:focus {
+  position: static !important;
+  width: auto !important;
+  height: auto !important;
+  padding: inherit !important;
+  margin: inherit !important;
+  overflow: visible !important;
+  clip: auto !important;
+  white-space: inherit !important;
+}
+
+/* Announcement region for screen readers */
+.announcement-region {
+  position: absolute;
+  left: -10000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+/* Custom scrollbar for better accessibility */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 12px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #346870;
+  border-radius: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #2a5359;
+}
+
+/* Firefox scrollbar */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #346870 #f1f1f1;
+}

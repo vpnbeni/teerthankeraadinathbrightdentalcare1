@@ -1,0 +1,89 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    font-family: "Inter", system-ui, sans-serif;
+  }
+
+  body {
+    @apply bg-gray-50 text-gray-900;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-[#346870] hover:bg-[#2a5359] text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-secondary {
+    @apply bg-[#BDCFD1] hover:bg-[#a8bfc2] text-gray-800 font-medium py-2 px-4 rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .input-field {
+    @apply w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#346870] focus:border-transparent;
+  }
+
+  .card {
+    @apply bg-white rounded-lg shadow-md p-6;
+  }
+
+  .plan-card {
+    @apply bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer transform hover:-translate-y-1;
+  }
+
+  .plan-card-popular {
+    @apply border-2 border-[#346870] scale-105;
+  }
+
+  .plan-card-selected {
+    @apply ring-4 ring-[#346870] ring-opacity-50 border-2 border-[#346870];
+  }
+
+  .gradient-bg {
+    background: linear-gradient(135deg, #346870 0%, #bdcfd1 100%);
+  }
+
+  .plan-feature-check {
+    @apply w-5 h-5 text-green-500 mr-3 flex-shrink-0 mt-0.5;
+  }
+
+  @keyframes fade-in-up {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-fade-in-up {
+    animation: fade-in-up 0.6s ease-out forwards;
+    opacity: 0;
+  }
+
+  /* Modal animations */
+  @keyframes modal-appear {
+    from {
+      opacity: 0;
+      transform: scale(0.95) translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+    }
+  }
+
+  .modal-content {
+    animation: modal-appear 0.3s ease-out;
+  }
+
+  /* OTP input styling */
+  .otp-input:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(52, 104, 112, 0.1);
+  }
+}
