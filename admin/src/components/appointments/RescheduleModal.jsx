@@ -42,20 +42,6 @@ const RescheduleModal = ({ appointment, onClose, onReschedule }) => {
   const loadAvailableSlots = async (forceRefresh = false) => {
     setLoadingSlots(true);
     try {
-      // If force refresh, sync holidays first to ensure latest data
-      if (forceRefresh) {
-        try {
-          const availabilityService = (
-            await import("../../services/availability")
-          ).default;
-          await availabilityService.syncHolidays();
-          console.log("Holidays synced before loading slots");
-        } catch (syncError) {
-          console.warn("Failed to sync holidays:", syncError);
-          // Continue with loading slots even if sync fails
-        }
-      }
-
       const response = await appointmentService.getAvailableSlots(
         selectedDate,
         forceRefresh

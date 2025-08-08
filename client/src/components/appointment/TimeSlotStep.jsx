@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import appointmentService from "../../services/appointments";
+import availabilityService from "../../services/availability";
 import { LoadingSpinner } from "../../shared/components";
 
 // Component to show availability information to patients
@@ -11,11 +12,11 @@ const AvailabilityInfo = ({ selectedDate }) => {
       if (!selectedDate) return;
 
       try {
-        const response = await appointmentService.getAvailableSlots(
+        const response = await availabilityService.getAvailabilityForDate(
           selectedDate
         );
-        if (response.data.success && response.data.data.metadata) {
-          setAvailabilityInfo(response.data.data.metadata);
+        if (response.data.success && response.data.data) {
+          setAvailabilityInfo(response.data.data);
         }
       } catch (error) {
         console.error("Failed to fetch availability info:", error);
@@ -28,35 +29,37 @@ const AvailabilityInfo = ({ selectedDate }) => {
   if (!availabilityInfo) return null;
 
   const getAvailabilityMessage = () => {
-    if (availabilityInfo.isHoliday) {
+    if (availabilityInfo.type === "holiday") {
       return {
         type: "holiday",
         icon: "🎉",
         title: "Holiday",
-        message: availabilityInfo.holidayName || "This date is a holiday",
+        message: availabilityInfo.holiday?.reason || "This date is a holiday",
         color: "text-red-600 bg-red-50 border-red-200",
       };
     }
 
-    if (availabilityInfo.isCustom) {
-      return {
-        type: "custom",
-        icon: "📅",
-        title: "Special Hours",
-        message:
-          availabilityInfo.customReason || "Custom availability for this date",
-        color: "text-blue-600 bg-blue-50 border-blue-200",
-      };
-    }
-
-    if (availabilityInfo.source === "template") {
-      return {
-        type: "regular",
-        icon: "⏰",
-        title: "Regular Hours",
-        message: "Standard clinic hours apply",
-        color: "text-green-600 bg-green-50 border-green-200",
-      };
+    if (availabilityInfo.available && availabilityInfo.template) {
+      const template = availabilityInfo.template;
+      if (template.isDefault) {
+        return {
+          type: "regular",
+          icon: "⏰",
+          title: "Regular Hours",
+          message: `Standard clinic hours: ${template.workingHours.start} - ${template.workingHours.end}`,
+          color: "text-green-600 bg-green-50 border-green-200",
+          template: template,
+        };
+      } else {
+        return {
+          type: "custom",
+          icon: "📅",
+          title: `${template.name}`,
+          message: `Extended hours: ${template.workingHours.start} - ${template.workingHours.end}`,
+          color: "text-blue-600 bg-blue-50 border-blue-200",
+          template: template,
+        };
+      }
     }
 
     return null;
@@ -66,12 +69,23 @@ const AvailabilityInfo = ({ selectedDate }) => {
   if (!info) return null;
 
   return (
-    <div className={`border rounded-lg p-3 ${info.color}`}>
+    <div className={`border rounded-lg p-4 ${info.color}`}>
       <div className="flex items-start">
-        <span className="text-lg mr-2 mt-0.5">{info.icon}</span>
+        <span className="text-lg mr-3 mt-0.5">{info.icon}</span>
         <div className="flex-1">
           <h4 className="font-medium text-sm">{info.title}</h4>
           <p className="text-sm mt-1">{info.message}</p>
+          {info.template && (
+            <div className="mt-2 text-xs space-y-1">
+              <div>Slot Duration: {info.template.slotDuration} minutes</div>
+              {info.template.breakTimes && info.template.breakTimes.length > 0 && (
+                <div>
+                  Break Times: {info.template.breakTimes.map(bt => `${bt.start}-${bt.end}`).join(', ')}
+                </div>
+              )}
+              <div>{availabilityInfo.totalSlots} total slots, {availabilityInfo.availableSlots} available</div>
+            </div>
+          )}
         </div>
       </div>
     </div>

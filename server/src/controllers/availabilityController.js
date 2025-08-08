@@ -1,18 +1,518 @@
-import Availability from "../models/Availability.js";
-import AvailabilitySettings from "../models/AvailabilitySettings.js";
-import Appointment from "../models/Appointment.js";
+import AvailabilityService from "../services/availabilityService.js";
+import AvailabilityTemplate from "../models/AvailabilityTemplate.js";
+import Holiday from "../models/Holiday.js";
+
+const availabilityService = new AvailabilityService();
+
+// Template Management Controllers
 
 /**
- * Availability Controller
- * Handles availability management for admin panel
+ * Get all availability templates
  */
+export const getTemplates = async (req, res) => {
+  try {
+    const { isDefault, isActive } = req.query;
+    const filters = {};
+    
+    if (isDefault !== undefined) {
+      filters.isDefault = isDefault === "true";
+    }
+    
+    if (isActive !== undefined) {
+      filters.isActive = isActive === "true";
+    }
+
+    const templates = await availabilityService.getTemplates(filters);
+
+    res.status(200).json({
+      success: true,
+      data: templates,
+      count: templates.length,
+    });
+  } catch (error) {
+    console.error("Error getting templates:", error);
+    res.status(500).json({
+      success: false,
+      message: error.message || "Failed to get availability templates",
+    });
+  }
+};
 
 /**
- * @desc    Get availability slots for date range
- * @route   GET /api/admin/availability
- * @access  Private (Admin)
+ * Get a specific template by ID
  */
-export const getAvailability = async (req, res) => {
+export const getTemplate = async (req, res) => {
+  try {
+    const { templateId } = req.params;
+    
+    const template = await AvailabilityTemplate.findById(templateId)
+      .populate("createdBy", "name email");
+
+    if (!template) {
+      return res.status(404).json({
+        success: false,
+        message: "Template not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: template,
+    });
+  } catch (error) {
+    console.error("Error getting template:", error);
+    res.status(500).json({
+      success: false,
+      message: error.message || "Failed to get availability template",
+    });
+  }
+};
+
+/**
+ * Create a new availability template
+ */
+export const createTemplate = async (req, res) => {
+  try {
+    const templateData = req.body;
+    const userId = req.user.id;
+
+    // Validate required fields
+    const { templateName, workingHours, slotDuration } = templateData;
+    
+    if (!templateName || !workingHours || !slotDuration) {
+      return res.status(400).json({
+        success: false,
+        message: "Template name, working hours, and slot duration are required",
+      });
+    }
+
+    const template = await availabilityService.createTemplate(templateData, userId);
+
+    res.status(201).json({
+      success: true,
+      message: "Availability template created successfully",
+      data: template,
+    });
+  } catch (error) {
+    console.error("Error creating template:", error);
+    res.status(500).json({
+      success: false,
+      message: error.message || "Failed to create availability template",
+    });
+  }
+};
+
+/**
+ * Update an availability template
+ */
+export const updateTemplate = async (req, res) => {
+  try {
+    const { templateId } = req.params;
+    const updateData = req.body;
+
+    const template = await availabilityService.updateTemplate(templateId, updateData);
+
+    res.status(200).json({
+      success: true,
+      message: "Availability template updated successfully",
+      data: template,
+    });
+  } catch (error) {
+    console.error("Error updating template:", error);
+    res.status(500).json({
+      success: false,
+      message: error.message || "Failed to update availability template",
+    });
+  }
+};
+
+/**
+ * Delete an availability template
+ */
+export const deleteTemplate = async (req, res) => {
+  try {
+    const { templateId } = req.params;
+
+    await availabilityService.deleteTemplate(templateId);
+
+    res.status(200).json({
+      success: true,
+      message: "Availability template deleted successfully",
+    });
+  } catch (error) {
+    console.error("Error deleting template:", error);
+    res.status(500).json({
+      success: false,
+      message: error.message || "Failed to delete availability template",
+    });
+  }
+};
+
+/**
+ * Apply template to specific dates
+ */
+export const applyTemplateToDate = async (req, res) => {
+  try {
+    const { templateId } = req.params;
+    const { dates } = req.body;
+
+    if (!dates || !Array.isArray(dates) || dates.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Dates array is required",
+      });
+    }
+
+    const template = await availabilityService.applyTemplateToDate(templateId, dates);
+
+    res.status(200).json({
+      success: true,
+      message: "Template applied to dates successfully",
+      data: template,
+    });
+  } catch (error) {
+    console.error("Error applying template to dates:", error);
+    res.status(500).json({
+      success: false,
+      message: error.message || "Failed to apply template to dates",
+    });
+  }
+};
+
+/**
+ * Remove template from specific dates
+ */
+export const removeTemplateFromDates = async (req, res) => {
+  try {
+    const { templateId } = req.params;
+    const { dates } = req.body;
+
+    if (!dates || !Array.isArray(dates) || dates.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Dates array is required",
+      });
+    }
+
+    const template = await availabilityService.removeTemplateFromDates(templateId, dates);
+
+    res.status(200).json({
+      success: true,
+      message: "Template removed from dates successfully",
+      data: template,
+    });
+  } catch (error) {
+    console.error("Error removing template from dates:", error);
+    res.status(500).json({
+      success: false,
+      message: error.message || "Failed to remove template from dates",
+    });
+  }
+};
+
+// Holiday Management Controllers
+
+/**
+ * Get all holidays
+ */
+export const getHolidays = async (req, res) => {
+  try {
+    const { type, isActive, startDate, endDate } = req.query;
+    let holidays;
+
+    if (startDate && endDate) {
+      holidays = await Holiday.getHolidaysInRange(startDate, endDate);
+    } else if (type) {
+      holidays = await Holiday.getHolidaysByType(type);
+    } else {
+      const filters = {};
+      if (isActive !== undefined) {
+        filters.isActive = isActive === "true";
+      }
+      holidays = await Holiday.find(filters)
+        .populate("createdBy", "name email")
+        .sort({ date: 1 });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: holidays,
+      count: holidays.length,
+    });
+  } catch (error) {
+    console.error("Error getting holidays:", error);
+    res.status(500).json({
+      success: false,
+      message: error.message || "Failed to get holidays",
+    });
+  }
+};
+
+/**
+ * Get a specific holiday by ID
+ */
+export const getHoliday = async (req, res) => {
+  try {
+    const { holidayId } = req.params;
+    
+    const holiday = await Holiday.findById(holidayId)
+      .populate("createdBy", "name email");
+
+    if (!holiday) {
+      return res.status(404).json({
+        success: false,
+        message: "Holiday not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: holiday,
+    });
+  } catch (error) {
+    console.error("Error getting holiday:", error);
+    res.status(500).json({
+      success: false,
+      message: error.message || "Failed to get holiday",
+    });
+  }
+};
+
+/**
+ * Create a new holiday
+ */
+export const createHoliday = async (req, res) => {
+  try {
+    const holidayData = req.body;
+    const userId = req.user.id;
+
+    // Validate required fields
+    const { date, reason } = holidayData;
+    
+    if (!date || !reason) {
+      return res.status(400).json({
+        success: false,
+        message: "Date and reason are required",
+      });
+    }
+
+    // Clean up recurringPattern if isRecurring is false
+    const cleanedData = { ...holidayData };
+    if (!cleanedData.isRecurring) {
+      delete cleanedData.recurringPattern;
+    } else if (cleanedData.recurringPattern === '') {
+      // If recurringPattern is empty string, remove it to trigger validation
+      delete cleanedData.recurringPattern;
+    }
+
+    const holiday = new Holiday({
+      ...cleanedData,
+      createdBy: userId,
+    });
+
+    await holiday.save();
+
+    res.status(201).json({
+      success: true,
+      message: "Holiday created successfully",
+      data: holiday,
+    });
+  } catch (error) {
+    console.error("Error creating holiday:", error);
+    
+    // Handle duplicate date error
+    if (error.code === 11000) {
+      return res.status(400).json({
+        success: false,
+        message: "A holiday already exists for this date",
+      });
+    }
+
+    res.status(500).json({
+      success: false,
+      message: error.message || "Failed to create holiday",
+    });
+  }
+};
+
+/**
+ * Update a holiday
+ */
+export const updateHoliday = async (req, res) => {
+  try {
+    const { holidayId } = req.params;
+    const updateData = req.body;
+
+    // Clean up recurringPattern if isRecurring is false
+    const cleanedData = { ...updateData };
+    if (!cleanedData.isRecurring) {
+      cleanedData.recurringPattern = undefined;
+    } else if (cleanedData.recurringPattern === '') {
+      // If recurringPattern is empty string, remove it to trigger validation
+      delete cleanedData.recurringPattern;
+    }
+
+    const holiday = await Holiday.findByIdAndUpdate(
+      holidayId,
+      { ...cleanedData, updatedAt: new Date() },
+      { new: true, runValidators: true }
+    );
+
+    if (!holiday) {
+      return res.status(404).json({
+        success: false,
+        message: "Holiday not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Holiday updated successfully",
+      data: holiday,
+    });
+  } catch (error) {
+    console.error("Error updating holiday:", error);
+    res.status(500).json({
+      success: false,
+      message: error.message || "Failed to update holiday",
+    });
+  }
+};
+
+/**
+ * Delete a holiday
+ */
+export const deleteHoliday = async (req, res) => {
+  try {
+    const { holidayId } = req.params;
+
+    const holiday = await Holiday.findByIdAndDelete(holidayId);
+
+    if (!holiday) {
+      return res.status(404).json({
+        success: false,
+        message: "Holiday not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Holiday deleted successfully",
+    });
+  } catch (error) {
+    console.error("Error deleting holiday:", error);
+    res.status(500).json({
+      success: false,
+      message: error.message || "Failed to delete holiday",
+    });
+  }
+};
+
+// Availability Query Controllers
+
+/**
+ * Get availability for a specific date
+ */
+export const getAvailabilityForDate = async (req, res) => {
+  try {
+    const { date } = req.params;
+    const { onlyAvailable } = req.query;
+
+    const options = {
+      onlyAvailable: onlyAvailable === "true",
+    };
+
+    const availability = await availabilityService.getAvailabilityForDate(date, options);
+
+    res.status(200).json({
+      success: true,
+      data: availability,
+    });
+  } catch (error) {
+    console.error("Error getting availability for date:", error);
+    res.status(500).json({
+      success: false,
+      message: error.message || "Failed to get availability for date",
+    });
+  }
+};
+
+/**
+ * Get availability for a date range
+ */
+export const getAvailabilityForDateRange = async (req, res) => {
+  try {
+    const { startDate, endDate } = req.query;
+    const { onlyAvailable } = req.query;
+
+    if (!startDate || !endDate) {
+      return res.status(400).json({
+        success: false,
+        message: "Start date and end date are required",
+      });
+    }
+
+    const options = {
+      onlyAvailable: onlyAvailable === "true",
+    };
+
+    const availability = await availabilityService.getAvailabilityForDateRange(
+      startDate,
+      endDate,
+      options
+    );
+
+    res.status(200).json({
+      success: true,
+      data: availability,
+    });
+  } catch (error) {
+    console.error("Error getting availability for date range:", error);
+    res.status(500).json({
+      success: false,
+      message: error.message || "Failed to get availability for date range",
+    });
+  }
+};
+
+/**
+ * Check if a specific time slot is available
+ */
+export const checkTimeSlotAvailability = async (req, res) => {
+  try {
+    const { date, timeSlot } = req.body;
+    const { excludeAppointmentId } = req.query;
+
+    if (!date || !timeSlot) {
+      return res.status(400).json({
+        success: false,
+        message: "Date and time slot are required",
+      });
+    }
+
+    const availability = await availabilityService.isTimeSlotAvailable(
+      date,
+      timeSlot,
+      excludeAppointmentId
+    );
+
+    res.status(200).json({
+      success: true,
+      data: availability,
+    });
+  } catch (error) {
+    console.error("Error checking time slot availability:", error);
+    res.status(500).json({
+      success: false,
+      message: error.message || "Failed to check time slot availability",
+    });
+  }
+};
+
+/**
+ * Get available dates in a range
+ */
+export const getAvailableDates = async (req, res) => {
   try {
     const { startDate, endDate } = req.query;
 
@@ -23,579 +523,18 @@ export const getAvailability = async (req, res) => {
       });
     }
 
-    const start = new Date(startDate);
-    const end = new Date(endDate);
-
-    if (isNaN(start.getTime()) || isNaN(end.getTime())) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid date format",
-      });
-    }
-
-    if (start > end) {
-      return res.status(400).json({
-        success: false,
-        message: "Start date must be before end date",
-      });
-    }
-
-    const availability = await Availability.getAvailabilityRange(start, end);
+    const availableDates = await availabilityService.getAvailableDates(startDate, endDate);
 
     res.status(200).json({
       success: true,
-      data: availability,
-      message: "Availability retrieved successfully",
+      data: availableDates,
+      count: availableDates.length,
     });
   } catch (error) {
-    console.error("Get availability error:", error);
+    console.error("Error getting available dates:", error);
     res.status(500).json({
       success: false,
-      message: "Server error while retrieving availability",
+      message: error.message || "Failed to get available dates",
     });
-  }
-};
-
-/**
- * @desc    Create new availability slots
- * @route   POST /api/admin/availability
- * @access  Private (Admin)
- */
-export const createAvailability = async (req, res) => {
-  try {
-    const { date, timeSlots, isHoliday, notes } = req.body;
-
-    if (!date) {
-      return res.status(400).json({
-        success: false,
-        message: "Date is required",
-      });
-    }
-
-    const availabilityDate = new Date(date);
-    if (isNaN(availabilityDate.getTime())) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid date format",
-      });
-    }
-
-    // Check if availability already exists for this date
-    const existingAvailability = await Availability.findOne({
-      date: availabilityDate,
-    });
-    if (existingAvailability) {
-      return res.status(400).json({
-        success: false,
-        message:
-          "Availability already exists for this date. Use PUT to update.",
-      });
-    }
-
-    // Validate time slots if provided
-    if (timeSlots && timeSlots.length > 0) {
-      for (const slot of timeSlots) {
-        if (!slot.startTime || !slot.endTime) {
-          return res.status(400).json({
-            success: false,
-            message: "Each time slot must have startTime and endTime",
-          });
-        }
-
-        // Validate time format
-        const timeRegex = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/;
-        if (!timeRegex.test(slot.startTime) || !timeRegex.test(slot.endTime)) {
-          return res.status(400).json({
-            success: false,
-            message: "Time must be in HH:MM format",
-          });
-        }
-      }
-    }
-
-    const availability = new Availability({
-      date: availabilityDate,
-      timeSlots: timeSlots || [],
-      isHoliday: isHoliday || false,
-      notes: notes || "",
-      createdBy: req.user.id,
-    });
-
-    await availability.save();
-
-    await availability.populate("createdBy", "name email");
-
-    res.status(201).json({
-      success: true,
-      data: availability,
-      message: "Availability created successfully",
-    });
-  } catch (error) {
-    console.error("Create availability error:", error);
-
-    if (error.name === "ValidationError") {
-      return res.status(400).json({
-        success: false,
-        message: "Validation error",
-        details: Object.values(error.errors).map((err) => err.message),
-      });
-    }
-
-    res.status(500).json({
-      success: false,
-      message: "Server error while creating availability",
-    });
-  }
-};
-
-/**
- * @desc    Update existing availability slots
- * @route   PUT /api/admin/availability/:id
- * @access  Private (Admin)
- */
-export const updateAvailability = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { timeSlots, isHoliday, notes } = req.body;
-
-    const availability = await Availability.findById(id);
-    if (!availability) {
-      return res.status(404).json({
-        success: false,
-        message: "Availability not found",
-      });
-    }
-
-    // Validate time slots if provided
-    if (timeSlots && timeSlots.length > 0) {
-      for (const slot of timeSlots) {
-        if (!slot.startTime || !slot.endTime) {
-          return res.status(400).json({
-            success: false,
-            message: "Each time slot must have startTime and endTime",
-          });
-        }
-
-        // Validate time format
-        const timeRegex = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/;
-        if (!timeRegex.test(slot.startTime) || !timeRegex.test(slot.endTime)) {
-          return res.status(400).json({
-            success: false,
-            message: "Time must be in HH:MM format",
-          });
-        }
-      }
-    }
-
-    // Update fields
-    if (timeSlots !== undefined) availability.timeSlots = timeSlots;
-    if (isHoliday !== undefined) availability.isHoliday = isHoliday;
-    if (notes !== undefined) availability.notes = notes;
-    availability.updatedBy = req.user.id;
-
-    await availability.save();
-    await availability.populate("createdBy updatedBy", "name email");
-
-    res.status(200).json({
-      success: true,
-      data: availability,
-      message: "Availability updated successfully",
-    });
-  } catch (error) {
-    console.error("Update availability error:", error);
-
-    if (error.name === "ValidationError") {
-      return res.status(400).json({
-        success: false,
-        message: "Validation error",
-        details: Object.values(error.errors).map((err) => err.message),
-      });
-    }
-
-    res.status(500).json({
-      success: false,
-      message: "Server error while updating availability",
-    });
-  }
-};
-
-/**
- * @desc    Delete availability slot with validation
- * @route   DELETE /api/admin/availability/:id
- * @access  Private (Admin)
- */
-export const deleteAvailability = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { force } = req.query; // Allow force deletion
-
-    const availability = await Availability.findById(id);
-    if (!availability) {
-      return res.status(404).json({
-        success: false,
-        message: "Availability not found",
-      });
-    }
-
-    // Check for existing appointments unless force delete
-    if (!force) {
-      const existingAppointments = await Appointment.find({
-        appointmentDate: availability.date,
-        status: { $in: ["confirmed", "pending"] },
-      });
-
-      if (existingAppointments.length > 0) {
-        return res.status(400).json({
-          success: false,
-          message: "Cannot delete availability with existing appointments",
-          data: {
-            appointmentCount: existingAppointments.length,
-            appointments: existingAppointments.map((apt) => ({
-              id: apt._id,
-              time: apt.appointmentTime,
-              patientName: apt.patientName,
-              status: apt.status,
-            })),
-          },
-        });
-      }
-    }
-
-    await Availability.findByIdAndDelete(id);
-
-    res.status(200).json({
-      success: true,
-      message: "Availability deleted successfully",
-    });
-  } catch (error) {
-    console.error("Delete availability error:", error);
-    res.status(500).json({
-      success: false,
-      message: "Server error while deleting availability",
-    });
-  }
-};
-
-/**
- * @desc    Get availability settings
- * @route   GET /api/admin/availability/settings
- * @access  Private (Admin)
- */
-export const getAvailabilitySettings = async (req, res) => {
-  try {
-    const settings = await AvailabilitySettings.getSettings();
-
-    res.status(200).json({
-      success: true,
-      data: settings,
-      message: "Availability settings retrieved successfully",
-    });
-  } catch (error) {
-    console.error("Get availability settings error:", error);
-    res.status(500).json({
-      success: false,
-      message: "Server error while retrieving availability settings",
-    });
-  }
-};
-
-/**
- * @desc    Update availability settings
- * @route   PUT /api/admin/availability/settings
- * @access  Private (Admin)
- */
-export const updateAvailabilitySettings = async (req, res) => {
-  try {
-    const {
-      workingDays,
-      defaultTimeSlots,
-      breakTimes,
-      advanceBookingDays,
-      minimumNoticeHours,
-      holidays,
-      autoGenerateAvailability,
-      autoGenerateDaysAhead,
-      defaultStartTime,
-      defaultEndTime,
-      sundayStartTime,
-      sundayEndTime,
-      slotDuration,
-      customDaySettings,
-    } = req.body;
-
-    let settings = await AvailabilitySettings.findById("availability_settings");
-
-    if (!settings) {
-      settings = new AvailabilitySettings({ _id: "availability_settings" });
-    }
-
-    // Update fields if provided
-    if (workingDays !== undefined) settings.workingDays = workingDays;
-    if (defaultTimeSlots !== undefined)
-      settings.defaultTimeSlots = defaultTimeSlots;
-    if (breakTimes !== undefined) settings.breakTimes = breakTimes;
-    if (advanceBookingDays !== undefined)
-      settings.advanceBookingDays = advanceBookingDays;
-    if (minimumNoticeHours !== undefined)
-      settings.minimumNoticeHours = minimumNoticeHours;
-    if (holidays !== undefined) settings.holidays = holidays;
-    if (autoGenerateAvailability !== undefined)
-      settings.autoGenerateAvailability = autoGenerateAvailability;
-    if (autoGenerateDaysAhead !== undefined)
-      settings.autoGenerateDaysAhead = autoGenerateDaysAhead;
-    if (defaultStartTime !== undefined)
-      settings.defaultStartTime = defaultStartTime;
-    if (defaultEndTime !== undefined) settings.defaultEndTime = defaultEndTime;
-    if (sundayStartTime !== undefined)
-      settings.sundayStartTime = sundayStartTime;
-    if (sundayEndTime !== undefined) settings.sundayEndTime = sundayEndTime;
-    if (slotDuration !== undefined) settings.slotDuration = slotDuration;
-    if (customDaySettings !== undefined)
-      settings.customDaySettings = customDaySettings;
-
-    settings.updatedBy = req.user.id;
-
-    await settings.save();
-    await settings.populate("updatedBy", "name email");
-
-    // Note: Automatic holiday sync temporarily disabled to prevent loops
-    // Use the manual sync endpoint: POST /api/admin/availability/sync-holidays
-    // if (holidays !== undefined) {
-    //   try {
-    //     await syncHolidaysWithAvailability(settings, req.user.id);
-    //   } catch (error) {
-    //     console.error('Error syncing holidays:', error);
-    //   }
-    // }
-
-    res.status(200).json({
-      success: true,
-      data: settings,
-      message: "Availability settings updated successfully",
-    });
-  } catch (error) {
-    console.error("Update availability settings error:", error);
-
-    if (error.name === "ValidationError") {
-      return res.status(400).json({
-        success: false,
-        message: "Validation error",
-        details: Object.values(error.errors).map((err) => err.message),
-      });
-    }
-
-    res.status(500).json({
-      success: false,
-      message: "Server error while updating availability settings",
-    });
-  }
-};
-
-/**
- * @desc    Generate availability for date range based on settings
- * @route   POST /api/admin/availability/generate
- * @access  Private (Admin)
- */
-export const generateAvailability = async (req, res) => {
-  try {
-    const { startDate, endDate, overwrite = false } = req.body;
-
-    if (!startDate || !endDate) {
-      return res.status(400).json({
-        success: false,
-        message: "Start date and end date are required",
-      });
-    }
-
-    const start = new Date(startDate);
-    const end = new Date(endDate);
-
-    if (isNaN(start.getTime()) || isNaN(end.getTime())) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid date format",
-      });
-    }
-
-    if (start > end) {
-      return res.status(400).json({
-        success: false,
-        message: "Start date must be before end date",
-      });
-    }
-
-    const settings = await AvailabilitySettings.getSettings();
-    const generatedDates = [];
-    const skippedDates = [];
-
-    // Iterate through each date in the range
-    const currentDate = new Date(start);
-    while (currentDate <= end) {
-      const dateToCheck = new Date(currentDate);
-      const isHoliday = settings.isHoliday(dateToCheck);
-      const isWorkingDay = settings.isWorkingDay(dateToCheck);
-
-      // Generate availability for working days (including holidays for display)
-      if (isWorkingDay) {
-        // Check if availability already exists
-        const existingAvailability = await Availability.findOne({
-          date: dateToCheck,
-        });
-
-        if (!existingAvailability || overwrite) {
-          const dayOfWeek = dateToCheck.getDay();
-          // For holidays, create empty time slots or mark as unavailable
-          const availableTimeSlots = isHoliday
-            ? []
-            : settings.getTimeSlotsForDay(dayOfWeek);
-
-          if (existingAvailability && overwrite) {
-            // Update existing
-            existingAvailability.timeSlots = availableTimeSlots;
-            existingAvailability.isHoliday = isHoliday;
-            existingAvailability.updatedBy = req.user.id;
-            await existingAvailability.save();
-            generatedDates.push(dateToCheck.toISOString().split("T")[0]);
-          } else {
-            // Create new
-            await Availability.create({
-              date: dateToCheck,
-              timeSlots: availableTimeSlots,
-              isHoliday: isHoliday,
-              createdBy: req.user.id,
-            });
-            generatedDates.push(dateToCheck.toISOString().split("T")[0]);
-          }
-        } else {
-          skippedDates.push(dateToCheck.toISOString().split("T")[0]);
-        }
-      }
-
-      // Move to next day
-      currentDate.setDate(currentDate.getDate() + 1);
-    }
-
-    res.status(200).json({
-      success: true,
-      data: {
-        generatedDates,
-        skippedDates,
-        totalGenerated: generatedDates.length,
-        totalSkipped: skippedDates.length,
-      },
-      message: `Availability generated for ${generatedDates.length} dates`,
-    });
-  } catch (error) {
-    console.error("Generate availability error:", error);
-    res.status(500).json({
-      success: false,
-      message: "Server error while generating availability",
-    });
-  }
-};
-
-/**
- * @desc    Manually sync holidays with existing availability records
- * @route   POST /api/admin/availability/sync-holidays
- * @access  Private (Admin)
- */
-export const syncHolidays = async (req, res) => {
-  try {
-    const settings = await AvailabilitySettings.getSettings();
-    const syncResult = await syncHolidaysWithAvailability(
-      settings,
-      req.user.id
-    );
-
-    res.status(200).json({
-      success: true,
-      data: syncResult,
-      message: "Holiday synchronization completed successfully",
-    });
-  } catch (error) {
-    console.error("Sync holidays error:", error);
-    res.status(500).json({
-      success: false,
-      message: "Server error while syncing holidays",
-    });
-  }
-};
-
-/**
- * Helper function to sync holiday settings with existing availability records
- * @param {Object} settings - The availability settings object
- * @param {String} userId - The user ID making the update
- */
-const syncHolidaysWithAvailability = async (settings, userId) => {
-  try {
-    // Get all future availability records (from today onwards)
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    const futureAvailability = await Availability.find({
-      date: { $gte: today },
-      status: "active",
-    });
-
-    const bulkOperations = [];
-    const syncedDates = [];
-
-    for (const availability of futureAvailability) {
-      const isHoliday = settings.isHoliday(availability.date);
-
-      // Only update if holiday status has changed
-      if (availability.isHoliday !== isHoliday) {
-        bulkOperations.push({
-          updateOne: {
-            filter: { _id: availability._id },
-            update: {
-              $set: {
-                isHoliday: isHoliday,
-                updatedBy: userId,
-                updatedAt: new Date(),
-              },
-              $inc: { version: 1 },
-              $push: {
-                auditLog: {
-                  action: "holiday_sync",
-                  performedBy: userId,
-                  timestamp: new Date(),
-                  changes: {
-                    isHoliday: { from: availability.isHoliday, to: isHoliday },
-                  },
-                  reason: "Holiday settings updated",
-                },
-              },
-            },
-          },
-        });
-
-        syncedDates.push({
-          date: availability.date.toISOString().split("T")[0],
-          from: availability.isHoliday,
-          to: isHoliday,
-        });
-      }
-    }
-
-    // Execute bulk operations if any
-    if (bulkOperations.length > 0) {
-      await Availability.bulkWrite(bulkOperations);
-      console.log(
-        `Synced holiday status for ${bulkOperations.length} availability records`
-      );
-    }
-
-    return {
-      totalRecordsChecked: futureAvailability.length,
-      recordsUpdated: bulkOperations.length,
-      syncedDates: syncedDates,
-    };
-  } catch (error) {
-    console.error("Error syncing holidays with availability:", error);
-    // For manual sync, throw error; for automatic sync, just log
-    if (userId) {
-      throw error;
-    }
   }
 };

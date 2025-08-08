@@ -24,17 +24,71 @@ const appointmentService = {
     return appointmentService.createAppointment(appointmentData);
   },
 
-  // Get available time slots for a date
+  // Get available time slots for a date (with enhanced availability data)
   getAvailableSlots: async (date) => {
     const formattedDate = new Date(date).toISOString().split("T")[0];
-    const response = await api.get(
-      `/appointments/available-slots/${formattedDate}`
-    );
+    
+    try {
+      // First try the new availability endpoint for enhanced data
+      const availabilityResponse = await api.get(`/availability/availability/date/${formattedDate}`);
+      
+      if (availabilityResponse.data.success && availabilityResponse.data.data.available) {
+        const availability = availabilityResponse.data.data;
+        // Format response to match expected structure
+        return {
+          data: {
+            success: true,
+            data: {
+              availableSlots: availability.slots
+                .filter(slot => slot.isAvailable)
+                .map(slot => slot.timeSlot),
+              metadata: {
+                isWorkingDay: availability.available,
+                isHoliday: availability.type === "holiday",
+                holidayName: availability.holiday?.reason,
+                template: availability.template,
+                totalSlots: availability.totalSlots,
+                availableSlots: availability.availableSlots,
+                bookedSlots: availability.bookedSlots,
+              }
+            }
+          }
+        };
+      }
+    } catch (error) {
+      console.warn("New availability endpoint failed, falling back to legacy:", error);
+    }
+    
+    // Fallback to legacy endpoint
+    const response = await api.get(`/appointments/available-slots/${formattedDate}`);
     return response;
   },
 
   // Get available dates in a range (for calendar view)
   getAvailableDates: async (startDate, endDate) => {
+    try {
+      // Try using the new availability service first
+      const response = await api.get("/availability/availability/dates", {
+        params: {
+          startDate: new Date(startDate).toISOString().split("T")[0],
+          endDate: new Date(endDate).toISOString().split("T")[0],
+        },
+      });
+      
+      if (response.data.success) {
+        // Format to match expected structure
+        return {
+          data: {
+            success: true,
+            data: response.data.data.map(item => item.dateString || item.date)
+          }
+        };
+      }
+    } catch (error) {
+      console.warn("New availability dates endpoint failed, falling back to legacy:", error);
+    }
+    
+    // Fallback to legacy endpoint
     const response = await api.get("/appointments/available-dates", {
       params: {
         startDate: startDate.toISOString(),

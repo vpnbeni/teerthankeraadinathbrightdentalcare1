@@ -14,8 +14,10 @@
     "test:payment:integration": "node src/test/runPaymentTests.js --category=integration",
     "test:payment:e2e": "node src/test/runPaymentTests.js --category=e2e",
     "test:payment:coverage": "node src/test/runPaymentTests.js --coverage",
+    "test:auto-cancel": "node src/test/autoCancelTest.js",
     "generate-key": "node src/scripts/generateEncryptionKey.js",
-    "seed-plans": "node src/scripts/seedPlans.js"
+    "seed-plans": "node src/scripts/seedPlans.js",
+    "seed-availability": "node src/scripts/seedAvailabilityData.js"
   },
   "dependencies": {
     "axios": "^1.6.2",

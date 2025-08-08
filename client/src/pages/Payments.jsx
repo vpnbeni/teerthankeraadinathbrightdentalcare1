@@ -1,25 +1,45 @@
-import React, { useState } from "react";
-import { useSelector } from "react-redux";
+import React, { useState, useEffect } from "react";
+import { useSelector, useDispatch } from "react-redux";
 import DashboardLayout from "../components/common/DashboardLayout";
 import PaymentHistory from "../components/payments/PaymentHistory";
 import SubscriptionStatus from "../components/subscription/SubscriptionStatus";
 import PlanUpgrade from "../components/subscription/PlanUpgrade";
+import { checkAuthStatus } from "../store/authSlice";
+import plansService from "../services/plans";
 
 const Payments = () => {
+  const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
   const [activeTab, setActiveTab] = useState("subscription");
   const [showUpgrade, setShowUpgrade] = useState(false);
+  const [plan, setPlan] = useState(null);
+
+  useEffect(() => {
+    dispatch(checkAuthStatus());
+  }, [dispatch]);
+
+  useEffect(() => {
+    if (user?.subscription?.planId) {
+      plansService
+        .getPlan(user.subscription.planId)
+        .then((response) => {
+          setPlan(response.data.data);
+        })
+        .catch((error) => {
+          console.error("Failed to fetch plan details", error);
+        });
+    }
+  }, [user]);
 
   const handleUpgradeSuccess = (paymentData) => {
     setShowUpgrade(false);
-    // Refresh user data or show success message
+    dispatch(checkAuthStatus());
     console.log("Upgrade successful:", paymentData);
   };
 
   const tabs = [
     { id: "subscription", label: "Subscription", icon: "📋" },
     { id: "history", label: "Payment History", icon: "💳" },
-    // { id: "upgrade", label: "Upgrade Plan", icon: "⬆️" },
   ];
 
   const renderContent = () => {
@@ -46,7 +66,7 @@ const Payments = () => {
             Back to Subscription
           </button>
           <PlanUpgrade
-            currentPlan={user?.subscription?.planId}
+            currentPlan={plan}
             onUpgradeSuccess={handleUpgradeSuccess}
           />
         </div>
@@ -58,18 +78,12 @@ const Payments = () => {
         return (
           <SubscriptionStatus
             subscription={user?.subscription}
+            plan={plan}
             onUpgrade={() => setShowUpgrade(true)}
           />
         );
       case "history":
         return <PaymentHistory />;
-      // case "upgrade":
-      //   return (
-      //     <PlanUpgrade
-      //       currentPlan={user?.subscription?.planId}
-      //       onUpgradeSuccess={handleUpgradeSuccess}
-      //     />
-      //   );
       default:
         return null;
     }

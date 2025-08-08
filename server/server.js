@@ -13,9 +13,14 @@ import appointmentRoutes from "./src/routes/appointments.js";
 import sessionLimitRoutes from "./src/routes/sessionLimits.js";
 import adminRoutes from "./src/routes/admin.js";
 import analyticsRoutes from "./src/routes/analytics.js";
+import availabilityRoutes from "./src/routes/availability.js";
+import autoCancelRoutes from "./src/routes/autoCancelRoutes.js";
 import { corsOptions } from "./src/middleware/security.js";
 import path from "path";
 import { fileURLToPath } from "url";
+
+// Import background services
+import "./src/services/appointmentAutoCancelService.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -42,6 +47,8 @@ app.use("/api/appointments", appointmentRoutes);
 app.use("/api/session-limits", sessionLimitRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/analytics", analyticsRoutes);
+app.use("/api/availability", availabilityRoutes);
+app.use("/api/admin/auto-cancel", autoCancelRoutes);
 
 // Handle 404 - Route not found
 app.use((req, res) => {
@@ -105,10 +112,14 @@ const startServer = async () => {
     // Connect to MongoDB first
     await connectDB();
 
+    // Initialize background services after database connection
+    console.log("✅ Background services initialized");
+
     // Start server after successful database connection
     const PORT = config.PORT || 5000;
     app.listen(PORT, () => {
-      console.log(`Server running on port ${PORT}`);
+      console.log(`🚀 Server running on port ${PORT}`);
+      console.log(`📋 Auto-cancellation service: ${config.AUTO_CANCEL.ENABLED ? 'enabled' : 'disabled'}`);
     });
   } catch (error) {
     console.error("Failed to start server:", error);

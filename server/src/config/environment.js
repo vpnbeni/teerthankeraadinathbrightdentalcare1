@@ -152,8 +152,17 @@ const config = {
     SESSION_TIMEOUT: 30 * 60 * 1000, // 30 minutes
     MAX_SESSIONS_PER_USER: 3,
     ENCRYPTION_KEY: process.env.ENCRYPTION_KEY,
-  AUDIT_RETENTION_DAYS: 2555, // 7 years for HIPAA compliance
+    AUDIT_RETENTION_DAYS: 2555, // 7 years for HIPAA compliance
     BACKUP_RETENTION_DAYS: 90,
+  },
+
+  // Appointment Auto-Cancellation Configuration
+  AUTO_CANCEL: {
+    ENABLED: process.env.AUTO_CANCEL_ENABLED !== "false", // Default enabled
+    CHECK_INTERVAL: process.env.AUTO_CANCEL_CHECK_INTERVAL || "*/15 * * * *", // Every 15 minutes
+    GRACE_PERIOD_MINUTES: parseInt(process.env.AUTO_CANCEL_GRACE_PERIOD_MINUTES) || 0, // No grace period by default
+    NOTIFY_PATIENTS: process.env.AUTO_CANCEL_NOTIFY_PATIENTS !== "false", // Default enabled
+    RESTORE_SESSIONS: process.env.AUTO_CANCEL_RESTORE_SESSIONS !== "false", // Default enabled
   },
 };
 

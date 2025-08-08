@@ -1,35 +1,8 @@
-import React, { useState, useEffect } from "react";
-import plansService from "../../services/plans";
+import React from "react";
 
-const SubscriptionStatus = ({ subscription, onUpgrade }) => {
-  const [planDetails, setPlanDetails] = useState(null);
-  const [loading, setLoading] = useState(false);
-
-  // Fetch plan details when subscription changes
-  useEffect(() => {
-    const fetchPlanDetails = async () => {
-      if (subscription?.planId && typeof subscription.planId === "string") {
-        setLoading(true);
-        try {
-          const response = await plansService.getPlan(subscription.planId);
-          setPlanDetails(response.data);
-        } catch (error) {
-          console.error("Failed to fetch plan details:", error);
-          setPlanDetails(null);
-        } finally {
-          setLoading(false);
-        }
-      } else if (subscription?.planId && typeof subscription.planId === "object") {
-        // If planId is already populated with plan details
-        setPlanDetails(subscription.planId);
-      }
-    };
-
-    fetchPlanDetails();
-  }, [subscription?.planId]);
-
+const SubscriptionStatus = ({ subscription, plan, onUpgrade }) => {
   // Handle case where subscription is not loaded or doesn't exist
-  if (!subscription) {
+  if (!subscription || !plan) {
     return (
       <div className="card">
         <div className="text-center py-8">
@@ -140,14 +113,7 @@ const SubscriptionStatus = ({ subscription, onUpgrade }) => {
 
   // Calculate total sessions from plan details or use fallback
   const getTotalSessions = () => {
-    if (planDetails?.sessions) {
-      return planDetails.sessions;
-    }
-    // Fallback: estimate from sessions remaining and usage pattern
-    const sessionsRemaining = subscription.sessionsRemaining || 0;
-    // If we don't have plan details, we can't accurately calculate total
-    // So we'll use a reasonable estimate or return 0
-    return subscription.totalSessions || sessionsRemaining;
+    return plan?.sessions || 0;
   };
 
   const calculateProgress = () => {
@@ -172,12 +138,7 @@ const SubscriptionStatus = ({ subscription, onUpgrade }) => {
 
   // Get plan name with fallback
   const getPlanName = () => {
-    if (loading) return "Loading...";
-    if (planDetails?.name) return planDetails.name;
-    if (typeof subscription.planId === "object" && subscription.planId?.name) {
-      return subscription.planId.name;
-    }
-    return "Unknown Plan";
+    return plan?.name || "Unknown Plan";
   };
 
   const totalSessions = getTotalSessions();

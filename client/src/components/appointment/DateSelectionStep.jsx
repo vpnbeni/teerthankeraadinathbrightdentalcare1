@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import appointmentService from "../../services/appointments";
+import availabilityService from "../../services/availability";
 import { LoadingSpinner } from "../../shared/components";
 
 const DateSelectionStep = ({ data, onNext, onBack, onDataChange }) => {
@@ -7,14 +8,14 @@ const DateSelectionStep = ({ data, onNext, onBack, onDataChange }) => {
   const [selectedDate, setSelectedDate] = useState(
     data.selectedDate ? new Date(data.selectedDate) : null
   );
-  const [unavailableDates, setUnavailableDates] = useState([]);
+  const [availabilityData, setAvailabilityData] = useState({});
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    fetchUnavailableDates();
+    fetchMonthAvailability();
   }, [currentDate]);
 
-  const fetchUnavailableDates = async () => {
+  const fetchMonthAvailability = async () => {
     setLoading(true);
     try {
       const startDate = new Date(
@@ -28,82 +29,21 @@ const DateSelectionStep = ({ data, onNext, onBack, onDataChange }) => {
         0
       );
 
-      // Use the new available dates endpoint if available, otherwise fallback to checking individual dates
-      try {
-        const response = await appointmentService.getAvailableDates(
-          startDate,
-          endDate
-        );
+      // Use the new availability service to get complete availability data
+      const response = await availabilityService.getAvailabilityForDateRange(
+        startDate,
+        endDate
+      );
 
-        if (response.data.success && response.data.data) {
-          // Extract dates that are not available (holidays, non-working days, or fully booked)
-          const allDatesInMonth = [];
-          for (let day = 1; day <= getDaysInMonth(currentDate); day++) {
-            const date = new Date(
-              currentDate.getFullYear(),
-              currentDate.getMonth(),
-              day
-            );
-            allDatesInMonth.push(date.toDateString());
-          }
-
-          const availableDates = response.data.data.map((dateStr) =>
-            new Date(dateStr).toDateString()
-          );
-
-          const unavailable = allDatesInMonth.filter(
-            (dateStr) => !availableDates.includes(dateStr)
-          );
-
-          setUnavailableDates(unavailable);
-        }
-      } catch (availableDatesError) {
-        // Fallback to checking individual slots if available-dates endpoint fails
-        console.warn(
-          "Available dates endpoint failed, falling back to individual slot checking:",
-          availableDatesError
-        );
-
-        const unavailable = [];
-        const daysInMonth = getDaysInMonth(currentDate);
-
-        // Check each day in the month
-        for (let day = 1; day <= daysInMonth; day++) {
-          const date = new Date(
-            currentDate.getFullYear(),
-            currentDate.getMonth(),
-            day
-          );
-
-          try {
-            const response = await appointmentService.getAvailableSlots(date);
-            if (response.data.success) {
-              const slots = response.data.data.availableSlots || [];
-              const metadata = response.data.data.metadata || {};
-
-              // Mark as unavailable if:
-              // - No available slots
-              // - It's a holiday
-              // - It's not a working day
-              if (
-                slots.length === 0 ||
-                metadata.isHoliday ||
-                !metadata.isWorkingDay
-              ) {
-                unavailable.push(date.toDateString());
-              }
-            }
-          } catch (slotError) {
-            // If we can't fetch slots for a date, mark it as unavailable
-            unavailable.push(date.toDateString());
-          }
-        }
-
-        setUnavailableDates(unavailable);
+      if (response.data.success) {
+        setAvailabilityData(response.data.data || {});
+      } else {
+        console.error("Failed to fetch availability data:", response.data.message);
+        setAvailabilityData({});
       }
     } catch (error) {
-      console.error("Failed to fetch available dates:", error);
-      setUnavailableDates([]); // Show all dates as available if we can't determine availability
+      console.error("Failed to fetch availability data:", error);
+      setAvailabilityData({});
     } finally {
       setLoading(false);
     }
@@ -115,6 +55,15 @@ const DateSelectionStep = ({ data, onNext, onBack, onDataChange }) => {
 
   const getFirstDayOfMonth = (date) => {
     return new Date(date.getFullYear(), date.getMonth(), 1).getDay();
+  };
+
+  const getDateAvailability = (date) => {
+    // Use local date formatting to avoid timezone issues
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const dateKey = `${year}-${month}-${day}`;
+    return availabilityData[dateKey];
   };
 
   const isDateDisabled = (date) => {
@@ -129,11 +78,12 @@ const DateSelectionStep = ({ data, onNext, onBack, onDataChange }) => {
     maxDate.setDate(maxDate.getDate() + 90);
     if (date > maxDate) return true;
 
-    // Disable unavailable dates
-    if (unavailableDates.includes(date.toDateString())) return true;
+    // Check availability data
+    const availability = getDateAvailability(date);
+    if (!availability || !availability.available) return true;
 
-    // Disable Sundays (assuming clinic is closed on Sundays)
-    if (date.getDay() === 0) return true;
+    // If no slots available, disable
+    if (!availability.slots || availability.slots.length === 0) return true;
 
     return false;
   };
@@ -176,6 +126,54 @@ const DateSelectionStep = ({ data, onNext, onBack, onDataChange }) => {
       const isSelected =
         selectedDate && date.toDateString() === selectedDate.toDateString();
       const isToday = date.toDateString() === new Date().toDateString();
+      const availability = getDateAvailability(date);
+
+      // Determine styling based on availability and template
+      let bgColor = "bg-white";
+      let textColor = "text-gray-700";
+      let hoverColor = "hover:bg-gray-100";
+      let indicator = null;
+
+      if (isDisabled) {
+        bgColor = "bg-gray-50";
+        textColor = "text-gray-300";
+        hoverColor = "";
+      } else if (availability) {
+        if (availability.type === "holiday") {
+          bgColor = "bg-red-50";
+          textColor = "text-red-700";
+          hoverColor = "hover:bg-red-100";
+          indicator = (
+            <div className="absolute top-0.5 right-0.5 w-1.5 h-1.5 bg-red-500 rounded-full"></div>
+          );
+        } else if (availability.available) {
+          if (availability.template?.isDefault) {
+            bgColor = "bg-green-50";
+            textColor = "text-green-700";
+            hoverColor = "hover:bg-green-100";
+            indicator = (
+              <div className="absolute top-0.5 right-0.5 w-1.5 h-1.5 bg-green-500 rounded-full"></div>
+            );
+          } else {
+            bgColor = "bg-blue-50";
+            textColor = "text-blue-700";
+            hoverColor = "hover:bg-blue-100";
+            indicator = (
+              <div className="absolute top-0.5 right-0.5 w-1.5 h-1.5 bg-blue-500 rounded-full"></div>
+            );
+          }
+        }
+      }
+
+      if (isSelected) {
+        bgColor = "bg-[#346870]";
+        textColor = "text-white";
+        hoverColor = "hover:bg-[#346870]";
+      } else if (isToday) {
+        bgColor = isDisabled ? bgColor : "bg-yellow-100";
+        textColor = isDisabled ? textColor : "text-yellow-800";
+        hoverColor = isDisabled ? hoverColor : "hover:bg-yellow-200";
+      }
 
       days.push(
         <button
@@ -183,17 +181,12 @@ const DateSelectionStep = ({ data, onNext, onBack, onDataChange }) => {
           type="button"
           onClick={() => handleDateSelect(date)}
           disabled={isDisabled}
-          className={`h-10 w-10 rounded-lg text-sm font-medium transition-colors ${
-            isSelected
-              ? "bg-[#346870] text-white"
-              : isToday
-              ? "bg-blue-100 text-blue-600"
-              : isDisabled
-              ? "text-gray-300 cursor-not-allowed"
-              : "text-gray-700 hover:bg-gray-100"
+          className={`relative h-10 w-10 rounded-lg text-sm font-medium transition-colors ${bgColor} ${textColor} ${hoverColor} ${
+            isDisabled ? "cursor-not-allowed" : ""
           }`}
         >
           {day}
+          {indicator}
         </button>
       );
     }
@@ -317,29 +310,61 @@ const DateSelectionStep = ({ data, onNext, onBack, onDataChange }) => {
                 d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
               />
             </svg>
-            <span className="text-[#346870] font-medium">
-              Selected:{" "}
-              {selectedDate.toLocaleDateString("en-IN", {
-                weekday: "long",
-                year: "numeric",
-                month: "long",
-                day: "numeric",
-              })}
-            </span>
+            <div className="text-left">
+              <span className="text-[#346870] font-medium block">
+                Selected: {selectedDate.toLocaleDateString("en-IN", {
+                  weekday: "long",
+                  year: "numeric",
+                  month: "long",
+                  day: "numeric",
+                })}
+              </span>
+              {(() => {
+                const availability = getDateAvailability(selectedDate);
+                if (availability?.template) {
+                  return (
+                    <span className="text-xs text-gray-600">
+                      {availability.template.name} • {availability.totalSlots} slots • {availability.template.workingHours.start}-{availability.template.workingHours.end}
+                    </span>
+                  );
+                }
+                return null;
+              })()}
+            </div>
           </div>
         </div>
       )}
 
       {/* Legend */}
-      <div className="text-center space-y-2">
-        <div className="flex items-center justify-center space-x-6 text-sm">
+      <div className="text-center space-y-3">
+        <div className="flex flex-wrap items-center justify-center gap-4 text-sm">
           <div className="flex items-center">
             <div className="w-4 h-4 bg-[#346870] rounded mr-2"></div>
             <span>Selected</span>
           </div>
           <div className="flex items-center">
-            <div className="w-4 h-4 bg-blue-100 rounded mr-2"></div>
+            <div className="w-4 h-4 bg-yellow-100 border border-yellow-200 rounded flex items-center justify-center mr-2">
+              <div className="w-1.5 h-1.5 bg-yellow-600 rounded-full"></div>
+            </div>
             <span>Today</span>
+          </div>
+          <div className="flex items-center">
+            <div className="w-4 h-4 bg-green-50 border border-green-200 rounded flex items-center justify-center mr-2">
+              <div className="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
+            </div>
+            <span>Regular Hours</span>
+          </div>
+          <div className="flex items-center">
+            <div className="w-4 h-4 bg-blue-50 border border-blue-200 rounded flex items-center justify-center mr-2">
+              <div className="w-1.5 h-1.5 bg-blue-500 rounded-full"></div>
+            </div>
+            <span>Extended Hours</span>
+          </div>
+          <div className="flex items-center">
+            <div className="w-4 h-4 bg-red-50 border border-red-200 rounded flex items-center justify-center mr-2">
+              <div className="w-1.5 h-1.5 bg-red-500 rounded-full"></div>
+            </div>
+            <span>Holiday</span>
           </div>
           <div className="flex items-center">
             <div className="w-4 h-4 bg-gray-200 rounded mr-2"></div>
@@ -347,7 +372,7 @@ const DateSelectionStep = ({ data, onNext, onBack, onDataChange }) => {
           </div>
         </div>
         <p className="text-xs text-gray-500">
-          Appointments must be booked at least 24 hours in advance
+          Different colored dots indicate different availability templates with varying hours
         </p>
       </div>
 

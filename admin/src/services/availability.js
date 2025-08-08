@@ -1,258 +1,97 @@
-import api from "./api";
+import api from './api.js';
 
-/**
- * Availability Service
- * Clean API calls for availability management
- */
-
-const availabilityService = {
-  // Get availability settings
-  getAvailabilitySettings: async () => {
-    try {
-      const response = await api.get("/admin/availability/settings");
-      return response;
-    } catch (error) {
-      throw new Error(
-        error.response?.data?.message || "Failed to fetch availability settings"
-      );
-    }
-  },
-
-  // Update availability settings
-  updateAvailabilitySettings: async (settingsData) => {
-    try {
-      const response = await api.put(
-        "/admin/availability/settings",
-        settingsData
-      );
-      return response;
-    } catch (error) {
-      throw new Error(
-        error.response?.data?.message ||
-          "Failed to update availability settings"
-      );
-    }
-  },
-
-  // Get availability for date range
-  getAvailability: async (params = {}) => {
-    try {
-      const response = await api.get("/admin/availability", { params });
-      return response;
-    } catch (error) {
-      throw new Error(
-        error.response?.data?.message || "Failed to fetch availability"
-      );
-    }
-  },
-
-  // Generate availability
-  generateAvailability: async (data) => {
-    try {
-      const response = await api.post("/admin/availability/generate", data);
-      return response;
-    } catch (error) {
-      throw new Error(
-        error.response?.data?.message || "Failed to generate availability"
-      );
-    }
-  },
-
-  // Sync holidays with availability records
-  syncHolidays: async () => {
-    try {
-      const response = await api.post("/admin/availability/sync-holidays");
-      return response;
-    } catch (error) {
-      throw new Error(
-        error.response?.data?.message || "Failed to sync holidays"
-      );
-    }
-  },
-
+export const availabilityService = {
   // Template Management
-  getAvailabilityTemplate: async () => {
-    try {
-      const response = await api.get("/admin/availability/template");
-      return response;
-    } catch (error) {
-      throw new Error(
-        error.response?.data?.message || "Failed to fetch availability template"
-      );
-    }
+  async getTemplates(filters = {}) {
+    const params = new URLSearchParams(filters);
+    const response = await api.get(`/availability/templates?${params}`);
+    return response.data;
   },
 
-  updateAvailabilityTemplate: async (templateData) => {
-    try {
-      const response = await api.put(
-        "/admin/availability/template",
-        templateData
-      );
-      return response;
-    } catch (error) {
-      throw new Error(
-        error.response?.data?.message ||
-          "Failed to update availability template"
-      );
-    }
+  async getTemplate(templateId) {
+    const response = await api.get(`/availability/templates/${templateId}`);
+    return response.data;
   },
 
-  addTemplateSlot: async (slotData) => {
-    try {
-      const response = await api.post(
-        "/admin/availability/template/slots",
-        slotData
-      );
-      return response;
-    } catch (error) {
-      throw new Error(
-        error.response?.data?.message || "Failed to add template slot"
-      );
-    }
+  async createTemplate(templateData) {
+    const response = await api.post('/availability/templates', templateData);
+    return response.data;
   },
 
-  removeTemplateSlot: async (slotId) => {
-    try {
-      const response = await api.delete(
-        `/admin/availability/template/slots/${slotId}`
-      );
-      return response;
-    } catch (error) {
-      throw new Error(
-        error.response?.data?.message || "Failed to remove template slot"
-      );
-    }
+  async updateTemplate(templateId, updateData) {
+    const response = await api.put(`/availability/templates/${templateId}`, updateData);
+    return response.data;
+  },
+
+  async deleteTemplate(templateId) {
+    const response = await api.delete(`/availability/templates/${templateId}`);
+    return response.data;
+  },
+
+  async applyTemplateToDate(templateId, dates) {
+    const response = await api.post(`/availability/templates/${templateId}/apply-dates`, { dates });
+    return response.data;
+  },
+
+  async removeTemplateFromDates(templateId, dates) {
+    const response = await api.post(`/availability/templates/${templateId}/remove-dates`, { dates });
+    return response.data;
   },
 
   // Holiday Management
-  getHolidays: async () => {
-    try {
-      const response = await api.get("/admin/availability/holidays");
-      return response;
-    } catch (error) {
-      throw new Error(
-        error.response?.data?.message || "Failed to fetch holidays"
-      );
-    }
+  async getHolidays(filters = {}) {
+    const params = new URLSearchParams(filters);
+    const response = await api.get(`/availability/holidays?${params}`);
+    return response.data;
   },
 
-  addHoliday: async (holidayData) => {
-    try {
-      const response = await api.post(
-        "/admin/availability/holidays",
-        holidayData
-      );
-      return response;
-    } catch (error) {
-      throw new Error(error.response?.data?.message || "Failed to add holiday");
-    }
+  async getHoliday(holidayId) {
+    const response = await api.get(`/availability/holidays/${holidayId}`);
+    return response.data;
   },
 
-  updateHoliday: async (id, holidayData) => {
-    try {
-      const response = await api.put(
-        `/admin/availability/holidays/${id}`,
-        holidayData
-      );
-      return response;
-    } catch (error) {
-      throw new Error(
-        error.response?.data?.message || "Failed to update holiday"
-      );
-    }
+  async createHoliday(holidayData) {
+    const response = await api.post('/availability/holidays', holidayData);
+    return response.data;
   },
 
-  deleteHoliday: async (id) => {
-    try {
-      const response = await api.delete(`/admin/availability/holidays/${id}`);
-      return response;
-    } catch (error) {
-      throw new Error(
-        error.response?.data?.message || "Failed to delete holiday"
-      );
-    }
+  async updateHoliday(holidayId, updateData) {
+    const response = await api.put(`/availability/holidays/${holidayId}`, updateData);
+    return response.data;
   },
 
-  bulkAddHolidays: async (holidaysData) => {
-    try {
-      const response = await api.post(
-        "/admin/availability/holidays/bulk",
-        holidaysData
-      );
-      return response;
-    } catch (error) {
-      throw new Error(
-        error.response?.data?.message || "Failed to bulk add holidays"
-      );
-    }
+  async deleteHoliday(holidayId) {
+    const response = await api.delete(`/availability/holidays/${holidayId}`);
+    return response.data;
   },
 
-  // Custom Date Management
-  getCustomDates: async () => {
-    try {
-      const response = await api.get("/admin/availability/custom-dates");
-      return response;
-    } catch (error) {
-      throw new Error(
-        error.response?.data?.message || "Failed to fetch custom dates"
-      );
-    }
+  // Availability Queries
+  async getAvailabilityForDate(date, onlyAvailable = false) {
+    const params = new URLSearchParams({ onlyAvailable });
+    const response = await api.get(`/availability/availability/date/${date}?${params}`);
+    return response.data;
   },
 
-  addCustomDate: async (customDateData) => {
-    try {
-      const response = await api.post(
-        "/admin/availability/custom-dates",
-        customDateData
-      );
-      return response;
-    } catch (error) {
-      throw new Error(
-        error.response?.data?.message || "Failed to add custom date"
-      );
-    }
+  async getAvailabilityForDateRange(startDate, endDate, onlyAvailable = false) {
+    const params = new URLSearchParams({ startDate, endDate, onlyAvailable });
+    const response = await api.get(`/availability/availability/range?${params}`);
+    return response.data;
   },
 
-  updateCustomDate: async (id, customDateData) => {
-    try {
-      const response = await api.put(
-        `/admin/availability/custom-dates/${id}`,
-        customDateData
-      );
-      return response;
-    } catch (error) {
-      throw new Error(
-        error.response?.data?.message || "Failed to update custom date"
-      );
-    }
+  async checkTimeSlotAvailability(date, timeSlot, excludeAppointmentId = null) {
+    const params = excludeAppointmentId ? { excludeAppointmentId } : {};
+    const response = await api.post(`/availability/availability/check-slot?${new URLSearchParams(params)}`, {
+      date,
+      timeSlot
+    });
+    return response.data;
   },
 
-  deleteCustomDate: async (id) => {
-    try {
-      const response = await api.delete(
-        `/admin/availability/custom-dates/${id}`
-      );
-      return response;
-    } catch (error) {
-      throw new Error(
-        error.response?.data?.message || "Failed to delete custom date"
-      );
-    }
-  },
-
-  bulkAddCustomDates: async (customDatesData) => {
-    try {
-      const response = await api.post(
-        "/admin/availability/custom-dates/bulk",
-        customDatesData
-      );
-      return response;
-    } catch (error) {
-      throw new Error(
-        error.response?.data?.message || "Failed to bulk add custom dates"
-      );
-    }
-  },
+  async getAvailableDates(startDate, endDate) {
+    const params = new URLSearchParams({ startDate, endDate });
+    const response = await api.get(`/availability/availability/dates?${params}`);
+    return response.data;
+  }
 };
 
 export default availabilityService;

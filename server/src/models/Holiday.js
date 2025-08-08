@@ -2,69 +2,65 @@ import mongoose from "mongoose";
 
 const holidaySchema = new mongoose.Schema(
   {
-    // Holiday date
     date: {
       type: Date,
-      required: true,
-      validate: {
-        validator: function (v) {
-          // Ensure date is a valid date
-          return v instanceof Date && !isNaN(v);
-        },
-        message: "Holiday date must be a valid date",
-      },
+      required: [true, "Holiday date is required"],
     },
-
-    // Holiday name/title
-    name: {
+    reason: {
       type: String,
-      required: true,
+      required: [true, "Holiday reason is required"],
       trim: true,
-      maxlength: 100,
-      validate: {
-        validator: function (v) {
-          return v && v.trim().length > 0;
-        },
-        message: "Holiday name is required and cannot be empty",
-      },
+      maxlength: [200, "Holiday reason cannot exceed 200 characters"],
     },
-
-    // Optional description
-    description: {
+    type: {
       type: String,
-      maxlength: 500,
-      trim: true,
-      default: "",
+      enum: {
+        values: ["public_holiday", "clinic_closed", "doctor_unavailable", "maintenance"],
+        message: "Holiday type must be public_holiday, clinic_closed, doctor_unavailable, or maintenance",
+      },
+      default: "public_holiday",
     },
-
-    // Whether this holiday recurs annually
     isRecurring: {
       type: Boolean,
       default: false,
     },
-
-    // Whether this holiday is currently active
+    recurringPattern: {
+      type: String,
+      enum: {
+        values: ["yearly", "monthly", "weekly"],
+        message: "Recurring pattern must be yearly, monthly, or weekly"
+      },
+      required: function() {
+        return this.isRecurring;
+      },
+      validate: {
+        validator: function(value) {
+          // Allow undefined/null when not recurring
+          if (!this.isRecurring) {
+            return value === undefined || value === null;
+          }
+          // Require valid enum value when recurring
+          return ["yearly", "monthly", "weekly"].includes(value);
+        },
+        message: "Recurring pattern is required when holiday is recurring and must be yearly, monthly, or weekly"
+      }
+    },
     isActive: {
       type: Boolean,
       default: true,
     },
-
-    // Audit fields
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
-      required: true,
+      required: [true, "Created by user ID is required"],
     },
-
-    updatedBy: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+    createdAt: {
+      type: Date,
+      default: Date.now,
     },
-
-    // Version for optimistic locking
-    version: {
-      type: Number,
-      default: 1,
+    updatedAt: {
+      type: Date,
+      default: Date.now,
     },
   },
   {
@@ -72,294 +68,127 @@ const holidaySchema = new mongoose.Schema(
   }
 );
 
-// Indexes for efficient queries
-holidaySchema.index({ date: 1, isActive: 1 }); // Primary query index
-holidaySchema.index({ isRecurring: 1, isActive: 1 }); // Recurring holidays
-holidaySchema.index({ createdBy: 1 }); // Admin-specific queries
-holidaySchema.index({ name: "text", description: "text" }); // Text search
+// Indexes for better query performance
+holidaySchema.index({ date: 1, isActive: 1 });
+holidaySchema.index({ type: 1 });
+holidaySchema.index({ isRecurring: 1 });
 
-// Compound index to prevent duplicate holidays on same date
-holidaySchema.index({ date: 1, name: 1 }, { unique: true });
-
-// Virtual for formatted date
-holidaySchema.virtual("formattedDate").get(function () {
-  return this.date.toISOString().split("T")[0];
-});
-
-// Virtual for month-day string (for recurring holidays)
-holidaySchema.virtual("monthDay").get(function () {
-  const month = (this.date.getUTCMonth() + 1).toString().padStart(2, "0");
-  const day = this.date.getUTCDate().toString().padStart(2, "0");
-  return `${month}-${day}`;
-});
-
-// Method to check if this holiday applies to a given date
-holidaySchema.methods.appliesToDate = function (date) {
-  if (!this.isActive) return false;
-
-  const inputDate = new Date(date);
-  const holidayDate = new Date(this.date);
-
-  if (this.isRecurring) {
-    // For recurring holidays, compare month and day only
-    return (
-      holidayDate.getUTCMonth() === inputDate.getUTCMonth() &&
-      holidayDate.getUTCDate() === inputDate.getUTCDate()
-    );
-  } else {
-    // For non-recurring holidays, compare exact dates
-    const inputDateString = inputDate.toISOString().split("T")[0];
-    const holidayDateString = holidayDate.toISOString().split("T")[0];
-    return inputDateString === holidayDateString;
-  }
-};
-
-// Method to get next occurrence of this holiday
-holidaySchema.methods.getNextOccurrence = function (fromDate = new Date()) {
-  if (!this.isRecurring) {
-    // For non-recurring holidays, return the holiday date if it's in the future
-    return this.date > fromDate ? this.date : null;
-  }
-
-  // For recurring holidays, find the next occurrence
-  const currentYear = fromDate.getFullYear();
-  const holidayMonth = this.date.getUTCMonth();
-  const holidayDay = this.date.getUTCDate();
-
-  // Try current year first
-  let nextOccurrence = new Date(currentYear, holidayMonth, holidayDay);
-
-  // If the date has passed this year, try next year
-  if (nextOccurrence <= fromDate) {
-    nextOccurrence = new Date(currentYear + 1, holidayMonth, holidayDay);
-  }
-
-  return nextOccurrence;
-};
+// Ensure no duplicate holidays for the same date
+holidaySchema.index({ date: 1 }, { unique: true });
 
 // Static method to check if a date is a holiday
 holidaySchema.statics.isHoliday = async function (date) {
-  const holidays = await this.find({ isActive: true });
-
-  return holidays.some((holiday) => holiday.appliesToDate(date));
-};
-
-// Static method to get holiday for a specific date
-holidaySchema.statics.getHolidayForDate = async function (date) {
-  const holidays = await this.find({ isActive: true });
-
-  return holidays.find((holiday) => holiday.appliesToDate(date)) || null;
-};
-
-// Static method to get holidays in date range
-holidaySchema.statics.getHolidaysInRange = async function (startDate, endDate) {
-  const holidays = await this.find({ isActive: true }).populate(
-    "createdBy updatedBy",
-    "name email"
-  );
-
-  const holidaysInRange = [];
-
-  for (const holiday of holidays) {
-    if (holiday.isRecurring) {
-      // For recurring holidays, check each year in the range
-      const startYear = startDate.getFullYear();
-      const endYear = endDate.getFullYear();
-
-      for (let year = startYear; year <= endYear; year++) {
-        const occurrence = new Date(
-          year,
-          holiday.date.getUTCMonth(),
-          holiday.date.getUTCDate()
-        );
-
-        if (occurrence >= startDate && occurrence <= endDate) {
-          holidaysInRange.push({
-            ...holiday.toObject(),
-            effectiveDate: occurrence,
-          });
-        }
-      }
-    } else {
-      // For non-recurring holidays, check if the date falls in range
-      if (holiday.date >= startDate && holiday.date <= endDate) {
-        holidaysInRange.push({
-          ...holiday.toObject(),
-          effectiveDate: holiday.date,
-        });
-      }
-    }
-  }
-
-  // Sort by effective date
-  return holidaysInRange.sort((a, b) => a.effectiveDate - b.effectiveDate);
-};
-
-// Static method to create a new holiday
-holidaySchema.statics.createHoliday = async function (holidayData, createdBy) {
-  // Check for duplicate holidays on the same date
-  const existingHoliday = await this.findOne({
-    date: holidayData.date,
-    name: holidayData.name,
+  const holiday = await this.findOne({
+    date: {
+      $gte: new Date(date.setHours(0, 0, 0, 0)),
+      $lt: new Date(date.setHours(23, 59, 59, 999)),
+    },
     isActive: true,
   });
+  
+  return holiday;
+};
 
-  if (existingHoliday) {
-    throw new Error(
-      `Holiday "${holidayData.name}" already exists on ${
-        holidayData.date.toISOString().split("T")[0]
-      }`
-    );
-  }
-
-  const holiday = new this({
-    ...holidayData,
-    createdBy,
+// Static method to get holidays in a date range
+holidaySchema.statics.getHolidaysInRange = function (startDate, endDate) {
+  return this.find({
+    date: {
+      $gte: new Date(startDate),
+      $lte: new Date(endDate),
+    },
     isActive: true,
-  });
-
-  return holiday.save();
+  }).sort({ date: 1 });
 };
 
-// Static method to bulk create holidays
-holidaySchema.statics.bulkCreateHolidays = async function (
-  holidaysData,
-  createdBy
-) {
-  const results = [];
-  const errors = [];
+// Static method to get all active holidays
+holidaySchema.statics.getActiveHolidays = function () {
+  return this.find({ isActive: true }).sort({ date: 1 });
+};
 
-  for (const holidayData of holidaysData) {
-    try {
-      const holiday = await this.createHoliday(holidayData, createdBy);
-      results.push({
-        success: true,
-        holiday: holiday.toObject(),
-      });
-    } catch (error) {
-      errors.push({
-        success: false,
-        data: holidayData,
-        error: error.message,
-      });
-    }
+// Static method to get holidays by type
+holidaySchema.statics.getHolidaysByType = function (type) {
+  return this.find({ type, isActive: true }).sort({ date: 1 });
+};
+
+// Instance method to check if holiday affects a specific date
+holidaySchema.methods.affectsDate = function (checkDate) {
+  const holidayDate = new Date(this.date);
+  const targetDate = new Date(checkDate);
+  
+  // For non-recurring holidays, simple date comparison
+  if (!this.isRecurring) {
+    return holidayDate.toDateString() === targetDate.toDateString();
   }
-
-  return { results, errors };
-};
-
-// Static method to get upcoming holidays
-holidaySchema.statics.getUpcomingHolidays = async function (limit = 10) {
-  const today = new Date();
-  const holidays = await this.find({ isActive: true }).populate(
-    "createdBy",
-    "name email"
-  );
-
-  const upcomingHolidays = [];
-
-  for (const holiday of holidays) {
-    const nextOccurrence = holiday.getNextOccurrence(today);
-    if (nextOccurrence) {
-      upcomingHolidays.push({
-        ...holiday.toObject(),
-        nextOccurrence,
-      });
-    }
+  
+  // For recurring holidays, check pattern
+  switch (this.recurringPattern) {
+    case "yearly":
+      return (
+        holidayDate.getMonth() === targetDate.getMonth() &&
+        holidayDate.getDate() === targetDate.getDate()
+      );
+    case "monthly":
+      return holidayDate.getDate() === targetDate.getDate();
+    case "weekly":
+      return holidayDate.getDay() === targetDate.getDay();
+    default:
+      return false;
   }
-
-  // Sort by next occurrence and limit results
-  return upcomingHolidays
-    .sort((a, b) => a.nextOccurrence - b.nextOccurrence)
-    .slice(0, limit);
 };
 
-// Static method to get holiday statistics
-holidaySchema.statics.getHolidayStats = async function () {
-  const stats = await this.aggregate([
-    {
-      $match: { isActive: true },
-    },
-    {
-      $group: {
-        _id: null,
-        totalHolidays: { $sum: 1 },
-        recurringHolidays: {
-          $sum: { $cond: ["$isRecurring", 1, 0] },
-        },
-        oneTimeHolidays: {
-          $sum: { $cond: ["$isRecurring", 0, 1] },
-        },
-      },
-    },
-    {
-      $project: {
-        _id: 0,
-        totalHolidays: 1,
-        recurringHolidays: 1,
-        oneTimeHolidays: 1,
-      },
-    },
-  ]);
-
-  return (
-    stats[0] || {
-      totalHolidays: 0,
-      recurringHolidays: 0,
-      oneTimeHolidays: 0,
-    }
-  );
-};
-
-// Method to update holiday
-holidaySchema.methods.updateHoliday = function (updateData, updatedBy) {
-  Object.assign(this, updateData);
-  this.updatedBy = updatedBy;
-  this.version += 1;
-  return this.save();
-};
-
-// Method to deactivate holiday (soft delete)
-holidaySchema.methods.deactivate = function (updatedBy) {
-  this.isActive = false;
-  this.updatedBy = updatedBy;
-  this.version += 1;
-  return this.save();
-};
-
-// Method to reactivate holiday
-holidaySchema.methods.reactivate = function (updatedBy) {
-  this.isActive = true;
-  this.updatedBy = updatedBy;
-  this.version += 1;
-  return this.save();
-};
-
-// Pre-save middleware for validation
+// Pre-save middleware to validate date
 holidaySchema.pre("save", function (next) {
-  try {
-    // Normalize date to start of day in UTC
-    if (this.date) {
-      const normalizedDate = new Date(this.date);
-      normalizedDate.setUTCHours(0, 0, 0, 0);
-      this.date = normalizedDate;
-    }
-
-    // Increment version if not new
-    if (!this.isNew) {
-      this.version += 1;
-    }
-
-    next();
-  } catch (error) {
-    next(error);
+  // Normalize date to start of day
+  if (this.date) {
+    this.date = new Date(this.date);
+    this.date.setHours(0, 0, 0, 0);
   }
+  
+  // Validate recurring pattern is set when isRecurring is true
+  if (this.isRecurring && !this.recurringPattern) {
+    return next(new Error("Recurring pattern is required for recurring holidays"));
+  }
+  
+  // Clear recurring pattern when isRecurring is false
+  if (!this.isRecurring) {
+    this.recurringPattern = undefined;
+  }
+  
+  next();
 });
 
-// Pre-update middleware
-holidaySchema.pre("findOneAndUpdate", function (next) {
-  this.set({ updatedAt: new Date() });
-  next();
+// Virtual to get formatted date
+holidaySchema.virtual("formattedDate").get(function () {
+  return this.date ? this.date.toLocaleDateString() : "";
+});
+
+// Virtual to check if holiday is in the past
+holidaySchema.virtual("isPast").get(function () {
+  if (!this.date) return false;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return this.date < today;
+});
+
+// Virtual to check if holiday is today
+holidaySchema.virtual("isToday").get(function () {
+  if (!this.date) return false;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return this.date.getTime() === today.getTime();
+});
+
+// Virtual to check if holiday is upcoming
+holidaySchema.virtual("isUpcoming").get(function () {
+  if (!this.date) return false;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return this.date > today;
+});
+
+// Ensure virtual fields are serialized
+holidaySchema.set("toJSON", {
+  virtuals: true,
 });
 
 const Holiday = mongoose.model("Holiday", holidaySchema);

@@ -3,7 +3,6 @@ import { useDispatch } from "react-redux";
 import { setSelectedDate } from "../../store/appointmentSlice";
 import { formatDate, formatPhoneNumber } from "../../shared/utils/formatters";
 import LoadingSpinner from "../../shared/components/LoadingSpinner";
-import availabilityService from "../../services/availability";
 
 const AppointmentCalendar = ({
   appointments = [],
@@ -24,13 +23,8 @@ const AppointmentCalendar = ({
   }, [currentMonth]);
 
   const fetchAvailabilitySettings = async () => {
-    try {
-      const response = await availabilityService.getAvailabilitySettings();
-      setAvailabilitySettings(response.data);
-      setHolidays(response.data.holidays || []);
-    } catch (error) {
-      console.error("Failed to fetch availability settings:", error);
-    }
+    // Availability service removed - holidays functionality disabled
+    console.log("Availability service removed - holidays functionality disabled");
   };
 
   const generateCalendarDays = () => {

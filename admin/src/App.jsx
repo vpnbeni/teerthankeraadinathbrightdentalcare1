@@ -15,6 +15,7 @@ import ProtectedRoute from "./components/common/ProtectedRoute";
 import AdminDashboard from "./pages/AdminDashboard";
 import UserManagement from "./pages/UserManagement";
 import AppointmentManagement from "./pages/AppointmentManagement";
+import AvailabilityManagement from "./pages/AvailabilityManagement";
 import SessionManagement from "./pages/SessionManagement";
 import Analytics from "./pages/Analytics";
 import AuditLogs from "./pages/AuditLogs";
@@ -91,6 +92,14 @@ function App() {
               element={
                 <ProtectedRoute requiredRole="admin">
                   <AppointmentManagement />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/availability"
+              element={
+                <ProtectedRoute requiredRole="admin">
+                  <AvailabilityManagement />
                 </ProtectedRoute>
               }
             />

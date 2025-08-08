@@ -1,152 +1,90 @@
 import mongoose from "mongoose";
 
-const defaultSlotSchema = new mongoose.Schema({
-  startTime: {
-    type: String,
-    required: true,
-    match: /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/,
-    validate: {
-      validator: function (v) {
-        return /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/.test(v);
-      },
-      message: "Start time must be in HH:MM format",
-    },
-  },
-  endTime: {
-    type: String,
-    required: true,
-    match: /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/,
-    validate: {
-      validator: function (v) {
-        return /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/.test(v);
-      },
-      message: "End time must be in HH:MM format",
-    },
-  },
-  isActive: {
-    type: Boolean,
-    default: true,
-  },
-  maxBookings: {
-    type: Number,
-    default: 1,
-    min: 1,
-    max: 10,
-    validate: {
-      validator: function (v) {
-        return Number.isInteger(v) && v >= 1 && v <= 10;
-      },
-      message: "Max bookings must be an integer between 1 and 10",
-    },
-  },
-});
-
-// Validate slot duration and order
-defaultSlotSchema.pre("validate", function () {
-  if (this.startTime && this.endTime) {
-    const [startHour, startMin] = this.startTime.split(":").map(Number);
-    const [endHour, endMin] = this.endTime.split(":").map(Number);
-
-    const startMinutes = startHour * 60 + startMin;
-    const endMinutes = endHour * 60 + endMin;
-
-    if (endMinutes <= startMinutes) {
-      throw new Error("End time must be after start time");
-    }
-
-    // Validate minimum slot duration (15 minutes)
-    if (endMinutes - startMinutes < 15) {
-      throw new Error("Time slot must be at least 15 minutes long");
-    }
-
-    // Validate maximum slot duration (4 hours)
-    if (endMinutes - startMinutes > 240) {
-      throw new Error("Time slot cannot exceed 4 hours");
-    }
-  }
-});
-
 const availabilityTemplateSchema = new mongoose.Schema(
   {
-    // Singleton document ID
-    _id: {
+    templateName: {
       type: String,
-      default: "availability_template",
+      required: [true, "Template name is required"],
+      trim: true,
+      maxlength: [100, "Template name cannot exceed 100 characters"],
     },
-
-    // Default time slots (8 AM to 6 PM hourly slots)
-    defaultSlots: {
-      type: [defaultSlotSchema],
-      validate: {
-        validator: function (slots) {
-          // Check for overlapping slots
-          for (let i = 0; i < slots.length; i++) {
-            for (let j = i + 1; j < slots.length; j++) {
-              if (this.timeSlotsOverlap(slots[i], slots[j])) {
-                return false;
-              }
-            }
-          }
-          return true;
-        },
-        message: "Default slots cannot overlap",
+    isDefault: {
+      type: Boolean,
+      default: false,
+    },
+    workingHours: {
+      start: {
+        type: String,
+        required: [true, "Working hours start time is required"],
+        match: [
+          /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/,
+          "Start time must be in format HH:MM",
+        ],
+      },
+      end: {
+        type: String,
+        required: [true, "Working hours end time is required"],
+        match: [
+          /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/,
+          "End time must be in format HH:MM",
+        ],
       },
     },
-
-    // Working days (0 = Sunday, 1 = Monday, etc.)
-    workingDays: {
-      type: [Number],
-      default: [1, 2, 3, 4, 5, 6], // Monday to Saturday
-      validate: [
-        {
-          validator: function (days) {
-            return Array.isArray(days) && days.length > 0 && days.length <= 7;
-          },
-          message: "Must have at least 1 and at most 7 working days",
-        },
-        {
-          validator: function (days) {
-            return days.every(
-              (day) => Number.isInteger(day) && day >= 0 && day <= 6
-            );
-          },
-          message:
-            "Working days must be integers between 0 (Sunday) and 6 (Saturday)",
-        },
-        {
-          validator: function (days) {
-            return new Set(days).size === days.length;
-          },
-          message: "Working days cannot contain duplicates",
-        },
-      ],
-    },
-
-    // Slot duration in minutes
     slotDuration: {
       type: Number,
-      default: 60,
-      min: 15,
-      max: 240,
-      validate: {
-        validator: function (v) {
-          return Number.isInteger(v) && v >= 15 && v <= 240;
-        },
-        message: "Slot duration must be an integer between 15 and 240 minutes",
-      },
+      required: [true, "Slot duration is required"],
+      min: [15, "Slot duration must be at least 15 minutes"],
+      max: [180, "Slot duration cannot exceed 180 minutes"],
+      default: 30,
     },
-
-    // Audit fields
-    updatedBy: {
+    breakTimes: [
+      {
+        start: {
+          type: String,
+          required: [true, "Break start time is required"],
+          match: [
+            /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/,
+            "Break start time must be in format HH:MM",
+          ],
+        },
+        end: {
+          type: String,
+          required: [true, "Break end time is required"],
+          match: [
+            /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/,
+            "Break end time must be in format HH:MM",
+          ],
+        },
+        reason: {
+          type: String,
+          trim: true,
+          maxlength: [100, "Break reason cannot exceed 100 characters"],
+          default: "Break",
+        },
+      },
+    ],
+    // Custom templates have specific dates, default template applies to all working days
+    applicableDates: [
+      {
+        type: Date,
+      },
+    ],
+    isActive: {
+      type: Boolean,
+      default: true,
+    },
+    createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
-      required: false, // Allow null for initial template creation
+      required: [true, "Created by user ID is required"],
     },
-
-    // Version for optimistic locking
-    version: {
-      type: Number,
-      default: 1,
+    createdAt: {
+      type: Date,
+      default: Date.now,
+    },
+    updatedAt: {
+      type: Date,
+      default: Date.now,
     },
   },
   {
@@ -154,191 +92,210 @@ const availabilityTemplateSchema = new mongoose.Schema(
   }
 );
 
-// Indexes for efficient queries
-availabilityTemplateSchema.index({ updatedAt: 1 });
-availabilityTemplateSchema.index({ updatedBy: 1 });
+// Indexes for better query performance
+availabilityTemplateSchema.index({ isDefault: 1 });
+availabilityTemplateSchema.index({ applicableDates: 1 });
+availabilityTemplateSchema.index({ isActive: 1 });
+availabilityTemplateSchema.index({ applicableDates: 1, isActive: 1 });
 
-// Method to check if two time slots overlap
-availabilityTemplateSchema.methods.timeSlotsOverlap = function (slot1, slot2) {
-  const slot1Start = this.timeToMinutes(slot1.startTime);
-  const slot1End = this.timeToMinutes(slot1.endTime);
-  const slot2Start = this.timeToMinutes(slot2.startTime);
-  const slot2End = this.timeToMinutes(slot2.endTime);
+// Ensure only one default template exists
+availabilityTemplateSchema.pre("save", async function (next) {
+  if (this.isDefault && this.isModified("isDefault")) {
+    // If this template is being set as default, unset all other defaults
+    await this.constructor.updateMany(
+      { _id: { $ne: this._id }, isDefault: true },
+      { isDefault: false }
+    );
+  }
 
-  return slot1Start < slot2End && slot1End > slot2Start;
-};
+  // Validate working hours
+  if (this.workingHours) {
+    const startTime = this.workingHours.start.split(":").map(Number);
+    const endTime = this.workingHours.end.split(":").map(Number);
+    const startMinutes = startTime[0] * 60 + startTime[1];
+    const endMinutes = endTime[0] * 60 + endTime[1];
 
-// Helper method to convert time string to minutes
-availabilityTemplateSchema.methods.timeToMinutes = function (timeString) {
-  const [hours, minutes] = timeString.split(":").map(Number);
-  return hours * 60 + minutes;
-};
-
-// Helper method to convert minutes to time string
-availabilityTemplateSchema.methods.minutesToTime = function (minutes) {
-  const hours = Math.floor(minutes / 60);
-  const mins = minutes % 60;
-  return `${hours.toString().padStart(2, "0")}:${mins
-    .toString()
-    .padStart(2, "0")}`;
-};
-
-// Method to get active slots only
-availabilityTemplateSchema.methods.getActiveSlots = function () {
-  return this.defaultSlots.filter((slot) => slot.isActive);
-};
-
-// Method to add a new slot
-availabilityTemplateSchema.methods.addSlot = function (slotData, userId) {
-  // Validate no overlap with existing slots
-  for (const existingSlot of this.defaultSlots) {
-    if (
-      existingSlot.isActive &&
-      this.timeSlotsOverlap(slotData, existingSlot)
-    ) {
-      throw new Error(
-        `New slot overlaps with existing slot: ${existingSlot.startTime}-${existingSlot.endTime}`
-      );
+    if (startMinutes >= endMinutes) {
+      return next(new Error("Working hours end time must be after start time"));
     }
   }
 
-  this.defaultSlots.push({
-    ...slotData,
+  // Validate break times
+  if (this.breakTimes && this.breakTimes.length > 0) {
+    for (const breakTime of this.breakTimes) {
+      const breakStart = breakTime.start.split(":").map(Number);
+      const breakEnd = breakTime.end.split(":").map(Number);
+      const breakStartMinutes = breakStart[0] * 60 + breakStart[1];
+      const breakEndMinutes = breakEnd[0] * 60 + breakEnd[1];
+
+      if (breakStartMinutes >= breakEndMinutes) {
+        return next(new Error("Break end time must be after break start time"));
+      }
+
+      // Validate break times are within working hours
+      const workStart = this.workingHours.start.split(":").map(Number);
+      const workEnd = this.workingHours.end.split(":").map(Number);
+      const workStartMinutes = workStart[0] * 60 + workStart[1];
+      const workEndMinutes = workEnd[0] * 60 + workEnd[1];
+
+      if (
+        breakStartMinutes < workStartMinutes ||
+        breakEndMinutes > workEndMinutes
+      ) {
+        return next(new Error("Break times must be within working hours"));
+      }
+    }
+  }
+
+  next();
+});
+
+// Static method to get the default template
+availabilityTemplateSchema.statics.getDefaultTemplate = async function () {
+  return this.findOne({ isDefault: true, isActive: true });
+};
+
+// Static method to get template for a specific date
+availabilityTemplateSchema.statics.getTemplateForDate = async function (date) {
+  // Normalize the input date to start of day
+  const targetDate = new Date(date);
+  targetDate.setHours(0, 0, 0, 0);
+
+  // Create date range for the entire day
+  const startOfDay = new Date(targetDate);
+  const endOfDay = new Date(targetDate);
+  endOfDay.setHours(23, 59, 59, 999);
+
+  // First check for custom templates on this date using date range
+  const customTemplate = await this.findOne({
+    applicableDates: {
+      $elemMatch: {
+        $gte: startOfDay,
+        $lte: endOfDay,
+      },
+    },
+    isDefault: false,
     isActive: true,
   });
 
-  this.updatedBy = userId;
-  this.version += 1;
-
-  return this.save();
-};
-
-// Method to remove a slot
-availabilityTemplateSchema.methods.removeSlot = function (slotId, userId) {
-  const slot = this.defaultSlots.id(slotId);
-  if (!slot) {
-    throw new Error("Slot not found");
+  if (customTemplate) {
+    return customTemplate;
   }
 
-  this.defaultSlots.pull(slotId);
-  this.updatedBy = userId;
-  this.version += 1;
-
-  return this.save();
+  // Fallback to default template
+  return this.getDefaultTemplate();
 };
 
-// Method to update a slot
-availabilityTemplateSchema.methods.updateSlot = function (
-  slotId,
-  slotData,
-  userId
-) {
-  const slot = this.defaultSlots.id(slotId);
-  if (!slot) {
-    throw new Error("Slot not found");
-  }
+// Instance method to generate time slots
+availabilityTemplateSchema.methods.generateTimeSlots = function () {
+  const slots = [];
+  const workStart = this.workingHours.start.split(":").map(Number);
+  const workEnd = this.workingHours.end.split(":").map(Number);
 
-  // Check for overlaps with other slots (excluding the current one)
-  const otherSlots = this.defaultSlots.filter((s) => !s._id.equals(slotId));
-  for (const otherSlot of otherSlots) {
-    if (otherSlot.isActive && this.timeSlotsOverlap(slotData, otherSlot)) {
-      throw new Error(
-        `Updated slot overlaps with existing slot: ${otherSlot.startTime}-${otherSlot.endTime}`
+  const workStartMinutes = workStart[0] * 60 + workStart[1];
+  const workEndMinutes = workEnd[0] * 60 + workEnd[1];
+
+  // Convert break times to minutes for easier comparison
+  const breakPeriods = this.breakTimes.map((breakTime) => {
+    const start = breakTime.start.split(":").map(Number);
+    const end = breakTime.end.split(":").map(Number);
+    return {
+      start: start[0] * 60 + start[1],
+      end: end[0] * 60 + end[1],
+      reason: breakTime.reason,
+    };
+  });
+
+  let currentTime = workStartMinutes;
+
+  while (currentTime + this.slotDuration <= workEndMinutes) {
+    const slotEnd = currentTime + this.slotDuration;
+
+    // Check if this slot conflicts with any break
+    const hasBreakConflict = breakPeriods.some((breakPeriod) => {
+      return (
+        (currentTime >= breakPeriod.start && currentTime < breakPeriod.end) ||
+        (slotEnd > breakPeriod.start && slotEnd <= breakPeriod.end) ||
+        (currentTime <= breakPeriod.start && slotEnd >= breakPeriod.end)
       );
-    }
-  }
+    });
 
-  Object.assign(slot, slotData);
-  this.updatedBy = userId;
-  this.version += 1;
+    if (!hasBreakConflict) {
+      const startHour = Math.floor(currentTime / 60);
+      const startMinute = currentTime % 60;
+      const endHour = Math.floor(slotEnd / 60);
+      const endMinute = slotEnd % 60;
 
-  return this.save();
-};
+      const timeSlot = `${startHour.toString().padStart(2, "0")}:${startMinute
+        .toString()
+        .padStart(2, "0")}-${endHour.toString().padStart(2, "0")}:${endMinute
+        .toString()
+        .padStart(2, "0")}`;
 
-// Method to toggle slot active status
-availabilityTemplateSchema.methods.toggleSlot = function (slotId, userId) {
-  const slot = this.defaultSlots.id(slotId);
-  if (!slot) {
-    throw new Error("Slot not found");
-  }
-
-  slot.isActive = !slot.isActive;
-  this.updatedBy = userId;
-  this.version += 1;
-
-  return this.save();
-};
-
-// Static method to get or create template
-availabilityTemplateSchema.statics.getTemplate = async function () {
-  let template = await this.findById("availability_template").populate(
-    "updatedBy",
-    "name email"
-  );
-
-  if (!template) {
-    // Create default template with 8 AM to 6 PM hourly slots
-    const defaultSlots = [];
-    for (let hour = 8; hour < 18; hour++) {
-      defaultSlots.push({
-        startTime: `${hour.toString().padStart(2, "0")}:00`,
-        endTime: `${(hour + 1).toString().padStart(2, "0")}:00`,
-        isActive: true,
-        maxBookings: 1,
+      slots.push({
+        timeSlot,
+        startTime: `${startHour.toString().padStart(2, "0")}:${startMinute
+          .toString()
+          .padStart(2, "0")}`,
+        endTime: `${endHour.toString().padStart(2, "0")}:${endMinute
+          .toString()
+          .padStart(2, "0")}`,
+        duration: this.slotDuration,
       });
     }
 
-    template = await this.create({
-      _id: "availability_template",
-      defaultSlots,
-      workingDays: [1, 2, 3, 4, 5, 6], // Monday to Saturday
-      slotDuration: 60,
-      updatedBy: null, // Will be set when first updated
-    });
+    currentTime += this.slotDuration;
   }
 
-  return template;
-};
-
-// Static method to generate default 8 AM to 6 PM slots
-availabilityTemplateSchema.statics.generateDefaultSlots = function () {
-  const slots = [];
-  for (let hour = 8; hour < 18; hour++) {
-    slots.push({
-      startTime: `${hour.toString().padStart(2, "0")}:00`,
-      endTime: `${(hour + 1).toString().padStart(2, "0")}:00`,
-      isActive: true,
-      maxBookings: 1,
-    });
-  }
   return slots;
 };
 
-// Method to check if a date is a working day
-availabilityTemplateSchema.methods.isWorkingDay = function (date) {
-  const dayOfWeek = date.getDay();
-  return this.workingDays.includes(dayOfWeek);
+// Instance method to add dates to template
+availabilityTemplateSchema.methods.addDates = function (dates) {
+  const datesToAdd = Array.isArray(dates) ? dates : [dates];
+
+  datesToAdd.forEach((date) => {
+    const dateObj = new Date(date);
+    // Normalize to start of day to ensure consistent comparison
+    dateObj.setHours(0, 0, 0, 0);
+
+    // Only add if not already present (compare by date string to avoid time issues)
+    const dateString = dateObj.toISOString().split("T")[0];
+    const exists = this.applicableDates.some((existingDate) => {
+      const existingDateString = new Date(existingDate)
+        .toISOString()
+        .split("T")[0];
+      return existingDateString === dateString;
+    });
+
+    if (!exists) {
+      this.applicableDates.push(dateObj);
+    }
+  });
+
+  return this.save();
 };
 
-// Pre-save middleware for validation
-availabilityTemplateSchema.pre("save", function (next) {
-  try {
-    // Ensure at least one active slot exists
-    const activeSlots = this.defaultSlots.filter((slot) => slot.isActive);
-    if (activeSlots.length === 0) {
-      throw new Error("At least one active slot must be defined");
-    }
+// Instance method to remove dates from template
+availabilityTemplateSchema.methods.removeDates = function (dates) {
+  const datesToRemove = Array.isArray(dates) ? dates : [dates];
 
-    // Increment version if not new
-    if (!this.isNew) {
-      this.version += 1;
-    }
+  datesToRemove.forEach((date) => {
+    const dateObj = new Date(date);
+    // Normalize to start of day for consistent comparison
+    dateObj.setHours(0, 0, 0, 0);
+    const dateString = dateObj.toISOString().split("T")[0];
 
-    next();
-  } catch (error) {
-    next(error);
-  }
-});
+    this.applicableDates = this.applicableDates.filter((existingDate) => {
+      const existingDateString = new Date(existingDate)
+        .toISOString()
+        .split("T")[0];
+      return existingDateString !== dateString;
+    });
+  });
+
+  return this.save();
+};
 
 const AvailabilityTemplate = mongoose.model(
   "AvailabilityTemplate",

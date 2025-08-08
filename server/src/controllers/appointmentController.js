@@ -1,6 +1,9 @@
 import mongoose from "mongoose";
 import { Appointment, User } from "../models/index.js";
 import emailService from "../services/emailService.js";
+import AvailabilityService from "../services/availabilityService.js";
+
+const availabilityService = new AvailabilityService();
 
 /**
  * Appointment Controller
@@ -25,17 +28,17 @@ export const createAppointment = async (req, res) => {
     console.log("User ID:", req.user._id);
     console.log("Session Limits from Middleware:", req.sessionLimits);
 
-    // Check if time slot is available
+    // Check if time slot is available using new availability service
     const appointmentDate = new Date(date);
-    const isAvailable = await Appointment.isTimeSlotAvailable(
+    const slotAvailability = await availabilityService.isTimeSlotAvailable(
       appointmentDate,
       timeSlot
     );
 
-    if (!isAvailable) {
+    if (!slotAvailability.available) {
       return res.status(400).json({
         success: false,
-        message: "Selected time slot is not available",
+        message: slotAvailability.reason || "Selected time slot is not available",
       });
     }
 
@@ -275,16 +278,16 @@ export const updateAppointment = async (req, res) => {
       const newDate = date ? new Date(date) : appointment.date;
       const newTimeSlot = timeSlot || appointment.timeSlot;
 
-      const isAvailable = await Appointment.isTimeSlotAvailable(
+      const slotAvailability = await availabilityService.isTimeSlotAvailable(
         newDate,
         newTimeSlot,
         appointmentId
       );
 
-      if (!isAvailable) {
+      if (!slotAvailability.available) {
         return res.status(400).json({
           success: false,
-          message: "Selected time slot is not available",
+          message: slotAvailability.reason || "Selected time slot is not available",
         });
       }
 
@@ -473,17 +476,8 @@ export const getAvailableDates = async (req, res) => {
       });
     }
 
-    // Use new AvailabilityCalculator service
-    const { default: AvailabilityCalculator } = await import(
-      "../services/availabilityCalculator.js"
-    );
-    const calculator = new AvailabilityCalculator();
-
-    const availableDates = await calculator.getAvailableDatesInRange(
-      start,
-      end,
-      { includeUnavailable: includeUnavailable === "true" }
-    );
+    // Use new availability service
+    const availableDates = await availabilityService.getAvailableDates(start, end);
 
     // Set cache-control headers with optimized caching
     res.set({
@@ -527,13 +521,8 @@ export const validateSlotBooking = async (req, res) => {
       });
     }
 
-    // Use new AvailabilityCalculator service
-    const { default: AvailabilityCalculator } = await import(
-      "../services/availabilityCalculator.js"
-    );
-    const calculator = new AvailabilityCalculator();
-
-    const validation = await calculator.validateSlotBooking(date, timeSlot);
+    // Use new availability service
+    const validation = await availabilityService.isTimeSlotAvailable(date, timeSlot);
 
     res.status(200).json({
       success: true,
@@ -568,16 +557,30 @@ export const getAvailableTimeSlots = async (req, res) => {
       });
     }
 
-    // Use new AvailabilityCalculator service
-    const { default: AvailabilityCalculator } = await import(
-      "../services/availabilityCalculator.js"
-    );
-    const calculator = new AvailabilityCalculator();
-
-    const availability = await calculator.getAvailableSlotsForDate(
+    // Use new availability service
+    const availability = await availabilityService.getAvailabilityForDate(
       appointmentDate,
       { onlyAvailable: onlyAvailable === "true" }
     );
+
+    // Handle cases where date is not available (holiday, no template, etc.)
+    if (!availability.available) {
+      return res.status(200).json({
+        success: true,
+        data: {
+          date: appointmentDate,
+          availableSlots: [],
+          totalSlots: 0,
+          availableCount: 0,
+          metadata: {
+            isHoliday: availability.type === "holiday",
+            holidayName: availability.reason,
+            reason: availability.reason,
+            type: availability.type,
+          },
+        },
+      });
+    }
 
     // Transform slots to maintain backward compatibility
     const availableSlots = availability.slots.map((slot) => slot.timeSlot);
@@ -597,12 +600,11 @@ export const getAvailableTimeSlots = async (req, res) => {
         availableCount: availability.availableSlots,
         // Enhanced metadata from new system
         metadata: {
-          source: availability.source,
-          isHoliday: availability.isHoliday || false,
-          holidayName: availability.holidayName,
-          isCustom: availability.isCustom || false,
-          customReason: availability.customReason,
-          isWorkingDay: availability.isWorkingDay !== false,
+          template: availability.template,
+          isHoliday: availability.type === "holiday",
+          holidayName: availability.holiday?.reason,
+          reason: availability.reason,
+          type: availability.type,
           slots: availability.slots, // Detailed slot information
         },
       },
@@ -842,7 +844,7 @@ export const completeAppointment = async (req, res) => {
   try {
     const { appointmentId } = req.params;
 
-    const appointment = await Appointment.findById(appointmentId);
+    const appointment = await Appointment.findById(appointmentId).populate("userId");
 
     if (!appointment) {
       return res.status(404).json({
@@ -858,13 +860,16 @@ export const completeAppointment = async (req, res) => {
       });
     }
 
-    await appointment.complete();
+    // Only consume a session if the appointment is moving to 'completed' state
+    if (appointment.status !== "completed") {
+      await appointment.complete();
 
-    // Sync user's session count after appointment completion
-    const { syncUserSessionCount } = await import(
-      "../utils/sessionCalculator.js"
-    );
-    await syncUserSessionCount(appointment.userId);
+      // Consume a session from the user's subscription
+      const user = appointment.userId;
+      if (user && user.subscription && user.subscription.sessionsRemaining > 0) {
+        await user.consumeSession();
+      }
+    }
 
     const updatedAppointment = await Appointment.findById(
       appointmentId

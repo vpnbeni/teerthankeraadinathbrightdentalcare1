@@ -8,7 +8,6 @@ import RescheduleModal from "../components/appointments/RescheduleModal";
 import Pagination from "../components/common/Pagination";
 import { LoadingSpinner } from "../shared/components";
 import appointmentService from "../services/appointments";
-import availabilityService from "../services/availability";
 import { toast } from "react-hot-toast";
 import {
   CalendarIcon,
@@ -157,20 +156,6 @@ const AppointmentManagement = () => {
     }
   };
 
-  const handleSyncHolidays = async () => {
-    try {
-      setLoading(true);
-      await availabilityService.syncHolidays();
-      toast.success("Holidays synced successfully");
-      // Refresh appointments to reflect changes
-      fetchAppointments(currentPage, filters);
-    } catch (error) {
-      console.error("Failed to sync holidays:", error);
-      toast.error("Failed to sync holidays");
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleRetry = () => {
     fetchAppointments(currentPage, filters);
@@ -256,18 +241,6 @@ const AppointmentManagement = () => {
                   )}
                 </button>
 
-                {/* Sync Holidays Button */}
-                <button
-                  onClick={handleSyncHolidays}
-                  disabled={loading}
-                  className="inline-flex items-center px-4 py-2.5 text-sm font-medium rounded-xl border border-green-200 bg-green-50 text-green-700 hover:bg-green-100 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                  title="Sync holidays with availability data"
-                >
-                  <ArrowPathIcon
-                    className={`h-4 w-4 mr-2 ${loading ? "animate-spin" : ""}`}
-                  />
-                  Sync Holidays
-                </button>
               </div>
             </div>
           </div>
