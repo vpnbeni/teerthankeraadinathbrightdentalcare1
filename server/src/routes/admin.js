@@ -11,7 +11,6 @@ import {
 } from "../middleware/adminAuditMiddleware.js";
 import { validateRequest } from "../middleware/validation.js";
 import { validateAdminRequest } from "../middleware/adminValidation.js";
-import { syncUserSessions } from "../controllers/adminController.js";
 import {
   getAllAppointments,
   getAppointmentDetails,
@@ -72,7 +71,6 @@ router.use(auth);
 router.use(adminOnly);
 
 // Admin routes
-router.post("/sync-sessions", syncUserSessions);
 
 
 // Admin appointment management routes

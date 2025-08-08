@@ -1,4 +1,4 @@
-import { User, Appointment, Session, Payment } from "../models/index.js";
+import { User, Appointment, Payment } from "../models/index.js";
 
 /**
  * User Management Controller
@@ -115,9 +115,8 @@ export const getUserById = async (req, res) => {
     // Get additional user statistics if admin
     let userStats = {};
     if (req.user.role === "admin") {
-      const [appointmentCount, sessionCount, paymentCount] = await Promise.all([
+      const [appointmentCount, paymentCount] = await Promise.all([
         Appointment.countDocuments({ userId }),
-        Session.countDocuments({ userId }),
         Payment.countDocuments({ userId, status: "completed" }),
       ]);
 
@@ -128,7 +127,6 @@ export const getUserById = async (req, res) => {
 
       userStats = {
         totalAppointments: appointmentCount,
-        totalSessions: sessionCount,
         totalPayments: paymentCount,
         totalSpent: totalSpent[0]?.total || 0,
       };
@@ -342,7 +340,6 @@ export const getUserDashboardStats = async (req, res) => {
     const [
       totalAppointments,
       upcomingAppointments,
-      completedSessions,
       totalPayments,
     ] = await Promise.all([
       Appointment.countDocuments({ userId }),
@@ -351,7 +348,6 @@ export const getUserDashboardStats = async (req, res) => {
         status: { $in: ["scheduled", "confirmed"] },
         date: { $gte: new Date() },
       }),
-      Session.countDocuments({ userId }),
       Payment.countDocuments({ userId, status: "completed" }),
     ]);
 
@@ -360,24 +356,16 @@ export const getUserDashboardStats = async (req, res) => {
       .limit(5)
       .populate("userId", "name phone email");
 
-    const recentSessions = await Session.find({ userId })
-      .sort({ completedAt: -1 })
-      .limit(3)
-      .populate("appointmentId", "date timeSlot")
-      .populate("completedBy", "name role");
-
     res.status(200).json({
       success: true,
       data: {
         statistics: {
           totalAppointments,
           upcomingAppointments,
-          completedSessions,
           totalPayments,
           subscription: req.user.subscription,
         },
         recentAppointments,
-        recentSessions,
       },
     });
   } catch (error) {
@@ -401,7 +389,6 @@ export const getAdminDashboardStats = async (req, res) => {
       activeSubscriptions,
       totalAppointments,
       todayAppointments,
-      totalSessions,
       totalRevenue,
     ] = await Promise.all([
       User.countDocuments(),
@@ -413,7 +400,6 @@ export const getAdminDashboardStats = async (req, res) => {
           $lte: new Date().setHours(23, 59, 59, 999),
         },
       }),
-      Session.countDocuments(),
       Payment.aggregate([
         { $match: { status: "completed" } },
         { $group: { _id: null, total: { $sum: "$amount" } } },
@@ -442,7 +428,6 @@ export const getAdminDashboardStats = async (req, res) => {
           activeSubscriptions,
           totalAppointments,
           todayAppointments,
-          totalSessions,
           totalRevenue: totalRevenue[0]?.total || 0,
         },
         recentUsers,
@@ -477,14 +462,10 @@ export const getUserActivity = async (req, res) => {
     }
 
     // Get user's appointments, sessions, and payments
-    const [appointments, sessions, payments] = await Promise.all([
+    const [appointments, payments] = await Promise.all([
       Appointment.find({ userId })
         .sort({ createdAt: -1 })
         .populate("userId", "name phone"),
-      Session.find({ userId })
-        .sort({ completedAt: -1 })
-        .populate("appointmentId", "date timeSlot")
-        .populate("completedBy", "name role"),
       Payment.find({ userId })
         .sort({ transactionDate: -1 })
         .populate("planId", "name sessions price"),
@@ -496,11 +477,6 @@ export const getUserActivity = async (req, res) => {
         type: "appointment",
         date: apt.createdAt,
         data: apt,
-      })),
-      ...sessions.map((session) => ({
-        type: "session",
-        date: session.completedAt,
-        data: session,
       })),
       ...payments.map((payment) => ({
         type: "payment",
@@ -597,14 +573,10 @@ export const searchUsers = async (req, res) => {
 // Get user profile
 export const getProfile = async (req, res) => {
   try {
-    const { getUserProfileWithSessionInfo } = await import(
-      "../utils/sessionCalculator.js"
-    );
-    const result = await getUserProfileWithSessionInfo(req.user._id);
-
+    // Session info removed
     res.json({
       success: true,
-      data: result,
+      data: req.user,
     });
   } catch (error) {
     res.status(500).json({
@@ -811,7 +783,6 @@ export const getUserDetails = async (req, res) => {
     const [appointmentCount, sessionCount, paymentCount, totalSpent] =
       await Promise.all([
         Appointment.countDocuments({ userId: id }),
-        Session.countDocuments({ userId: id }),
         Payment.countDocuments({ userId: id, status: "completed" }),
         Payment.aggregate([
           { $match: { userId: user._id, status: "completed" } },
@@ -840,7 +811,6 @@ export const getUserDetails = async (req, res) => {
         user,
         statistics: {
           totalAppointments: appointmentCount,
-          totalSessions: sessionCount,
           totalPayments: paymentCount,
           totalSpent: totalSpent[0]?.total || 0,
         },

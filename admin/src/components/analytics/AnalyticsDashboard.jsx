@@ -3,14 +3,12 @@ import { useDispatch, useSelector } from "react-redux";
 import {
   fetchDashboardStats,
   fetchPaymentAnalytics,
-  fetchSessionAnalytics,
   fetchBookingAnalytics,
   setDateRange,
 } from "../../store/analyticsSlice";
 import { LoadingSpinner } from "../../shared/components";
 import StatsCards from "./StatsCards";
 import RevenueChart from "./RevenueChart";
-import SessionChart from "./SessionChart";
 import BookingChart from "./BookingChart";
 import AppointmentTrends from "./AppointmentTrends";
 import PatientGrowth from "./PatientGrowth";
@@ -32,14 +30,12 @@ import {
 const AnalyticsDashboard = ({
   data,
   paymentData,
-  sessionData,
   bookingData,
 }) => {
   const dispatch = useDispatch();
   const {
     dashboardStats,
     paymentAnalytics,
-    sessionAnalytics,
     bookingAnalytics,
     loading,
     error,
@@ -51,7 +47,6 @@ const AnalyticsDashboard = ({
   // Use passed data or fallback to store data
   const currentData = data || dashboardStats;
   const currentPaymentData = paymentData || paymentAnalytics;
-  const currentSessionData = sessionData || sessionAnalytics;
   const currentBookingData = bookingData || bookingAnalytics;
 
   useEffect(() => {
@@ -59,7 +54,6 @@ const AnalyticsDashboard = ({
     if (!data) {
       dispatch(fetchDashboardStats());
       dispatch(fetchPaymentAnalytics(dateRange));
-      dispatch(fetchSessionAnalytics(dateRange));
       dispatch(fetchBookingAnalytics(dateRange));
     }
   }, [dispatch, dateRange, data]);
@@ -73,26 +67,21 @@ const AnalyticsDashboard = ({
     const totalRevenue = currentPaymentData?.totalRevenue || 0;
     const totalPatients = currentData?.totalUsers || 0;
     const totalAppointments = currentBookingData?.totalBookings || 0;
-    const completedSessions = currentSessionData?.totalSessions || 0;
 
     const revenueGrowth = currentPaymentData?.revenueChange || 0;
     const patientGrowth = currentData?.userGrowth || 0;
     const appointmentGrowth = currentBookingData?.bookingChange || 0;
-    const sessionGrowth = currentSessionData?.sessionChange || 0;
 
     return {
       totalRevenue,
       totalPatients,
       totalAppointments,
-      completedSessions,
       revenueGrowth,
       patientGrowth,
       appointmentGrowth,
-      sessionGrowth,
       averageRevenuePerPatient:
         totalPatients > 0 ? totalRevenue / totalPatients : 0,
       appointmentShowRate: currentBookingData?.showRate || 0,
-      sessionCompletionRate: currentSessionData?.completionRate || 0,
     };
   };
 
@@ -209,38 +198,6 @@ const AnalyticsDashboard = ({
           </div>
         </div>
 
-        {/* Completed Sessions */}
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600">
-                Completed Sessions
-              </p>
-              <p className="text-2xl font-bold text-gray-900">
-                {metrics.completedSessions}
-              </p>
-            </div>
-            <div className="p-3 bg-yellow-100 rounded-full">
-              <ChartBarIcon className="h-6 w-6 text-yellow-600" />
-            </div>
-          </div>
-          <div className="mt-4 flex items-center">
-            {metrics.sessionGrowth >= 0 ? (
-              <TrendingUpIcon className="h-4 w-4 text-green-500 mr-1" />
-            ) : (
-              <TrendingDownIcon className="h-4 w-4 text-red-500 mr-1" />
-            )}
-            <span
-              className={`text-sm font-medium ${
-                metrics.sessionGrowth >= 0 ? "text-green-600" : "text-red-600"
-              }`}
-            >
-              {metrics.sessionGrowth >= 0 ? "+" : ""}
-              {formatPercentage(metrics.sessionGrowth)}
-            </span>
-            <span className="text-sm text-gray-500 ml-2">vs last period</span>
-          </div>
-        </div>
       </div>
 
       {/* Secondary Metrics */}
@@ -262,16 +219,6 @@ const AnalyticsDashboard = ({
             </p>
             <p className="text-xl font-bold text-green-600">
               {formatPercentage(metrics.appointmentShowRate)}
-            </p>
-          </div>
-        </div>
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
-          <div className="text-center">
-            <p className="text-sm font-medium text-gray-600">
-              Session Completion Rate
-            </p>
-            <p className="text-xl font-bold text-blue-600">
-              {formatPercentage(metrics.sessionCompletionRate)}
             </p>
           </div>
         </div>
@@ -298,12 +245,6 @@ const AnalyticsDashboard = ({
           />
         </div>
 
-        {/* Session Analytics */}
-        <SessionChart
-          data={currentSessionData?.sessionTrends}
-          loading={loading?.sessions}
-          detailed={true}
-        />
 
         {/* Booking Patterns */}
         <BookingChart

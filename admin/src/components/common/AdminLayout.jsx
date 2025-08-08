@@ -53,9 +53,7 @@ const AdminLayout = ({ children }) => {
     { name: "Users", href: "/users", icon: UsersIcon },
     { name: "Appointments", href: "/appointments", icon: CalendarIcon },
     { name: "Availability", href: "/availability", icon: ClockIcon },
-    { name: "Sessions", href: "/sessions", icon: DocumentTextIcon },
     { name: "Analytics", href: "/analytics", icon: ChartBarIcon },
-    { name: "Audit Logs", href: "/audit-logs", icon: ShieldCheckIcon },
     { name: "Settings", href: "/settings", icon: CogIcon },
   ];
 

@@ -420,7 +420,6 @@ class EmailService {
     date,
     timeSlot,
     reason = null,
-    sessionRestored = false,
     clinicName = "Teerthanker Dental Care"
   ) {
     const subject = `Appointment Cancelled - ${clinicName}`;
@@ -444,7 +443,6 @@ class EmailService {
         .header { background-color: #f44336; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
         .content { padding: 20px; }
         .appointment-details { background-color: #f9f9f9; padding: 15px; border-left: 4px solid #f44336; margin: 20px 0; }
-        .session-info { background-color: #e8f5e8; padding: 15px; border-left: 4px solid #4CAF50; margin: 20px 0; }
         .footer { text-align: center; padding: 20px; color: #666; font-size: 12px; }
       </style>
     </head>
@@ -462,16 +460,6 @@ class EmailService {
             <p><strong>Time:</strong> ${timeSlot}</p>
             ${reason ? `<p><strong>Reason:</strong> ${reason}</p>` : ""}
           </div>
-          ${
-            sessionRestored
-              ? `
-          <div class="session-info">
-            <h3>Session Restored</h3>
-            <p>Good news! Your session has been restored to your subscription and you can book a new appointment at your convenience.</p>
-          </div>
-          `
-              : ""
-          }
           <p>We apologize for any inconvenience caused. Please feel free to book a new appointment or contact us if you have any questions.</p>
         </div>
         <div class="footer">
@@ -492,12 +480,6 @@ class EmailService {
     - Date: ${formattedDate}
     - Time: ${timeSlot}
     ${reason ? `- Reason: ${reason}` : ""}
-
-    ${
-      sessionRestored
-        ? "Good news! Your session has been restored to your subscription and you can book a new appointment at your convenience."
-        : ""
-    }
 
     We apologize for any inconvenience caused. Please feel free to book a new appointment or contact us if you have any questions.
 
@@ -557,9 +539,6 @@ class EmailService {
             <h3>Appointment Details</h3>
             <p><strong>Date:</strong> ${formattedDate}</p>
             <p><strong>Time:</strong> ${appointmentData.timeSlot}</p>
-            <p><strong>Session Number:</strong> ${
-              appointmentData.sessionNumber || "N/A"
-            }</p>
             ${
               appointmentData.notes
                 ? `<p><strong>Notes:</strong> ${appointmentData.notes}</p>`
@@ -591,7 +570,6 @@ class EmailService {
     Appointment Details:
     - Date: ${formattedDate}
     - Time: ${appointmentData.timeSlot}
-    - Session Number: ${appointmentData.sessionNumber || "N/A"}
     ${appointmentData.notes ? `- Notes: ${appointmentData.notes}` : ""}
 
     Patient Information:
@@ -800,9 +778,6 @@ class EmailService {
             <h3>New Appointment</h3>
             <p><strong>Date:</strong> ${formattedNewDate}</p>
             <p><strong>Time:</strong> ${appointmentData.timeSlot}</p>
-            <p><strong>Session Number:</strong> ${
-              appointmentData.sessionNumber || "N/A"
-            }</p>
           </div>
           
           ${
@@ -844,7 +819,6 @@ class EmailService {
     New Appointment:
     - Date: ${formattedNewDate}
     - Time: ${appointmentData.timeSlot}
-    - Session Number: ${appointmentData.sessionNumber || "N/A"}
 
     ${reason ? `Reason for Reschedule: ${reason}` : ""}
 

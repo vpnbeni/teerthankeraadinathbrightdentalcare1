@@ -22,11 +22,6 @@ export const createAppointment = async (req, res) => {
   try {
     const { date, timeSlot, notes, personalDetails, medicalInfo } = req.body;
 
-    // Session limits validation is handled by middleware
-    // req.sessionLimits contains the validation results
-    console.log("🔍 DEBUG: Appointment Creation Controller");
-    console.log("User ID:", req.user._id);
-    console.log("Session Limits from Middleware:", req.sessionLimits);
 
     // Check if time slot is available using new availability service
     const appointmentDate = new Date(date);
@@ -75,17 +70,11 @@ export const createAppointment = async (req, res) => {
       }
     }
 
-    // Get user's current session number from middleware session limits
-    const sessionNumber = (req.sessionLimits?.confirmedAppointments || 0) + 1;
-
-    console.log("Creating appointment with session number:", sessionNumber);
-
     const appointment = await Appointment.create({
       userId: req.user._id,
       date: appointmentDate,
       timeSlot,
       notes,
-      sessionNumber: sessionNumber,
     });
 
     const populatedAppointment = await Appointment.findById(
@@ -120,7 +109,6 @@ export const createAppointment = async (req, res) => {
 
     console.log("🎉 SUCCESS: Appointment created successfully");
     console.log("Appointment ID:", appointment._id);
-    console.log("Session Number:", appointment.sessionNumber);
 
     res.status(201).json({
       success: true,
@@ -402,21 +390,6 @@ export const cancelAppointment = async (req, res) => {
     // Cancel the appointment with reason and user info
     await appointment.cancel(reason, req.user._id);
 
-    // Restore session for user cancellations
-    let sessionRestored = false;
-    if (appointment.userId.subscription) {
-      try {
-        await appointment.userId.restoreSession();
-        sessionRestored = true;
-
-        // Update appointment record
-        appointment.cancellationDetails.sessionRestored = true;
-        await appointment.save();
-      } catch (error) {
-        console.error("Session restoration failed:", error.message);
-        // Continue with cancellation even if session restoration fails
-      }
-    }
 
     const updatedAppointment = await Appointment.findById(appointmentId)
       .populate("userId", "name phone email")
@@ -426,7 +399,6 @@ export const cancelAppointment = async (req, res) => {
       success: true,
       data: {
         appointment: updatedAppointment,
-        sessionRestored,
       },
       message: "Appointment cancelled successfully",
     });
@@ -860,16 +832,7 @@ export const completeAppointment = async (req, res) => {
       });
     }
 
-    // Only consume a session if the appointment is moving to 'completed' state
-    if (appointment.status !== "completed") {
-      await appointment.complete();
-
-      // Consume a session from the user's subscription
-      const user = appointment.userId;
-      if (user && user.subscription && user.subscription.sessionsRemaining > 0) {
-        await user.consumeSession();
-      }
-    }
+    await appointment.complete();
 
     const updatedAppointment = await Appointment.findById(
       appointmentId
@@ -924,21 +887,6 @@ export const adminCancelAppointment = async (req, res) => {
     // Cancel the appointment with reason and admin info
     await appointment.cancel(reason, req.user._id);
 
-    // Restore session if requested and user has subscription
-    let sessionRestored = false;
-    if (restoreSession && appointment.userId.subscription) {
-      try {
-        await appointment.userId.restoreSession();
-        sessionRestored = true;
-
-        // Update appointment record
-        appointment.cancellationDetails.sessionRestored = true;
-        await appointment.save();
-      } catch (error) {
-        console.error("Session restoration failed:", error.message);
-        // Continue with cancellation even if session restoration fails
-      }
-    }
 
     // Send email notification to patient if requested
     if (notifyPatient && appointment.userId.email) {
@@ -948,8 +896,7 @@ export const adminCancelAppointment = async (req, res) => {
           appointment.userId.name,
           appointment.date,
           appointment.timeSlot,
-          reason,
-          sessionRestored
+          reason
         );
       } catch (error) {
         console.error(
@@ -967,7 +914,6 @@ export const adminCancelAppointment = async (req, res) => {
       success: true,
       data: {
         appointment: updatedAppointment,
-        sessionRestored,
       },
       message: "Appointment cancelled successfully",
     });
@@ -1038,21 +984,6 @@ export const bulkCancelAppointments = async (req, res) => {
         // Cancel the appointment
         await appointment.cancel(reason, req.user._id);
 
-        // Restore session if requested
-        let sessionRestored = false;
-        if (restoreSessions && appointment.userId.subscription) {
-          try {
-            await appointment.userId.restoreSession();
-            sessionRestored = true;
-            appointment.cancellationDetails.sessionRestored = true;
-            await appointment.save();
-          } catch (error) {
-            console.error(
-              `Session restoration failed for appointment ${appointmentId}:`,
-              error.message
-            );
-          }
-        }
 
         // Send email notification if requested
         if (notifyPatients && appointment.userId.email) {
@@ -1062,8 +993,7 @@ export const bulkCancelAppointments = async (req, res) => {
               appointment.userId.name,
               appointment.date,
               appointment.timeSlot,
-              reason,
-              sessionRestored
+              reason
             );
           } catch (error) {
             console.error(
@@ -1076,7 +1006,6 @@ export const bulkCancelAppointments = async (req, res) => {
         results.successful.push({
           appointmentId,
           patientName: appointment.userId.name,
-          sessionRestored,
         });
       } catch (error) {
         results.failed.push({

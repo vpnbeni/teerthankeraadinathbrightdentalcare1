@@ -25,11 +25,6 @@ const planSchema = new mongoose.Schema(
       required: true,
       min: 1,
     },
-    sessions: {
-      type: Number,
-      required: true,
-      min: 1,
-    },
     features: {
       type: [String],
       default: [],

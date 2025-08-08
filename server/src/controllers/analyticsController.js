@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { User, Appointment, Session, Payment, Plan } from "../models/index.js";
+import { User, Appointment, Payment, Plan } from "../models/index.js";
 
 /**
  * Analytics Controller
@@ -522,17 +522,10 @@ export const getAdminPatientAnalytics = async (req, res) => {
         },
       },
       {
-        $lookup: {
-          from: "sessions",
-          localField: "_id",
-          foreignField: "userId",
-          as: "sessions",
-        },
       },
       {
         $project: {
           appointmentCount: { $size: "$appointments" },
-          sessionCount: { $size: "$sessions" },
           subscriptionStatus: "$subscription.status",
           sessionsRemaining: "$subscription.sessionsRemaining",
           hasActiveSubscription: { $eq: ["$subscription.status", "active"] },
@@ -544,12 +537,8 @@ export const getAdminPatientAnalytics = async (req, res) => {
           totalPatients: { $sum: 1 },
           activePatients: { $sum: { $cond: ["$hasActiveSubscription", 1, 0] } },
           avgAppointmentsPerPatient: { $avg: "$appointmentCount" },
-          avgSessionsPerPatient: { $avg: "$sessionCount" },
           patientsWithAppointments: {
             $sum: { $cond: [{ $gt: ["$appointmentCount", 0] }, 1, 0] },
-          },
-          patientsWithSessions: {
-            $sum: { $cond: [{ $gt: ["$sessionCount", 0] }, 1, 0] },
           },
         },
       },
@@ -669,9 +658,7 @@ export const getAdminPatientAnalytics = async (req, res) => {
       totalPatients: 0,
       activePatients: 0,
       avgAppointmentsPerPatient: 0,
-      avgSessionsPerPatient: 0,
       patientsWithAppointments: 0,
-      patientsWithSessions: 0,
     };
 
     const retention = retentionAnalysis[0] || {
@@ -839,7 +826,6 @@ export const getDashboardAnalytics = async (req, res) => {
       totalUsers,
       activeSubscriptions,
       totalAppointments,
-      completedSessions,
       totalRevenue,
       todayAppointments,
       upcomingAppointments,
@@ -847,7 +833,6 @@ export const getDashboardAnalytics = async (req, res) => {
       User.countDocuments(),
       User.countDocuments({ "subscription.status": "active" }),
       Appointment.countDocuments({ date: { $gte: start, $lte: end } }),
-      Session.countDocuments({ completedAt: { $gte: start, $lte: end } }),
       Payment.aggregate([
         {
           $match: {
@@ -879,7 +864,6 @@ export const getDashboardAnalytics = async (req, res) => {
     const [
       previousUsers,
       previousAppointments,
-      previousSessions,
       previousRevenue,
     ] = await Promise.all([
       User.countDocuments({
@@ -887,9 +871,6 @@ export const getDashboardAnalytics = async (req, res) => {
       }),
       Appointment.countDocuments({
         date: { $gte: previousStart, $lte: previousEnd },
-      }),
-      Session.countDocuments({
-        completedAt: { $gte: previousStart, $lte: previousEnd },
       }),
       Payment.aggregate([
         {
@@ -918,10 +899,6 @@ export const getDashboardAnalytics = async (req, res) => {
         ? ((totalAppointments - previousAppointments) / previousAppointments) *
           100
         : 0;
-    const sessionGrowth =
-      previousSessions > 0
-        ? ((completedSessions - previousSessions) / previousSessions) * 100
-        : 0;
     const revenueGrowth =
       prevRevenue > 0
         ? ((currentRevenue - prevRevenue) / prevRevenue) * 100
@@ -934,7 +911,6 @@ export const getDashboardAnalytics = async (req, res) => {
           totalUsers,
           activeSubscriptions,
           totalAppointments,
-          completedSessions,
           totalRevenue: currentRevenue,
           todayAppointments,
           upcomingAppointments,
@@ -942,7 +918,6 @@ export const getDashboardAnalytics = async (req, res) => {
         growth: {
           userGrowth: Math.round(userGrowth * 100) / 100,
           appointmentGrowth: Math.round(appointmentGrowth * 100) / 100,
-          sessionGrowth: Math.round(sessionGrowth * 100) / 100,
           revenueGrowth: Math.round(revenueGrowth * 100) / 100,
         },
         dateRange: {
@@ -1188,146 +1163,6 @@ export const getAppointmentAnalytics = async (req, res) => {
   }
 };
 
-/**
- * @desc    Get session analytics
- * @route   GET /api/analytics/sessions
- * @access  Private (Admin)
- */
-export const getSessionAnalytics = async (req, res) => {
-  try {
-    const { startDate, endDate } = req.query;
-
-    const start = startDate
-      ? new Date(startDate)
-      : new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
-    const end = endDate ? new Date(endDate) : new Date();
-
-    // Get session statistics
-    const sessionStats = await Session.getSessionStatistics(start, end);
-
-    // Get monthly session trends
-    const monthlyTrends = await Session.getMonthlySessionTrends(
-      new Date().getFullYear()
-    );
-
-    // Common dental conditions analysis
-    const dentalConditions = await Session.aggregate([
-      {
-        $match: {
-          completedAt: { $gte: start, $lte: end },
-        },
-      },
-      {
-        $group: {
-          _id: null,
-          avgTeethPresent: { $avg: "$examination.teethPresent" },
-          totalMissingTeeth: {
-            $sum: { $size: { $ifNull: ["$examination.missingTeeth", []] } },
-          },
-          cariesCases: {
-            $sum: {
-              $cond: [
-                {
-                  $and: [
-                    { $ne: ["$examination.cariesStatus", null] },
-                    { $ne: ["$examination.cariesStatus", ""] },
-                  ],
-                },
-                1,
-                0,
-              ],
-            },
-          },
-          gumIssues: {
-            $sum: {
-              $cond: [
-                {
-                  $and: [
-                    { $ne: ["$examination.gumIssues", null] },
-                    { $ne: ["$examination.gumIssues", ""] },
-                  ],
-                },
-                1,
-                0,
-              ],
-            },
-          },
-          customFieldUsage: {
-            $sum: {
-              $cond: [
-                {
-                  $gt: [
-                    { $size: { $ifNull: ["$examination.customFields", []] } },
-                    0,
-                  ],
-                },
-                1,
-                0,
-              ],
-            },
-          },
-        },
-      },
-    ]);
-
-    // Session duration analysis
-    const sessionDurations = await Session.aggregate([
-      {
-        $match: {
-          completedAt: { $gte: start, $lte: end },
-        },
-      },
-      {
-        $project: {
-          duration: {
-            $divide: [
-              { $subtract: ["$completedAt", "$createdAt"] },
-              1000 * 60, // Convert to minutes
-            ],
-          },
-        },
-      },
-      {
-        $group: {
-          _id: null,
-          avgDuration: { $avg: "$duration" },
-          minDuration: { $min: "$duration" },
-          maxDuration: { $max: "$duration" },
-        },
-      },
-    ]);
-
-    res.status(200).json({
-      success: true,
-      data: {
-        overview: sessionStats,
-        monthlyTrends,
-        dentalConditions: dentalConditions[0] || {
-          avgTeethPresent: 0,
-          totalMissingTeeth: 0,
-          cariesCases: 0,
-          gumIssues: 0,
-          customFieldUsage: 0,
-        },
-        sessionDurations: sessionDurations[0] || {
-          avgDuration: 0,
-          minDuration: 0,
-          maxDuration: 0,
-        },
-        dateRange: {
-          startDate: start,
-          endDate: end,
-        },
-      },
-    });
-  } catch (error) {
-    console.error("Get session analytics error:", error);
-    res.status(400).json({
-      success: false,
-      message: error.message,
-    });
-  }
-};
 
 /**
  * @desc    Get user analytics
@@ -1405,26 +1240,17 @@ export const getUserAnalytics = async (req, res) => {
         },
       },
       {
-        $lookup: {
-          from: "sessions",
-          localField: "_id",
-          foreignField: "userId",
-          as: "sessions",
-        },
       },
       {
         $project: {
           appointmentCount: { $size: "$appointments" },
-          sessionCount: { $size: "$sessions" },
           subscriptionStatus: "$subscription.status",
-          sessionsRemaining: "$subscription.sessionsRemaining",
         },
       },
       {
         $group: {
           _id: null,
           avgAppointments: { $avg: "$appointmentCount" },
-          avgSessions: { $avg: "$sessionCount" },
           activeUsers: {
             $sum: { $cond: [{ $eq: ["$subscriptionStatus", "active"] }, 1, 0] },
           },
@@ -1461,7 +1287,6 @@ export const getUserAnalytics = async (req, res) => {
         planDistribution,
         engagementMetrics: engagementMetrics[0] || {
           avgAppointments: 0,
-          avgSessions: 0,
           activeUsers: 0,
           totalUsers: 0,
         },
@@ -1513,9 +1338,6 @@ export const generateCustomReport = async (req, res) => {
           filters,
           groupBy
         );
-        break;
-      case "sessions":
-        reportData = await generateSessionReport(start, end, filters, groupBy);
         break;
       case "users":
         reportData = await generateUserReport(start, end, filters, groupBy);
@@ -1586,7 +1408,6 @@ const generateAppointmentReport = async (
         date: 1,
         timeSlot: 1,
         status: 1,
-        sessionNumber: 1,
         notes: 1,
         createdAt: 1,
         "user.name": 1,
@@ -1771,7 +1592,6 @@ const generatePatientReport = async (start, end, filters, groupBy, metrics) => {
         address: 1,
         createdAt: 1,
         "subscription.status": 1,
-        "subscription.sessionsRemaining": 1,
         "subscription.startDate": 1,
         "subscription.endDate": 1,
         planName: { $arrayElemAt: ["$plan.name", 0] },

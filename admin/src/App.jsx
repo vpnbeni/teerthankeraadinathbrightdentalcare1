@@ -16,9 +16,7 @@ import AdminDashboard from "./pages/AdminDashboard";
 import UserManagement from "./pages/UserManagement";
 import AppointmentManagement from "./pages/AppointmentManagement";
 import AvailabilityManagement from "./pages/AvailabilityManagement";
-import SessionManagement from "./pages/SessionManagement";
 import Analytics from "./pages/Analytics";
-import AuditLogs from "./pages/AuditLogs";
 import SystemSettings from "./pages/SystemSettings";
 
 function App() {
@@ -104,26 +102,10 @@ function App() {
               }
             />
             <Route
-              path="/sessions"
-              element={
-                <ProtectedRoute requiredRole="admin">
-                  <SessionManagement />
-                </ProtectedRoute>
-              }
-            />
-            <Route
               path="/analytics"
               element={
                 <ProtectedRoute requiredRole="admin">
                   <Analytics />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/audit-logs"
-              element={
-                <ProtectedRoute requiredRole="admin">
-                  <AuditLogs />
                 </ProtectedRoute>
               }
             />
@@ -146,7 +128,16 @@ function App() {
                 />
               }
             />
-            {/* No catch-all route - let React Router handle 404s naturally */}
+            {/* Catch-all route to handle removed or unknown routes */}
+            <Route
+              path="*"
+              element={
+                <Navigate
+                  to={isAuthenticated ? "/dashboard" : "/login"}
+                  replace
+                />
+              }
+            />
           </Routes>
 
           {/* Toast notifications are handled by react-hot-toast Toaster in main.jsx */}

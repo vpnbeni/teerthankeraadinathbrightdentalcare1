@@ -37,11 +37,6 @@ const appointmentSchema = new mongoose.Schema(
       default: "scheduled",
     },
 
-    // Session Information
-    sessionNumber: {
-      type: Number,
-      min: [1, "Session number must be at least 1"],
-    },
     notes: {
       type: String,
       trim: true,
@@ -92,10 +87,6 @@ const appointmentSchema = new mongoose.Schema(
       },
       cancelledAt: {
         type: Date,
-      },
-      sessionRestored: {
-        type: Boolean,
-        default: false,
       },
     },
 

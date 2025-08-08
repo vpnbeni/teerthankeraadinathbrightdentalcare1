@@ -5,7 +5,6 @@ import {
   getDashboardAnalytics,
   getRevenueAnalytics,
   getAppointmentAnalytics,
-  getSessionAnalytics,
   getUserAnalytics,
   generateCustomReport,
   getAdminAppointmentAnalytics,
@@ -23,7 +22,6 @@ router.use(auth);
 router.get("/dashboard", getDashboardAnalytics);
 router.get("/revenue", getRevenueAnalytics);
 router.get("/appointments", getAppointmentAnalytics);
-router.get("/sessions", getSessionAnalytics);
 router.get("/users", getUserAnalytics);
 router.post("/custom-report", generateCustomReport);
 

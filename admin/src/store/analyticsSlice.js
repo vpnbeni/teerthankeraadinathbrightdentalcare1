@@ -33,20 +33,6 @@ export const fetchPaymentAnalytics = createAsyncThunk(
   }
 );
 
-export const fetchSessionAnalytics = createAsyncThunk(
-  "analytics/fetchSessionAnalytics",
-  async (params = {}, { rejectWithValue }) => {
-    try {
-      const response = await analyticsService.getSessionAnalytics(params);
-      return response.data;
-    } catch (error) {
-      return rejectWithValue(
-        error.response?.data?.message || "Failed to fetch session analytics"
-      );
-    }
-  }
-);
-
 export const fetchBookingAnalytics = createAsyncThunk(
   "analytics/fetchBookingAnalytics",
   async (params = {}, { rejectWithValue }) => {
@@ -66,7 +52,6 @@ const initialState = {
     totalUsers: 0,
     activeSubscriptions: 0,
     totalAppointments: 0,
-    completedSessions: 0,
     totalRevenue: 0,
     monthlyRevenue: 0,
   },
@@ -74,11 +59,6 @@ const initialState = {
     monthlyRevenue: [],
     planDistribution: [],
     paymentMethods: [],
-  },
-  sessionAnalytics: {
-    completionRates: [],
-    sessionTrends: [],
-    averageSessionsPerUser: 0,
   },
   bookingAnalytics: {
     appointmentPatterns: [],
@@ -88,7 +68,6 @@ const initialState = {
   loading: {
     dashboard: false,
     payments: false,
-    sessions: false,
     bookings: false,
   },
   error: null,
@@ -134,14 +113,12 @@ const analyticsSlice = createSlice({
           totalUsers: overview?.totalUsers || 0,
           activeSubscriptions: overview?.activeSubscriptions || 0,
           totalAppointments: overview?.totalAppointments || 0,
-          completedSessions: overview?.completedSessions || 0,
           totalRevenue: overview?.totalRevenue || 0,
           monthlyRevenue: overview?.totalRevenue || 0, // Using totalRevenue as monthlyRevenue
           todayAppointments: overview?.todayAppointments || 0,
           upcomingAppointments: overview?.upcomingAppointments || 0,
           userGrowth: growth?.userGrowth || 0,
           appointmentChange: growth?.appointmentGrowth || 0,
-          sessionChange: growth?.sessionGrowth || 0,
           revenueChange: growth?.revenueGrowth || 0,
         };
       })
@@ -160,19 +137,6 @@ const analyticsSlice = createSlice({
       })
       .addCase(fetchPaymentAnalytics.rejected, (state, action) => {
         state.loading.payments = false;
-        state.error = action.payload;
-      })
-      // Session analytics
-      .addCase(fetchSessionAnalytics.pending, (state) => {
-        state.loading.sessions = true;
-        state.error = null;
-      })
-      .addCase(fetchSessionAnalytics.fulfilled, (state, action) => {
-        state.loading.sessions = false;
-        state.sessionAnalytics = action.payload;
-      })
-      .addCase(fetchSessionAnalytics.rejected, (state, action) => {
-        state.loading.sessions = false;
         state.error = action.payload;
       })
       // Booking analytics
@@ -200,7 +164,6 @@ export const fetchAnalyticsData = createAsyncThunk(
       await Promise.all([
         dispatch(fetchDashboardStats()),
         dispatch(fetchPaymentAnalytics(dateRange)),
-        dispatch(fetchSessionAnalytics(dateRange)),
         dispatch(fetchBookingAnalytics(dateRange)),
       ]);
       return true;

@@ -101,8 +101,6 @@ class AuthService {
         planId,
         startDate,
         endDate,
-        sessionsRemaining: plan.sessions, // Set to plan sessions initially
-        totalSessions: plan.sessions, // Set to plan sessions
         status: "suspended", // Will be activated after payment
       },
       isVerified: false,
@@ -397,10 +395,7 @@ class AuthService {
    * Get user profile
    */
   async getProfile(userId) {
-    const { getUserProfileWithSessionInfo } = await import(
-      "../utils/sessionCalculator.js"
-    );
-    return await getUserProfileWithSessionInfo(userId);
+    return await User.findById(userId).select("-passwordHash");
   }
 
   /**

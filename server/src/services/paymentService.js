@@ -116,7 +116,6 @@ class PaymentService {
           paymentId: payment._id,
           planDetails: {
             name: plan.name,
-            sessions: plan.sessions,
             duration: plan.duration,
             price: plan.price,
           },
@@ -247,7 +246,6 @@ class PaymentService {
         planId: plan._id,
         startDate,
         endDate,
-        sessionsRemaining: plan.sessions,
         status: "active",
       };
 
@@ -276,7 +274,6 @@ class PaymentService {
         subscription: {
           planId: plan._id,
           planName: plan.name,
-          sessions: plan.sessions,
           startDate,
           endDate,
           status: "active",

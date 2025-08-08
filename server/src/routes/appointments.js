@@ -2,10 +2,6 @@ import express from "express";
 import { auth } from "../middleware/auth.js";
 import { adminOnly } from "../middleware/adminAuth.js";
 import {
-  validateSessionLimits,
-  validateSessionLimitsForUpdate,
-} from "../middleware/sessionLimits.js";
-import {
   getUserAppointments,
   createAppointment,
   getAvailableTimeSlots,
@@ -48,16 +44,8 @@ router.get("/available-dates", getAvailableDates);
 router.get("/available-slots/:date", getAvailableTimeSlots);
 router.post("/validate-slot", validateSlotBooking);
 router.get("/:appointmentId", getAppointmentDetails);
-router.post("/", validateSessionLimits, createAppointment);
-router.put(
-  "/:appointmentId",
-  validateSessionLimitsForUpdate,
-  updateAppointment
-);
-router.delete(
-  "/:appointmentId",
-  validateSessionLimitsForUpdate,
-  cancelAppointment
-);
+router.post("/", createAppointment);
+router.put("/:appointmentId", updateAppointment);
+router.delete("/:appointmentId", cancelAppointment);
 
 export default router;

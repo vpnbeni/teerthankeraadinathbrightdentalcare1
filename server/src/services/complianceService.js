@@ -1,7 +1,6 @@
 import mongoose from "mongoose";
 import { auditService } from "./auditService.js";
 import { encryptionService } from "./encryptionService.js";
-import { sessionService } from "./sessionService.js";
 import { backupService } from "./backupService.js";
 import { config } from "../config/environment.js";
 
@@ -14,7 +13,6 @@ class ComplianceService {
     this.complianceChecks = {
       encryption: false,
       auditLogging: false,
-      sessionManagement: false,
       backupSystem: false,
       accessControls: false,
     };
@@ -35,8 +33,6 @@ class ComplianceService {
       // Check audit logging
       this.complianceChecks.auditLogging = await this.checkAuditSystem();
 
-      // Check session management
-      this.complianceChecks.sessionManagement = this.checkSessionManagement();
 
       // Check backup system
       this.complianceChecks.backupSystem = this.checkBackupSystem();
@@ -104,22 +100,6 @@ class ComplianceService {
     }
   }
 
-  /**
-   * Check session management
-   */
-  checkSessionManagement() {
-    try {
-      // Check if session service is properly initialized
-      return (
-        typeof sessionService.createSession === "function" &&
-        typeof sessionService.validateSession === "function" &&
-        typeof sessionService.invalidateSession === "function"
-      );
-    } catch (error) {
-      console.error("Session management check failed:", error);
-      return false;
-    }
-  }
 
   /**
    * Check backup system
@@ -179,14 +159,11 @@ class ComplianceService {
       // Get backup statistics
       const backupStats = await backupService.getBackupStats();
 
-      // Get session statistics
-      const sessionStats = await sessionService.getSessionStats();
 
       // Security metrics
       const securityMetrics = {
         encryptionEnabled: this.complianceChecks.encryption,
         auditLoggingActive: this.complianceChecks.auditLogging,
-        sessionTimeoutConfigured: sessionService.sessionTimeout / (60 * 1000), // in minutes
         backupRetentionDays: backupService.retentionDays,
         complianceScore: this.calculateComplianceScore(),
       };
@@ -206,7 +183,6 @@ class ComplianceService {
         systemChecks: this.complianceChecks,
         auditSummary: auditReport,
         backupStatus: backupStats,
-        sessionManagement: sessionStats,
         securityMetrics,
         dataAccessPatterns,
         recommendations: this.generateRecommendations(),
@@ -293,15 +269,6 @@ class ComplianceService {
       });
     }
 
-    if (!this.complianceChecks.sessionManagement) {
-      recommendations.push({
-        priority: "MEDIUM",
-        category: "Access Control",
-        issue: "Session management system issues",
-        recommendation:
-          "Review session service configuration and timeout settings",
-      });
-    }
 
     if (!this.complianceChecks.backupSystem) {
       recommendations.push({
@@ -313,15 +280,6 @@ class ComplianceService {
       });
     }
 
-    if (sessionService.sessionTimeout > 30 * 60 * 1000) {
-      recommendations.push({
-        priority: "MEDIUM",
-        category: "Access Control",
-        issue: "Session timeout too long for healthcare data",
-        recommendation:
-          "Consider reducing session timeout to 15-30 minutes for better security",
-      });
-    }
 
     return recommendations;
   }
@@ -381,34 +339,6 @@ class ComplianceService {
     };
   }
 
-  /**
-   * Check for inactive sessions
-   */
-  async checkInactiveSessions() {
-    try {
-      const stats = await sessionService.getSessionStats();
-      const inactiveThreshold = 15 * 60 * 1000; // 15 minutes
-
-      const inactiveSessions = stats.recentSessions.filter((session) => {
-        const lastActivity = new Date(session.lastActivity);
-        return Date.now() - lastActivity.getTime() > inactiveThreshold;
-      });
-
-      return {
-        totalSessions: stats.totalActiveSessions,
-        inactiveSessions: inactiveSessions.length,
-        recommendations:
-          inactiveSessions.length > 0
-            ? [
-                "Consider reducing session timeout",
-                "Implement automatic session cleanup",
-              ]
-            : [],
-      };
-    } catch (error) {
-      return { error: error.message };
-    }
-  }
 
   /**
    * Check for suspicious activity

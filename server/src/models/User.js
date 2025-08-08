@@ -80,10 +80,6 @@ const userSchema = new mongoose.Schema(
       },
       startDate: Date,
       endDate: Date,
-      sessionsRemaining: {
-        type: Number,
-        default: 0,
-      },
       status: {
         type: String,
         enum: ["active", "expired", "cancelled", "suspended"],
@@ -112,45 +108,10 @@ userSchema.methods.isSubscriptionActive = function () {
   const now = new Date();
   return (
     this.subscription.status === "active" &&
-    this.subscription.endDate > now &&
-    this.subscription.sessionsRemaining > 0
+    this.subscription.endDate > now
   );
 };
 
-// Method to consume a session
-userSchema.methods.consumeSession = async function () {
-  if (!this.subscription || this.subscription.sessionsRemaining <= 0) {
-    throw new Error("No sessions available");
-  }
-
-  this.subscription.sessionsRemaining--;
-  if (this.subscription.sessionsRemaining === 0) {
-    this.subscription.status = "expired";
-  }
-
-  await this.save();
-  return this.subscription.sessionsRemaining;
-};
-
-// Method to restore a session (for cancellations)
-userSchema.methods.restoreSession = async function () {
-  if (!this.subscription) {
-    throw new Error("No subscription found");
-  }
-
-  this.subscription.sessionsRemaining++;
-
-  // If subscription was expired due to no sessions, reactivate it
-  if (
-    this.subscription.status === "expired" &&
-    this.subscription.endDate > new Date()
-  ) {
-    this.subscription.status = "active";
-  }
-
-  await this.save();
-  return this.subscription.sessionsRemaining;
-};
 
 // Password hashing middleware
 userSchema.pre("save", async function (next) {
