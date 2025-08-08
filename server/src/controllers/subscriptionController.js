@@ -162,6 +162,7 @@ export const changeSubscriptionPlan = async (req, res) => {
 
     // Calculate new session count if adjustSessions is true
     let newSessionsRemaining = user.subscription.sessionsRemaining;
+    let newTotalSessions = newPlan.sessions;
     if (adjustSessions) {
       // Calculate session ratio and adjust
       const sessionRatio = newPlan.sessions / originalPlan.sessions;
@@ -173,7 +174,11 @@ export const changeSubscriptionPlan = async (req, res) => {
 
     // Update subscription
     user.subscription.planId = newPlanId;
-    user.subscription.sessionsRemaining = newSessionsRemaining;
+    user.subscription.totalSessions = newTotalSessions;
+    user.subscription.sessionsRemaining = Math.min(
+      newSessionsRemaining,
+      newTotalSessions
+    );
 
     // If subscription was expired but new plan has sessions, reactivate
     if (

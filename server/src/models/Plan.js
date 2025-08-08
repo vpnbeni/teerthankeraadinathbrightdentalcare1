@@ -11,6 +11,13 @@ const planSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
+  // Total sessions included in this plan
+  sessions: {
+    type: Number,
+    required: true,
+    min: 0,
+    default: 0,
+  },
     price: {
       type: Number,
       required: true,

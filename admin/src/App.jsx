@@ -28,6 +28,7 @@ function App() {
     setupGlobalErrorHandler();
   }, [dispatch]);
 
+  // Show loading spinner while checking authentication status
   if (loading) {
     return (
       <AccessibilityProvider>
@@ -141,8 +142,6 @@ function App() {
           </Routes>
 
           {/* Toast notifications are handled by react-hot-toast Toaster in main.jsx */}
-
-         
         </div>
       </ErrorBoundary>
     </AccessibilityProvider>

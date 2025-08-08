@@ -23,9 +23,15 @@ export const fetchPaymentAnalytics = createAsyncThunk(
   "analytics/fetchPaymentAnalytics",
   async (params = {}, { rejectWithValue }) => {
     try {
+      console.log(
+        "Analytics slice: Fetching payment analytics with params:",
+        params
+      );
       const response = await analyticsService.getPaymentAnalytics(params);
+      console.log("Analytics slice: Payment analytics response:", response);
       return response.data;
     } catch (error) {
+      console.error("Analytics slice: Payment analytics error:", error);
       return rejectWithValue(
         error.response?.data?.message || "Failed to fetch payment analytics"
       );
@@ -37,9 +43,15 @@ export const fetchBookingAnalytics = createAsyncThunk(
   "analytics/fetchBookingAnalytics",
   async (params = {}, { rejectWithValue }) => {
     try {
+      console.log(
+        "Analytics slice: Fetching booking analytics with params:",
+        params
+      );
       const response = await analyticsService.getBookingAnalytics(params);
+      console.log("Analytics slice: Booking analytics response:", response);
       return response.data;
     } catch (error) {
+      console.error("Analytics slice: Booking analytics error:", error);
       return rejectWithValue(
         error.response?.data?.message || "Failed to fetch booking analytics"
       );
@@ -133,7 +145,42 @@ const analyticsSlice = createSlice({
       })
       .addCase(fetchPaymentAnalytics.fulfilled, (state, action) => {
         state.loading.payments = false;
-        state.paymentAnalytics = action.payload;
+        console.log(
+          "Analytics slice: Payment analytics payload:",
+          action.payload
+        );
+        // Map the API response structure to what the components expect
+        const {
+          overview,
+          trends,
+          revenueByPlan,
+          paymentMethodDistribution,
+          failedPayments,
+        } = action.payload.data || {};
+        console.log("Analytics slice: Extracted data:", {
+          overview,
+          trends,
+          revenueByPlan,
+          paymentMethodDistribution,
+          failedPayments,
+        });
+        state.paymentAnalytics = {
+          overview: overview || {},
+          monthlyRevenue: trends || [],
+          planDistribution: revenueByPlan || [],
+          paymentMethods: paymentMethodDistribution || [],
+          failedPayments: failedPayments || {
+            count: 0,
+            potentialRevenueLoss: 0,
+          },
+          trends: trends || [],
+          revenueByPlan: revenueByPlan || [],
+          paymentMethodDistribution: paymentMethodDistribution || [],
+        };
+        console.log(
+          "Analytics slice: Final paymentAnalytics state:",
+          state.paymentAnalytics
+        );
       })
       .addCase(fetchPaymentAnalytics.rejected, (state, action) => {
         state.loading.payments = false;
@@ -146,7 +193,40 @@ const analyticsSlice = createSlice({
       })
       .addCase(fetchBookingAnalytics.fulfilled, (state, action) => {
         state.loading.bookings = false;
-        state.bookingAnalytics = action.payload;
+        console.log(
+          "Analytics slice: Booking analytics payload:",
+          action.payload
+        );
+        // Map the API response structure to what the components expect
+        const {
+          overview,
+          statusDistribution,
+          dailyTrends,
+          timeSlotPopularity,
+          rescheduleAnalysis,
+        } = action.payload.data || {};
+        console.log("Analytics slice: Extracted booking data:", {
+          overview,
+          statusDistribution,
+          dailyTrends,
+          timeSlotPopularity,
+          rescheduleAnalysis,
+        });
+        state.bookingAnalytics = {
+          overview: overview || {},
+          statusDistribution: statusDistribution || [],
+          dailyTrends: dailyTrends || [],
+          timeSlotPopularity: timeSlotPopularity || [],
+          rescheduleAnalysis: rescheduleAnalysis || {},
+          // Legacy mappings for backward compatibility
+          appointmentPatterns: dailyTrends || [],
+          timeSlotUtilization: timeSlotPopularity || [],
+          cancellationRates: statusDistribution || [],
+        };
+        console.log(
+          "Analytics slice: Final bookingAnalytics state:",
+          state.bookingAnalytics
+        );
       })
       .addCase(fetchBookingAnalytics.rejected, (state, action) => {
         state.loading.bookings = false;
@@ -161,11 +241,18 @@ export const fetchAnalyticsData = createAsyncThunk(
   async (dateRange, { dispatch, rejectWithValue }) => {
     try {
       // Fetch all analytics data
-      await Promise.all([
+      const results = await Promise.allSettled([
         dispatch(fetchDashboardStats()),
         dispatch(fetchPaymentAnalytics(dateRange)),
         dispatch(fetchBookingAnalytics(dateRange)),
       ]);
+
+      // Check if any failed
+      const failed = results.filter((result) => result.status === "rejected");
+      if (failed.length > 0) {
+        console.warn("Some analytics requests failed:", failed);
+      }
+
       return true;
     } catch (error) {
       return rejectWithValue("Failed to fetch analytics data");

@@ -89,6 +89,7 @@ class AuthService {
     // Calculate subscription end date
     const startDate = new Date();
     const endDate = plan.calculateEndDate(startDate);
+    const totalSessions = Number(plan.sessions) || 0;
 
     // Create user (unverified initially)
     const user = await User.create({
@@ -101,6 +102,8 @@ class AuthService {
         planId,
         startDate,
         endDate,
+        totalSessions,
+        sessionsRemaining: totalSessions,
         status: "suspended", // Will be activated after payment
       },
       isVerified: false,

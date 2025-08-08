@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import AdminLayout from "../components/common/AdminLayout";
 import AnalyticsDashboard from "../components/analytics/AnalyticsDashboard";
+import BookingChart from "../components/analytics/BookingChart";
+import RevenueChart from "../components/analytics/RevenueChart";
 import DateRangeFilter from "../components/analytics/DateRangeFilter";
 import ReportGenerator from "../components/analytics/ReportGenerator";
 import { LoadingSpinner } from "../shared/components";
@@ -19,13 +21,12 @@ import {
 const Analytics = () => {
   const dispatch = useDispatch();
   const {
-    analyticsData,
+    dashboardStats,
+    paymentAnalytics,
+    bookingAnalytics,
     loading,
     error,
     dateRange,
-    paymentAnalytics,
-    sessionAnalytics,
-    bookingAnalytics,
   } = useSelector((state) => state.analytics || {});
 
   const [activeTab, setActiveTab] = useState("overview");
@@ -45,9 +46,8 @@ const Analytics = () => {
 
   const tabs = [
     { id: "overview", name: "Overview", icon: ChartBarIcon },
-    { id: "payments", name: "Payments", icon: ChartBarIcon },
-    { id: "sessions", name: "Sessions", icon: ChartBarIcon },
     { id: "bookings", name: "Bookings", icon: CalendarIcon },
+    { id: "payments", name: "Payments", icon: ChartBarIcon },
   ];
 
   return (
@@ -72,15 +72,6 @@ const Analytics = () => {
               Generate Report
             </button>
           </div>
-        </div>
-
-        {/* Date Range Filter */}
-        <div className="bg-white p-4 rounded-lg shadow">
-          <DateRangeFilter
-            dateRange={dateRange}
-            onDateRangeChange={handleDateRangeChange}
-            onClearFilters={handleClearFilters}
-          />
         </div>
 
         {/* Tab Navigation */}
@@ -109,7 +100,7 @@ const Analytics = () => {
 
           {/* Tab Content */}
           <div className="p-6">
-            {loading ? (
+            {loading.dashboard || loading.payments || loading.bookings ? (
               <div className="flex items-center justify-center h-64">
                 <LoadingSpinner size="large" ariaLabel="Loading analytics" />
               </div>
@@ -129,159 +120,27 @@ const Analytics = () => {
               <div>
                 {activeTab === "overview" && (
                   <AnalyticsDashboard
-                    data={analyticsData}
+                    data={dashboardStats}
                     paymentData={paymentAnalytics}
-                    sessionData={sessionAnalytics}
                     bookingData={bookingAnalytics}
+                    dateRange={dateRange}
+                  />
+                )}
+
+                {activeTab === "bookings" && (
+                  <BookingChart
+                    data={bookingAnalytics}
+                    dateRange={dateRange}
+                    loading={loading.bookings}
                   />
                 )}
 
                 {activeTab === "payments" && (
-                  <div className="space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                      <div className="bg-gray-50 p-4 rounded-lg">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                          Total Revenue
-                        </h3>
-                        <p className="text-3xl font-bold text-green-600">
-                          ₹
-                          {paymentAnalytics?.totalRevenue?.toLocaleString() ||
-                            0}
-                        </p>
-                        <p className="text-sm text-gray-500 mt-1">
-                          {paymentAnalytics?.revenueChange > 0 ? "+" : ""}
-                          {paymentAnalytics?.revenueChange || 0}% from last
-                          period
-                        </p>
-                      </div>
-                      <div className="bg-gray-50 p-4 rounded-lg">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                          Total Payments
-                        </h3>
-                        <p className="text-3xl font-bold text-blue-600">
-                          {paymentAnalytics?.totalPayments || 0}
-                        </p>
-                        <p className="text-sm text-gray-500 mt-1">
-                          {paymentAnalytics?.paymentChange > 0 ? "+" : ""}
-                          {paymentAnalytics?.paymentChange || 0}% from last
-                          period
-                        </p>
-                      </div>
-                      <div className="bg-gray-50 p-4 rounded-lg">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                          Average Payment
-                        </h3>
-                        <p className="text-3xl font-bold text-purple-600">
-                          ₹
-                          {paymentAnalytics?.averagePayment?.toLocaleString() ||
-                            0}
-                        </p>
-                        <p className="text-sm text-gray-500 mt-1">
-                          Per transaction
-                        </p>
-                      </div>
-                    </div>
-                    <div className="bg-gray-50 p-6 rounded-lg">
-                      <p className="text-gray-600">
-                        Detailed payment charts and trends coming soon...
-                      </p>
-                    </div>
-                  </div>
-                )}
-
-                {activeTab === "sessions" && (
-                  <div className="space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                      <div className="bg-gray-50 p-4 rounded-lg">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                          Total Sessions
-                        </h3>
-                        <p className="text-3xl font-bold text-green-600">
-                          {sessionAnalytics?.totalSessions || 0}
-                        </p>
-                        <p className="text-sm text-gray-500 mt-1">
-                          {sessionAnalytics?.sessionChange > 0 ? "+" : ""}
-                          {sessionAnalytics?.sessionChange || 0}% from last
-                          period
-                        </p>
-                      </div>
-                      <div className="bg-gray-50 p-4 rounded-lg">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                          Completion Rate
-                        </h3>
-                        <p className="text-3xl font-bold text-blue-600">
-                          {sessionAnalytics?.completionRate || 0}%
-                        </p>
-                        <p className="text-sm text-gray-500 mt-1">
-                          Of scheduled sessions
-                        </p>
-                      </div>
-                      <div className="bg-gray-50 p-4 rounded-lg">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                          Average Duration
-                        </h3>
-                        <p className="text-3xl font-bold text-purple-600">
-                          {sessionAnalytics?.averageDuration || 0} min
-                        </p>
-                        <p className="text-sm text-gray-500 mt-1">
-                          Per session
-                        </p>
-                      </div>
-                    </div>
-                    <div className="bg-gray-50 p-6 rounded-lg">
-                      <p className="text-gray-600">
-                        Session completion charts and analysis coming soon...
-                      </p>
-                    </div>
-                  </div>
-                )}
-
-                {activeTab === "bookings" && (
-                  <div className="space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                      <div className="bg-gray-50 p-4 rounded-lg">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                          Total Bookings
-                        </h3>
-                        <p className="text-3xl font-bold text-green-600">
-                          {bookingAnalytics?.totalBookings || 0}
-                        </p>
-                        <p className="text-sm text-gray-500 mt-1">
-                          {bookingAnalytics?.bookingChange > 0 ? "+" : ""}
-                          {bookingAnalytics?.bookingChange || 0}% from last
-                          period
-                        </p>
-                      </div>
-                      <div className="bg-gray-50 p-4 rounded-lg">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                          Show Rate
-                        </h3>
-                        <p className="text-3xl font-bold text-blue-600">
-                          {bookingAnalytics?.showRate || 0}%
-                        </p>
-                        <p className="text-sm text-gray-500 mt-1">
-                          Patients who attended
-                        </p>
-                      </div>
-                      <div className="bg-gray-50 p-4 rounded-lg">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                          Peak Hours
-                        </h3>
-                        <p className="text-3xl font-bold text-purple-600">
-                          {bookingAnalytics?.peakHours || "N/A"}
-                        </p>
-                        <p className="text-sm text-gray-500 mt-1">
-                          Most popular time
-                        </p>
-                      </div>
-                    </div>
-                    <div className="bg-gray-50 p-6 rounded-lg">
-                      <p className="text-gray-600">
-                        Booking pattern analysis and calendar heatmap coming
-                        soon...
-                      </p>
-                    </div>
-                  </div>
+                  <RevenueChart
+                    data={paymentAnalytics}
+                    dateRange={dateRange}
+                    loading={loading.payments}
+                  />
                 )}
               </div>
             )}

@@ -80,6 +80,18 @@ const userSchema = new mongoose.Schema(
       },
       startDate: Date,
       endDate: Date,
+        // Number of sessions remaining for the current subscription period
+        sessionsRemaining: {
+          type: Number,
+          default: 0,
+          min: 0,
+        },
+        // Optional: total sessions allocated for the subscription period
+        totalSessions: {
+          type: Number,
+          default: 0,
+          min: 0,
+        },
       status: {
         type: String,
         enum: ["active", "expired", "cancelled", "suspended"],

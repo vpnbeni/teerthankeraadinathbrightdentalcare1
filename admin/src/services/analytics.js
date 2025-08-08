@@ -7,21 +7,15 @@ const analyticsService = {
     return response;
   },
 
-  // Get payment analytics (using revenue endpoint)
+  // Get payment analytics (using admin revenue endpoint)
   getPaymentAnalytics: async (params = {}) => {
-    const response = await api.get("/analytics/revenue", { params });
+    const response = await api.get("/analytics/admin/revenue", { params });
     return response;
   },
 
-  // Get session analytics
-  getSessionAnalytics: async (params = {}) => {
-    const response = await api.get("/analytics/sessions", { params });
-    return response;
-  },
-
-  // Get booking analytics (using appointments endpoint)
+  // Get booking analytics (using admin appointments endpoint)
   getBookingAnalytics: async (params = {}) => {
-    const response = await api.get("/analytics/appointments", { params });
+    const response = await api.get("/analytics/admin/appointments", { params });
     return response;
   },
 

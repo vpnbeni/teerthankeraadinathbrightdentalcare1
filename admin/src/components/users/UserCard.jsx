@@ -20,7 +20,11 @@ const UserCard = ({ user, onSelect, onEdit }) => {
   };
 
   const getPlanName = (planId) => {
-    // This would typically come from a plans lookup
+    // Handle both object and string planId formats
+    if (typeof planId === "object" && planId?.name) {
+      return planId.name;
+    }
+    // Fallback for string planId
     const planNames = {
       "6-sessions": "6 Sessions Plan",
       "8-sessions": "8 Sessions Plan",
@@ -94,7 +98,7 @@ const UserCard = ({ user, onSelect, onEdit }) => {
               </p>
               <p className="text-xs text-gray-600">
                 {user.subscription.sessionsRemaining}/
-                {user.subscription.totalSessions} sessions left
+                {user.subscription.planId?.sessions || "N/A"} sessions left
               </p>
               <p className="text-xs text-gray-600">
                 Expires: {formatDate(user.subscription.endDate)}
@@ -133,8 +137,8 @@ const UserCard = ({ user, onSelect, onEdit }) => {
         <div className="flex items-center justify-between text-sm text-gray-600">
           <div className="flex items-center gap-4">
             <span>Joined: {formatDate(user.createdAt)}</span>
-            {user.lastLoginAt && (
-              <span>Last login: {formatDate(user.lastLoginAt)}</span>
+            {user.lastLogin && (
+              <span>Last login: {formatDate(user.lastLogin)}</span>
             )}
           </div>
 

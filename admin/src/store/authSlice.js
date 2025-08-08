@@ -5,7 +5,7 @@ import authService from "../services/auth";
 const initialState = {
   user: null,
   isAuthenticated: false,
-  loading: false,
+  loading: true, // Start with loading true to prevent premature redirects
   error: null,
 };
 
@@ -22,7 +22,7 @@ export const loginAdmin = createAsyncThunk(
       console.log("Auth slice: Login response:", response);
 
       // Handle the response structure - the login endpoint returns user directly
-      const userData = response.data?.user || response.data?.data?.user;
+      const userData = response.data?.user || response.data?.data;
       console.log("Auth slice: extracted login user data:", userData);
 
       return { user: userData };
@@ -47,7 +47,8 @@ export const checkAuthStatus = createAsyncThunk(
       console.log("Auth slice: checkAuthStatus response:", response);
 
       // Handle the nested data structure from the API
-      const userData = response.data?.data?.user || response.data?.user;
+      // The API returns user data directly in response.data.data
+      const userData = response.data?.data || response.data?.user;
       console.log("Auth slice: extracted user data:", userData);
 
       return { user: userData, isAuthenticated: true };

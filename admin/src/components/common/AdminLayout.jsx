@@ -54,7 +54,7 @@ const AdminLayout = ({ children }) => {
     { name: "Appointments", href: "/appointments", icon: CalendarIcon },
     { name: "Availability", href: "/availability", icon: ClockIcon },
     { name: "Analytics", href: "/analytics", icon: ChartBarIcon },
-    { name: "Settings", href: "/settings", icon: CogIcon },
+    // { name: "Settings", href: "/settings", icon: CogIcon },
   ];
 
   // Enhanced sidebar management with accessibility

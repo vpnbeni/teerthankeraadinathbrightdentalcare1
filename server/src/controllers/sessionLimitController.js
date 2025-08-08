@@ -33,14 +33,20 @@ export const getSessionLimits = async (req, res) => {
 
     const sessionLimitInfo = await getSessionLimitInfo(req.user._id);
 
+    // Get fresh user data to get accurate subscription status
+    const User = (await import("../models/User.js")).default;
+    const freshUser = await User.findById(req.user._id).populate(
+      "subscription.planId"
+    );
+
     console.log("Session Limit Info:", sessionLimitInfo);
 
     res.status(200).json({
       success: true,
       data: {
         ...sessionLimitInfo,
-        subscriptionStatus: req.user.subscription?.status || "none",
-        planName: req.user.subscription?.planId?.name || null,
+        subscriptionStatus: freshUser.subscription?.status || "none",
+        planName: freshUser.subscription?.planId?.name || null,
       },
     });
   } catch (error) {
@@ -77,12 +83,22 @@ export const canBookAppointment = async (req, res) => {
 
     const sessionLimitInfo = await getSessionLimitInfo(req.user._id);
 
+    // Get fresh user data to check subscription status
+    const User = (await import("../models/User.js")).default;
+    const freshUser = await User.findById(req.user._id).populate(
+      "subscription.planId"
+    );
+
+    const isSubscriptionActive = freshUser.isSubscriptionActive();
+    // Allow booking when subscription is active and either sessionsRemaining > 0
+    // or there are available bookings after considering already scheduled/confirmed
     const canBook =
-      req.user.isSubscriptionActive() && sessionLimitInfo.canBookMore;
+      isSubscriptionActive &&
+      (sessionLimitInfo.sessionsRemaining > 0 || sessionLimitInfo.canBookMore);
 
     let message = "";
     if (!canBook) {
-      if (!req.user.isSubscriptionActive()) {
+      if (!isSubscriptionActive) {
         message = "Active subscription required to book appointments";
       } else if (sessionLimitInfo.sessionsRemaining <= 0) {
         message = "No sessions remaining in your current plan";
@@ -100,7 +116,7 @@ export const canBookAppointment = async (req, res) => {
         canBook,
         message,
         ...sessionLimitInfo,
-        subscriptionStatus: req.user.subscription?.status || "none",
+        subscriptionStatus: freshUser.subscription?.status || "none",
       },
     });
   } catch (error) {

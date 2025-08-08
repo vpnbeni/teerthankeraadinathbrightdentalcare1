@@ -160,6 +160,14 @@ const UserDetailTabs = ({ user, onClose, onEdit }) => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Plan Name
+                  </label>
+                  <p className="text-sm text-gray-900">
+                    {user.subscription.planId?.name || "N/A"}
+                  </p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
                     Plan Status
                   </label>
                   <span
@@ -172,10 +180,34 @@ const UserDetailTabs = ({ user, onClose, onEdit }) => {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Plan Price
+                  </label>
+                  <p className="text-sm text-gray-900">
+                    ₹{user.subscription.planId?.price || 0}
+                  </p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Total Sessions
+                  </label>
+                  <p className="text-sm text-gray-900">
+                    {user.subscription.planId?.sessions || 0}
+                  </p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
                     Sessions Remaining
                   </label>
                   <p className="text-sm text-gray-900">
                     {user.subscription.sessionsRemaining || 0}
+                  </p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Plan Duration
+                  </label>
+                  <p className="text-sm text-gray-900">
+                    {user.subscription.planId?.duration || 0} months
                   </p>
                 </div>
                 <div>

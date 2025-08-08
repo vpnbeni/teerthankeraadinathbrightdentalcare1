@@ -1,23 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import {
-  fetchDashboardStats,
-  fetchPaymentAnalytics,
-  fetchBookingAnalytics,
-  setDateRange,
-} from "../../store/analyticsSlice";
+import React from "react";
 import { LoadingSpinner } from "../../shared/components";
-import StatsCards from "./StatsCards";
-import RevenueChart from "./RevenueChart";
-import BookingChart from "./BookingChart";
-import AppointmentTrends from "./AppointmentTrends";
-import PatientGrowth from "./PatientGrowth";
-import DateRangeFilter from "./DateRangeFilter";
-import ReportGenerator from "./ReportGenerator";
-import {
-  formatCurrency,
-  formatPercentage,
-} from "../../shared/utils/formatters";
 import {
   ArrowTrendingUpIcon as TrendingUpIcon,
   ArrowTrendingDownIcon as TrendingDownIcon,
@@ -27,50 +9,20 @@ import {
   ChartBarIcon,
 } from "@heroicons/react/24/outline";
 
-const AnalyticsDashboard = ({
-  data,
-  paymentData,
-  bookingData,
-}) => {
-  const dispatch = useDispatch();
-  const {
-    dashboardStats,
-    paymentAnalytics,
-    bookingAnalytics,
-    loading,
-    error,
-    dateRange,
-  } = useSelector((state) => state.analytics);
-
-  const [activeView, setActiveView] = useState("overview");
-
-  // Use passed data or fallback to store data
-  const currentData = data || dashboardStats;
-  const currentPaymentData = paymentData || paymentAnalytics;
-  const currentBookingData = bookingData || bookingAnalytics;
-
-  useEffect(() => {
-    // Fetch initial data if not provided
-    if (!data) {
-      dispatch(fetchDashboardStats());
-      dispatch(fetchPaymentAnalytics(dateRange));
-      dispatch(fetchBookingAnalytics(dateRange));
-    }
-  }, [dispatch, dateRange, data]);
-
-  const handleDateRangeChange = (newDateRange) => {
-    dispatch(setDateRange(newDateRange));
-  };
+const AnalyticsDashboard = ({ data, paymentData, bookingData, dateRange }) => {
+  // Format currency helper
+  const formatCurrency = (value) => `₹${value?.toLocaleString() || 0}`;
+  const formatPercentage = (value) => `${value?.toFixed(1) || 0}%`;
 
   // Enhanced metrics calculation
   const calculateMetrics = () => {
-    const totalRevenue = currentPaymentData?.totalRevenue || 0;
-    const totalPatients = currentData?.totalUsers || 0;
-    const totalAppointments = currentBookingData?.totalBookings || 0;
+    const totalRevenue = paymentData?.overview?.totalRevenue || 0;
+    const totalPatients = data?.totalUsers || 0;
+    const totalAppointments = data?.totalAppointments || 0;
 
-    const revenueGrowth = currentPaymentData?.revenueChange || 0;
-    const patientGrowth = currentData?.userGrowth || 0;
-    const appointmentGrowth = currentBookingData?.bookingChange || 0;
+    const revenueGrowth = paymentData?.overview?.revenueGrowth || 0;
+    const patientGrowth = data?.userGrowth || 0;
+    const appointmentGrowth = data?.appointmentChange || 0;
 
     return {
       totalRevenue,
@@ -81,19 +33,14 @@ const AnalyticsDashboard = ({
       appointmentGrowth,
       averageRevenuePerPatient:
         totalPatients > 0 ? totalRevenue / totalPatients : 0,
-      appointmentShowRate: currentBookingData?.showRate || 0,
+      appointmentShowRate: bookingData?.overview?.completionRate || 0,
+      activeSubscriptions: data?.activeSubscriptions || 0,
+      todayAppointments: data?.todayAppointments || 0,
+      upcomingAppointments: data?.upcomingAppointments || 0,
     };
   };
 
   const metrics = calculateMetrics();
-
-  if (loading?.dashboard && !currentData?.totalUsers) {
-    return (
-      <div className="flex justify-center items-center h-64">
-        <LoadingSpinner size="large" ariaLabel="Loading analytics dashboard" />
-      </div>
-    );
-  }
 
   return (
     <div className="space-y-6">
@@ -198,10 +145,49 @@ const AnalyticsDashboard = ({
           </div>
         </div>
 
+        {/* Active Subscriptions */}
+        <div className="bg-white rounded-lg border border-gray-200 p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600">
+                Active Subscriptions
+              </p>
+              <p className="text-2xl font-bold text-gray-900">
+                {metrics.activeSubscriptions}
+              </p>
+            </div>
+            <div className="p-3 bg-orange-100 rounded-full">
+              <ChartBarIcon className="h-6 w-6 text-orange-600" />
+            </div>
+          </div>
+          <div className="mt-4">
+            <span className="text-sm text-gray-500">Currently active</span>
+          </div>
+        </div>
       </div>
 
       {/* Secondary Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div className="bg-white rounded-lg border border-gray-200 p-4">
+          <div className="text-center">
+            <p className="text-sm font-medium text-gray-600">
+              Today's Appointments
+            </p>
+            <p className="text-xl font-bold text-blue-600">
+              {metrics.todayAppointments}
+            </p>
+          </div>
+        </div>
+        <div className="bg-white rounded-lg border border-gray-200 p-4">
+          <div className="text-center">
+            <p className="text-sm font-medium text-gray-600">
+              Upcoming Appointments
+            </p>
+            <p className="text-xl font-bold text-purple-600">
+              {metrics.upcomingAppointments}
+            </p>
+          </div>
+        </div>
         <div className="bg-white rounded-lg border border-gray-200 p-4">
           <div className="text-center">
             <p className="text-sm font-medium text-gray-600">
@@ -214,9 +200,7 @@ const AnalyticsDashboard = ({
         </div>
         <div className="bg-white rounded-lg border border-gray-200 p-4">
           <div className="text-center">
-            <p className="text-sm font-medium text-gray-600">
-              Appointment Show Rate
-            </p>
+            <p className="text-sm font-medium text-gray-600">Completion Rate</p>
             <p className="text-xl font-bold text-green-600">
               {formatPercentage(metrics.appointmentShowRate)}
             </p>
@@ -224,34 +208,70 @@ const AnalyticsDashboard = ({
         </div>
       </div>
 
-      {/* Enhanced Charts Grid */}
+      {/* Quick Overview Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Revenue Chart */}
-        <RevenueChart
-          data={currentPaymentData?.monthlyRevenue}
-          loading={loading?.payments}
-          title="Revenue Performance"
-          showTrends={true}
-        />
-
-        {/* Patient Growth Chart */}
-        <PatientGrowth data={currentData} loading={loading?.dashboard} />
-
-        {/* Appointment Trends - Full Width */}
-        <div className="lg:col-span-2">
-          <AppointmentTrends
-            data={currentBookingData}
-            loading={loading?.bookings}
-          />
+        {/* Revenue Overview */}
+        <div className="bg-white p-6 rounded-lg shadow border">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">
+            Revenue Overview
+          </h3>
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <span className="text-gray-600">Total Revenue</span>
+              <span className="font-semibold">
+                {formatCurrency(metrics.totalRevenue)}
+              </span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-gray-600">Growth Rate</span>
+              <span
+                className={`font-semibold ${
+                  metrics.revenueGrowth >= 0 ? "text-green-600" : "text-red-600"
+                }`}
+              >
+                {metrics.revenueGrowth >= 0 ? "+" : ""}
+                {formatPercentage(metrics.revenueGrowth)}
+              </span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-gray-600">Avg per Patient</span>
+              <span className="font-semibold">
+                {formatCurrency(metrics.averageRevenuePerPatient)}
+              </span>
+            </div>
+          </div>
         </div>
 
-
-        {/* Booking Patterns */}
-        <BookingChart
-          data={currentBookingData?.appointmentPatterns}
-          loading={loading?.bookings}
-          showHeatmap={true}
-        />
+        {/* Appointment Overview */}
+        <div className="bg-white p-6 rounded-lg shadow border">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">
+            Appointment Overview
+          </h3>
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <span className="text-gray-600">Total Appointments</span>
+              <span className="font-semibold">{metrics.totalAppointments}</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-gray-600">Today's Appointments</span>
+              <span className="font-semibold text-blue-600">
+                {metrics.todayAppointments}
+              </span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-gray-600">Upcoming</span>
+              <span className="font-semibold text-purple-600">
+                {metrics.upcomingAppointments}
+              </span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-gray-600">Completion Rate</span>
+              <span className="font-semibold text-green-600">
+                {formatPercentage(metrics.appointmentShowRate)}
+              </span>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

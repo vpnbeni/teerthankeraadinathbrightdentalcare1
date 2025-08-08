@@ -71,13 +71,13 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex items-center justify-center bg-secondary-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
         {/* Header */}
         <div>
-          <div className="mx-auto h-12 w-12 flex items-center justify-center rounded-full bg-blue-100">
+          <div className="mx-auto h-12 w-12 flex items-center justify-center rounded-full bg-primary-100">
             <svg
-              className="h-6 w-6 text-blue-600"
+              className="h-6 w-6 text-primary-600"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -90,10 +90,10 @@ const LoginPage = () => {
               />
             </svg>
           </div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+          <h2 className="mt-6 text-center text-3xl font-extrabold text-primary-900">
             Admin Login
           </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
+          <p className="mt-2 text-center text-sm text-primary-700">
             Sign in to access the admin dashboard
           </p>
         </div>
@@ -120,10 +120,10 @@ const LoginPage = () => {
                   })}
                   type="email"
                   autoComplete="email"
-                  className={`appearance-none block w-full px-3 py-2 border rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
+                  className={`appearance-none block w-full px-3 py-2 border rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm ${
                     errors.email
                       ? "border-red-300 text-red-900 placeholder-red-300"
-                      : "border-gray-300"
+                      : "border-secondary-300"
                   }`}
                   placeholder="Enter your email"
                 />
@@ -154,10 +154,10 @@ const LoginPage = () => {
                   })}
                   type={showPassword ? "text" : "password"}
                   autoComplete="current-password"
-                  className={`appearance-none block w-full px-3 py-2 pr-10 border rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
+                  className={`appearance-none block w-full px-3 py-2 pr-10 border rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm ${
                     errors.password
                       ? "border-red-300 text-red-900 placeholder-red-300"
-                      : "border-gray-300"
+                      : "border-secondary-300"
                   }`}
                   placeholder="Enter your password"
                 />
@@ -185,10 +185,10 @@ const LoginPage = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className={`group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${
+                className={`group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 ${
                   loading
-                    ? "bg-gray-400 cursor-not-allowed"
-                    : "bg-blue-600 hover:bg-blue-700"
+                    ? "bg-secondary-400 cursor-not-allowed"
+                    : "bg-primary-600 hover:bg-primary-700"
                 }`}
               >
                 {loading ? (
@@ -206,7 +206,7 @@ const LoginPage = () => {
 
         {/* Footer */}
         <div className="text-center">
-          <p className="text-xs text-gray-500">
+          <p className="text-xs text-primary-600">
             Teerthanker Aadinath Bright Dental Care - Admin Portal
           </p>
         </div>

@@ -48,9 +48,9 @@ const UserFilters = ({ filters, onFilterChange, onClearFilters }) => {
           className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#346870] focus:border-transparent"
         >
           <option value="">All Plans</option>
-          <option value="6-sessions">6 Sessions</option>
-          <option value="8-sessions">8 Sessions</option>
-          <option value="12-sessions">12 Sessions</option>
+          <option value="Standard Plan">Standard Plan</option>
+          <option value="Premium Plan">Premium Plan</option>
+          <option value="Basic Plan">Basic Plan</option>
         </select>
       </div>
 

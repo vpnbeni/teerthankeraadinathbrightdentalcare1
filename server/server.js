@@ -14,6 +14,7 @@ import adminRoutes from "./src/routes/admin.js";
 import analyticsRoutes from "./src/routes/analytics.js";
 import availabilityRoutes from "./src/routes/availability.js";
 import autoCancelRoutes from "./src/routes/autoCancelRoutes.js";
+import sessionLimitsRoutes from "./src/routes/sessionLimits.js";
 import { corsOptions } from "./src/middleware/security.js";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -47,6 +48,7 @@ app.use("/api/admin", adminRoutes);
 app.use("/api/analytics", analyticsRoutes);
 app.use("/api/availability", availabilityRoutes);
 app.use("/api/admin/auto-cancel", autoCancelRoutes);
+app.use("/api/session-limits", sessionLimitsRoutes);
 
 // Handle 404 - Route not found
 app.use((req, res) => {
@@ -90,6 +92,10 @@ app.use((req, res) => {
         "DELETE /api/users/documents/:id - Delete a document",
         "GET /api/users/subscription - Get subscription details",
       ],
+      "session-limits": [
+        "GET /api/session-limits - Get user's session limit information",
+        "GET /api/session-limits/can-book - Check if user can book appointments",
+      ],
     },
   });
 });
@@ -117,7 +123,11 @@ const startServer = async () => {
     const PORT = config.PORT || 5000;
     app.listen(PORT, () => {
       console.log(`🚀 Server running on port ${PORT}`);
-      console.log(`📋 Auto-cancellation service: ${config.AUTO_CANCEL.ENABLED ? 'enabled' : 'disabled'}`);
+      console.log(
+        `📋 Auto-cancellation service: ${
+          config.AUTO_CANCEL.ENABLED ? "enabled" : "disabled"
+        }`
+      );
     });
   } catch (error) {
     console.error("Failed to start server:", error);

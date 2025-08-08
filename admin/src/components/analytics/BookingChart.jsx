@@ -1,205 +1,257 @@
 import React from "react";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+  LineChart,
+  Line,
+} from "recharts";
 import { LoadingSpinner } from "../../shared/components";
 
-const BookingChart = ({ data, loading, detailed = false, className = "" }) => {
+const BookingChart = ({ data, dateRange, loading }) => {
   if (loading) {
     return (
-      <div className={`admin-card ${className}`}>
+      <div className="space-y-6">
         <div className="flex justify-center items-center h-64">
-          <LoadingSpinner />
+          <LoadingSpinner size="large" />
         </div>
       </div>
     );
   }
 
-  const maxValue = Math.max(...(data?.map((item) => item.appointments) || [0]));
-  const chartHeight = detailed ? 300 : 200;
+  // Transform data for charts
+  const dailyTrends = data?.dailyTrends || [];
+  const statusDistribution = data?.statusDistribution || [];
+  const timeSlotPopularity = data?.timeSlotPopularity || [];
+  const overview = data?.overview || {};
+
+  // Colors for different chart elements
+  const COLORS = ["#346870", "#4F9A94", "#6BB6B0", "#87D2CC", "#A3EEE8"];
+  const STATUS_COLORS = {
+    scheduled: "#3B82F6",
+    confirmed: "#10B981",
+    completed: "#8B5CF6",
+    cancelled: "#EF4444",
+    rescheduled: "#F59E0B",
+  };
 
   return (
-    <div className={`admin-card ${className}`}>
-      <div className="flex justify-between items-center mb-6">
-        <h3 className="text-lg font-semibold text-gray-800">
-          Booking Analytics
-        </h3>
-        {detailed && (
-          <div className="flex items-center gap-4 text-sm text-gray-600">
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 bg-purple-500 rounded"></div>
-              <span>Appointments</span>
-            </div>
-          </div>
-        )}
+    <div className="space-y-6">
+      {/* Overview Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div className="bg-white p-6 rounded-lg shadow border">
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">
+            Total Appointments
+          </h3>
+          <p className="text-3xl font-bold text-[#346870]">
+            {overview.totalAppointments || 0}
+          </p>
+          <p className="text-sm text-gray-500 mt-1">In selected period</p>
+        </div>
+        <div className="bg-white p-6 rounded-lg shadow border">
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">
+            Completion Rate
+          </h3>
+          <p className="text-3xl font-bold text-green-600">
+            {overview.completionRate || 0}%
+          </p>
+          <p className="text-sm text-gray-500 mt-1">Appointments completed</p>
+        </div>
+        <div className="bg-white p-6 rounded-lg shadow border">
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">
+            Cancellation Rate
+          </h3>
+          <p className="text-3xl font-bold text-red-600">
+            {overview.cancellationRate || 0}%
+          </p>
+          <p className="text-sm text-gray-500 mt-1">Appointments cancelled</p>
+        </div>
+        <div className="bg-white p-6 rounded-lg shadow border">
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">
+            Avg Per Day
+          </h3>
+          <p className="text-3xl font-bold text-blue-600">
+            {overview.avgAppointmentsPerDay || 0}
+          </p>
+          <p className="text-sm text-gray-500 mt-1">Daily average</p>
+        </div>
       </div>
 
-      {!data || data.length === 0 ? (
-        <div className="flex flex-col items-center justify-center h-48 text-gray-500">
-          <span className="text-4xl mb-2">📅</span>
-          <p>No booking data available</p>
-        </div>
-      ) : (
-        <div className="space-y-4">
-          {/* Chart */}
-          <div className="relative" style={{ height: `${chartHeight}px` }}>
-            <div className="absolute inset-0 flex items-end justify-between px-2">
-              {data.map((item, index) => (
-                <div
-                  key={index}
-                  className="flex flex-col items-center group relative"
-                  style={{ width: `${100 / data.length - 2}%` }}
-                >
-                  {/* Bar */}
-                  <div
-                    className="bg-purple-500 rounded-t-md w-full transition-all duration-300 hover:bg-purple-600 relative"
-                    style={{
-                      height: `${
-                        (item.appointments / maxValue) * (chartHeight - 40)
-                      }px`,
-                      minHeight: "4px",
-                    }}
-                  >
-                    {/* Tooltip */}
-                    <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-                      {item.appointments} appointments
-                    </div>
-                  </div>
-
-                  {/* Label */}
-                  <div className="mt-2 text-xs text-gray-600 text-center">
-                    {item.month || item.period || item.day}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Summary Stats */}
-          {detailed && (
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 pt-4 border-t border-gray-200">
-              <div className="text-center">
-                <p className="text-2xl font-bold text-purple-600">
-                  {data.reduce((sum, item) => sum + item.appointments, 0)}
-                </p>
-                <p className="text-sm text-gray-600">Total Bookings</p>
-              </div>
-              <div className="text-center">
-                <p className="text-2xl font-bold text-blue-600">
-                  {Math.round(
-                    data.reduce((sum, item) => sum + item.appointments, 0) /
-                      data.length
-                  )}
-                </p>
-                <p className="text-sm text-gray-600">Average Daily</p>
-              </div>
-              <div className="text-center">
-                <p className="text-2xl font-bold text-green-600">
-                  {data.length > 0
-                    ? Math.max(...data.map((item) => item.appointments))
-                    : 0}
-                </p>
-                <p className="text-sm text-gray-600">Peak Day</p>
-              </div>
-              <div className="text-center">
-                <p className="text-2xl font-bold text-orange-600">
-                  {data.length > 1 ? (
-                    <>
-                      {data[data.length - 1].appointments >
-                      data[data.length - 2].appointments
-                        ? "+"
-                        : ""}
-                      {Math.round(
-                        ((data[data.length - 1].appointments -
-                          data[data.length - 2].appointments) /
-                          data[data.length - 2].appointments) *
-                          100
-                      )}
-                      %
-                    </>
-                  ) : (
-                    "N/A"
-                  )}
-                </p>
-                <p className="text-sm text-gray-600">Growth Rate</p>
-              </div>
-            </div>
-          )}
-
-          {/* Booking Status Breakdown */}
-          {detailed && data[0]?.statusBreakdown && (
-            <div className="pt-4 border-t border-gray-200">
-              <h4 className="text-md font-semibold text-gray-800 mb-3">
-                Appointment Status
-              </h4>
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-                {Object.entries(data[data.length - 1].statusBreakdown).map(
-                  ([status, count]) => {
-                    const statusColors = {
-                      scheduled: "bg-blue-50 text-blue-800",
-                      confirmed: "bg-green-50 text-green-800",
-                      completed: "bg-purple-50 text-purple-800",
-                      cancelled: "bg-red-50 text-red-800",
-                      rescheduled: "bg-yellow-50 text-yellow-800",
-                    };
-
-                    return (
-                      <div
-                        key={status}
-                        className={`text-center p-3 rounded-lg ${
-                          statusColors[status] || "bg-gray-50 text-gray-800"
-                        }`}
-                      >
-                        <p className="text-lg font-bold">{count}</p>
-                        <p className="text-xs capitalize">{status}</p>
-                      </div>
-                    );
+      {/* Daily Trends Chart */}
+      <div className="bg-white p-6 rounded-lg shadow border">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">
+          Daily Appointment Trends
+        </h3>
+        <div className="h-80">
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={dailyTrends}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis
+                dataKey="_id"
+                tickFormatter={(value) => {
+                  if (value && value.day) {
+                    return `${value.day}/${value.month}`;
                   }
-                )}
-              </div>
-            </div>
-          )}
+                  return "";
+                }}
+              />
+              <YAxis />
+              <Tooltip
+                labelFormatter={(value) => {
+                  if (value && value.day) {
+                    return `${value.day}/${value.month}/${value.year}`;
+                  }
+                  return "Date";
+                }}
+              />
+              <Line
+                type="monotone"
+                dataKey="total"
+                stroke="#346870"
+                strokeWidth={2}
+                name="Total Appointments"
+              />
+              <Line
+                type="monotone"
+                dataKey="completed"
+                stroke="#10B981"
+                strokeWidth={2}
+                name="Completed"
+              />
+              <Line
+                type="monotone"
+                dataKey="cancelled"
+                stroke="#EF4444"
+                strokeWidth={2}
+                name="Cancelled"
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
 
-          {/* Popular Time Slots */}
-          {detailed && data[0]?.popularTimeSlots && (
-            <div className="pt-4 border-t border-gray-200">
-              <h4 className="text-md font-semibold text-gray-800 mb-3">
-                Popular Time Slots
-              </h4>
-              <div className="space-y-2">
-                {data[data.length - 1].popularTimeSlots
-                  .slice(0, 5)
-                  .map((slot, index) => (
-                    <div
-                      key={index}
-                      className="flex justify-between items-center"
-                    >
-                      <span className="text-gray-600">{slot.timeSlot}</span>
-                      <div className="flex items-center gap-2">
-                        <div className="w-20 bg-gray-200 rounded-full h-2">
-                          <div
-                            className="bg-purple-500 h-2 rounded-full"
-                            style={{
-                              width: `${
-                                (slot.bookings /
-                                  Math.max(
-                                    ...data[
-                                      data.length - 1
-                                    ].popularTimeSlots.map((s) => s.bookings)
-                                  )) *
-                                100
-                              }%`,
-                            }}
-                          ></div>
-                        </div>
-                        <span className="text-sm font-medium">
-                          {slot.bookings}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Status Distribution Pie Chart */}
+        <div className="bg-white p-6 rounded-lg shadow border">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">
+            Appointment Status Distribution
+          </h3>
+          <div className="h-64">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={statusDistribution}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  label={({ _id, count, percent }) =>
+                    `${_id}: ${count} (${(percent * 100).toFixed(0)}%)`
+                  }
+                  outerRadius={80}
+                  fill="#8884d8"
+                  dataKey="count"
+                >
+                  {statusDistribution.map((entry, index) => (
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={
+                        STATUS_COLORS[entry._id] ||
+                        COLORS[index % COLORS.length]
+                      }
+                    />
+                  ))}
+                </Pie>
+                <Tooltip />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* Time Slot Popularity Bar Chart */}
+        <div className="bg-white p-6 rounded-lg shadow border">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">
+            Popular Time Slots
+          </h3>
+          <div className="h-64">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={timeSlotPopularity.slice(0, 8)}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="_id" />
+                <YAxis />
+                <Tooltip />
+                <Bar dataKey="count" fill="#346870" />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      </div>
+
+      {/* Detailed Stats Table */}
+      <div className="bg-white p-6 rounded-lg shadow border">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">
+          Appointment Status Breakdown
+        </h3>
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Status
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Count
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Percentage
+                </th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {statusDistribution.map((status, index) => {
+                const total = statusDistribution.reduce(
+                  (sum, item) => sum + item.count,
+                  0
+                );
+                const percentage =
+                  total > 0 ? ((status.count / total) * 100).toFixed(1) : 0;
+
+                return (
+                  <tr key={index}>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center">
+                        <div
+                          className="w-3 h-3 rounded-full mr-3"
+                          style={{
+                            backgroundColor:
+                              STATUS_COLORS[status._id] ||
+                              COLORS[index % COLORS.length],
+                          }}
+                        ></div>
+                        <span className="text-sm font-medium text-gray-900 capitalize">
+                          {status._id}
                         </span>
                       </div>
-                    </div>
-                  ))}
-              </div>
-            </div>
-          )}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {status.count}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {percentage}%
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
-      )}
+      </div>
     </div>
   );
 };
