@@ -151,10 +151,7 @@ function App() {
 
           {/* Toast notifications are handled by react-hot-toast Toaster in main.jsx */}
 
-          {/* Accessibility tester for development */}
-          <AccessibilityTester
-            enabled={process.env.NODE_ENV === "development"}
-          />
+         
         </div>
       </ErrorBoundary>
     </AccessibilityProvider>

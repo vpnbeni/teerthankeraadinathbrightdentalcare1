@@ -15,7 +15,6 @@ import {
   CogIcon,
 } from "@heroicons/react/24/outline";
 import { logoutAdmin } from "../../store/authSlice";
-import { getTimeBasedGreeting, getTimeBasedMessage } from "../../shared/utils";
 import {
   useAccessibility,
   useResponsive,
@@ -32,8 +31,6 @@ import toast from "react-hot-toast";
 
 const AdminLayout = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [currentGreeting, setCurrentGreeting] = useState("");
-  const [currentMessage, setCurrentMessage] = useState("");
   const location = useLocation();
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -49,21 +46,7 @@ const AdminLayout = ({ children }) => {
   const mobileMenuButtonRef = useRef(null);
   const previousFocusRef = useRef(null);
 
-  // Update greeting every minute to keep it current
-  useEffect(() => {
-    const updateGreeting = () => {
-      setCurrentGreeting(getTimeBasedGreeting(user?.name || "Admin"));
-      setCurrentMessage(getTimeBasedMessage());
-    };
-
-    // Initial update
-    updateGreeting();
-
-    // Update every minute
-    const interval = setInterval(updateGreeting, 60000);
-
-    return () => clearInterval(interval);
-  }, [user?.name]);
+  // Removed time-based greeting and message
 
   const navigation = [
     { name: "Dashboard", href: "/dashboard", icon: HomeIcon },
@@ -370,16 +353,9 @@ const AdminLayout = ({ children }) => {
               Admin Dashboard
             </h1>
 
-            {/* Desktop header content */}
+            {/* Desktop header spacer */}
             <div className="hidden lg:flex lg:items-center lg:space-x-4 lg:flex-1">
-              <div className="flex-1 min-w-0">
-                <h1 className="text-xl font-semibold text-gray-800 responsive-heading">
-                  {currentGreeting}
-                </h1>
-                <p className="text-sm text-gray-600 responsive-text truncate">
-                  Manage your dental clinic operations • {currentMessage}
-                </p>
-              </div>
+              <div className="flex-1 min-w-0"></div>
             </div>
 
             {/* Header actions */}

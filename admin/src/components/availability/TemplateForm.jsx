@@ -4,7 +4,7 @@ import { PlusIcon, TrashIcon, ClockIcon, XMarkIcon, ExclamationTriangleIcon } fr
 import { toast } from 'react-hot-toast';
 import { availabilityService } from '../../services/availability';
 
-const TemplateForm = ({ template, onSave, onCancel }) => {
+export default function TemplateForm({ template, onSave, onCancel }) {
   const [formData, setFormData] = useState({
     templateName: '',
     isDefault: false,
@@ -517,6 +517,4 @@ const TemplateForm = ({ template, onSave, onCancel }) => {
     </div>,
     document.body
   );
-};
-
-export default TemplateForm;
+}
