@@ -42,11 +42,28 @@ export const getSessionLimitInfo = async (userId) => {
 
     // Get actual subscription data
     const sessionsRemaining = Number(user.subscription.sessionsRemaining) || 0;
-    // Prefer explicit totalSessions saved on subscription; then plan sessions; fallback to remaining
-    const totalSessions =
-      (Number(user.subscription.totalSessions) || 0) ||
-      (user.subscription.planId && Number(user.subscription.planId.sessions)) ||
-      sessionsRemaining;
+
+    // Ensure we have the plan's sessions from DB even if not populated or missing
+    let planSessions = 0;
+    if (user.subscription.planId) {
+      if (
+        typeof user.subscription.planId === "object" &&
+        user.subscription.planId !== null &&
+        Object.prototype.hasOwnProperty.call(
+          user.subscription.planId,
+          "sessions"
+        )
+      ) {
+        planSessions = Number(user.subscription.planId.sessions) || 0;
+      } else {
+        const Plan = (await import("../models/Plan.js")).default;
+        const plan = await Plan.findById(user.subscription.planId);
+        planSessions = Number(plan?.sessions) || 0;
+      }
+    }
+
+    // Total sessions should primarily come from the plan details
+    const totalSessions = planSessions || Number(user.subscription.totalSessions) || sessionsRemaining;
     const sessionsUsed = Math.max(0, totalSessions - sessionsRemaining);
 
     // Calculate available bookings (sessions remaining minus already confirmed appointments)
