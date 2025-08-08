@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { LoadingSpinner } from "../../shared/components";
 import Toast from "../../shared/components/Toast";
 import authService, { sendEmailOTP, verifyEmailOTP } from "../../services/auth";
@@ -24,6 +24,18 @@ const StreamlinedAuthModal = ({
   const [error, setError] = useState("");
   const [toast, setToast] = useState(null);
   const [otpSent, setOtpSent] = useState(false);
+
+  // Lock body scroll when modal is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isOpen]);
 
   // Clear toast
   const clearToast = () => setToast(null);
@@ -265,7 +277,7 @@ const StreamlinedAuthModal = ({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto modal-content">
+      <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto custom-scrollbar modal-content">
         {/* Toast Notification */}
         {toast && (
           <Toast
