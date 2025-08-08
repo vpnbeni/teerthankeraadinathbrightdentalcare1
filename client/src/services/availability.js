@@ -3,16 +3,20 @@ import api from "./api";
 const availabilityService = {
   // Get availability for a specific date
   getAvailabilityForDate: async (date) => {
-    const formattedDate = new Date(date).toISOString().split("T")[0];
+    // Accept either Date or YYYY-MM-DD; always format as local date-only
+    const d = typeof date === "string" ? new Date(date + "T00:00:00") : new Date(date);
+    const formattedDate = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
     const response = await api.get(`/availability/availability/date/${formattedDate}`);
     return response;
   },
 
   // Get availability for a date range
   getAvailabilityForDateRange: async (startDate, endDate, onlyAvailable = false) => {
+    const s = typeof startDate === "string" ? new Date(startDate + "T00:00:00") : new Date(startDate);
+    const e = typeof endDate === "string" ? new Date(endDate + "T00:00:00") : new Date(endDate);
     const params = {
-      startDate: new Date(startDate).toISOString().split("T")[0],
-      endDate: new Date(endDate).toISOString().split("T")[0],
+      startDate: `${s.getFullYear()}-${String(s.getMonth() + 1).padStart(2, "0")}-${String(s.getDate()).padStart(2, "0")}`,
+      endDate: `${e.getFullYear()}-${String(e.getMonth() + 1).padStart(2, "0")}-${String(e.getDate()).padStart(2, "0")}`,
     };
     
     if (onlyAvailable) {
@@ -25,8 +29,9 @@ const availabilityService = {
 
   // Check if a specific time slot is available
   checkTimeSlotAvailability: async (date, timeSlot, excludeAppointmentId = null) => {
+    const d = typeof date === "string" ? new Date(date + "T00:00:00") : new Date(date);
     const data = {
-      date: new Date(date).toISOString().split("T")[0],
+      date: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`,
       timeSlot,
     };
 
@@ -41,9 +46,11 @@ const availabilityService = {
 
   // Get available dates in a range
   getAvailableDates: async (startDate, endDate) => {
+    const s = typeof startDate === "string" ? new Date(startDate + "T00:00:00") : new Date(startDate);
+    const e = typeof endDate === "string" ? new Date(endDate + "T00:00:00") : new Date(endDate);
     const params = {
-      startDate: new Date(startDate).toISOString().split("T")[0],
-      endDate: new Date(endDate).toISOString().split("T")[0],
+      startDate: `${s.getFullYear()}-${String(s.getMonth() + 1).padStart(2, "0")}-${String(s.getDate()).padStart(2, "0")}`,
+      endDate: `${e.getFullYear()}-${String(e.getMonth() + 1).padStart(2, "0")}-${String(e.getDate()).padStart(2, "0")}`,
     };
 
     const response = await api.get("/availability/availability/dates", { params });

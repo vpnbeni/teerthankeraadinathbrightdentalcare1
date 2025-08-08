@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { CalendarIcon, XMarkIcon, InformationCircleIcon } from '@heroicons/react/24/outline';
 import { toast } from 'react-hot-toast';
-import { availabilityService } from '../../services/availability';
 
 const HolidayForm = ({ holiday, onSave, onCancel }) => {
   const [formData, setFormData] = useState({
@@ -116,9 +116,15 @@ const HolidayForm = ({ holiday, onSave, onCancel }) => {
     { value: 'weekly', label: 'Weekly', description: 'Repeats every week on the same day' }
   ];
 
-  return (
-    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-      <div className="relative top-10 mx-auto p-5 border max-w-md shadow-lg rounded-md bg-white">
+  // Ensure DOM exists for portal (avoid SSR/test issues)
+  if (typeof document === 'undefined') {
+    return null;
+  }
+
+  return createPortal(
+    <div className="fixed inset-0 z-[1000] bg-gray-600/50 overflow-y-auto">
+      <div className="min-h-full flex items-start justify-center p-4">
+        <div className="relative mt-6 w-full max-w-md p-5 border shadow-lg rounded-md bg-white">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-medium text-gray-900">
             {holiday ? 'Edit Holiday' : 'Add New Holiday'}
@@ -280,6 +286,8 @@ const HolidayForm = ({ holiday, onSave, onCancel }) => {
         </form>
       </div>
     </div>
+    </div>,
+    document.body
   );
 };
 

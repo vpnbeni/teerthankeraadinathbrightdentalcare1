@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { EllipsisHorizontalIcon, PencilIcon, TrashIcon, StarIcon, CalendarIcon, ClockIcon } from '@heroicons/react/24/outline';
 import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid';
 import { format } from 'date-fns';
@@ -184,35 +185,39 @@ const TemplateList = ({ templates = [], onEdit, onDelete, onRefresh }) => {
       </div>
 
       {/* Delete Confirmation Modal */}
-      {deleteConfirm && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-            <div className="mt-3 text-center">
-              <h3 className="text-lg font-medium text-gray-900">Delete Template</h3>
-              <div className="mt-2 px-7 py-3">
-                <p className="text-sm text-gray-500">
-                  Are you sure you want to delete the template "{deleteConfirm?.templateName}"?
-                  This action cannot be undone and will affect any dates where this template is applied.
-                </p>
-              </div>
-              <div className="items-center px-4 py-3">
-                <button
-                  onClick={() => setDeleteConfirm(null)}
-                  className="px-4 py-2 bg-gray-500 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-gray-600 mr-2"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleDeleteConfirm}
-                  className="mt-3 px-4 py-2 bg-red-600 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-red-700"
-                >
-                  Delete
-                </button>
+      {deleteConfirm &&
+        createPortal(
+          <div className="fixed inset-0 z-[1100] bg-gray-900/50 overflow-y-auto">
+            <div className="min-h-full flex items-center justify-center p-4">
+              <div className="w-full max-w-md rounded-md bg-white p-5 shadow-lg border">
+                <div className="mt-1 text-center">
+                  <h3 className="text-lg font-medium text-gray-900">Delete Template</h3>
+                  <div className="mt-2 px-2 py-3">
+                    <p className="text-sm text-gray-600">
+                      Are you sure you want to delete the template "{deleteConfirm?.templateName}"?
+                      This action cannot be undone and will affect any dates where this template is applied.
+                    </p>
+                  </div>
+                  <div className="flex flex-col gap-2 px-2 py-1">
+                    <button
+                      onClick={() => setDeleteConfirm(null)}
+                      className="px-4 py-2 bg-gray-500 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-gray-600"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={handleDeleteConfirm}
+                      className="px-4 py-2 bg-red-600 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-red-700"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
-        </div>
-      )}
+          </div>,
+          document.body
+        )}
     </>
   );
 };

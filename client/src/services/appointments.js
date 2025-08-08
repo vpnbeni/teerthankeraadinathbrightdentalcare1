@@ -9,8 +9,11 @@ const appointmentService = {
 
   // Create new appointment
   createAppointment: async (appointmentData) => {
+    // Ensure date is sent as YYYY-MM-DD (local) to avoid timezone drift
+    const d = typeof appointmentData.date === "string" ? new Date(appointmentData.date + "T00:00:00") : new Date(appointmentData.date);
+    const localDate = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
     const response = await api.post("/appointments", {
-      date: appointmentData.date,
+      date: localDate,
       timeSlot: appointmentData.timeSlot,
       notes: appointmentData.notes,
       personalDetails: appointmentData.personalDetails,
@@ -26,7 +29,8 @@ const appointmentService = {
 
   // Get available time slots for a date (with enhanced availability data)
   getAvailableSlots: async (date) => {
-    const formattedDate = new Date(date).toISOString().split("T")[0];
+    const d = typeof date === "string" ? new Date(date + "T00:00:00") : new Date(date);
+    const formattedDate = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
     
     try {
       // First try the new availability endpoint for enhanced data
@@ -70,8 +74,8 @@ const appointmentService = {
       // Try using the new availability service first
       const response = await api.get("/availability/availability/dates", {
         params: {
-          startDate: new Date(startDate).toISOString().split("T")[0],
-          endDate: new Date(endDate).toISOString().split("T")[0],
+          startDate: (()=>{const s=typeof startDate==="string"?new Date(startDate+"T00:00:00"):new Date(startDate);return `${s.getFullYear()}-${String(s.getMonth()+1).padStart(2,"0")}-${String(s.getDate()).padStart(2,"0")}`;})(),
+          endDate: (()=>{const e=typeof endDate==="string"?new Date(endDate+"T00:00:00"):new Date(endDate);return `${e.getFullYear()}-${String(e.getMonth()+1).padStart(2,"0")}-${String(e.getDate()).padStart(2,"0")}`;})(),
         },
       });
       

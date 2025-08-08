@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { PlusIcon, TrashIcon, ClockIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { createPortal } from 'react-dom';
+import { PlusIcon, TrashIcon, ClockIcon, XMarkIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import { toast } from 'react-hot-toast';
 import { availabilityService } from '../../services/availability';
 
@@ -16,7 +17,9 @@ const TemplateForm = ({ template, onSave, onCancel }) => {
     isActive: true
   });
   const [loading, setLoading] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [errors, setErrors] = useState({});
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   useEffect(() => {
     if (template) {
@@ -111,6 +114,22 @@ const TemplateForm = ({ template, onSave, onCancel }) => {
     }
   };
 
+  const handleConfirmDelete = async () => {
+    if (!template) return;
+    setDeleting(true);
+    try {
+      await availabilityService.deleteTemplate(template._id);
+      toast.success('Template deleted successfully');
+      onSave();
+    } catch (error) {
+      console.error('Error deleting template:', error);
+      toast.error(error.response?.data?.message || 'Failed to delete template');
+    } finally {
+      setDeleting(false);
+      setShowDeleteModal(false);
+    }
+  };
+
   const handleInputChange = (field, value) => {
     setFormData(prev => ({
       ...prev,
@@ -191,9 +210,15 @@ const TemplateForm = ({ template, onSave, onCancel }) => {
 
   const timeOptions = generateTimeOptions();
 
-  return (
-    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-      <div className="relative top-10 mx-auto p-5 border max-w-2xl shadow-lg rounded-md bg-white">
+  // Avoid rendering in non-DOM environments
+  if (typeof document === 'undefined') {
+    return null;
+  }
+
+  return createPortal(
+    <div className="fixed inset-0 z-[1000] bg-gray-600/50 overflow-y-auto">
+      <div className="min-h-full flex items-start justify-center p-4">
+        <div className="relative mt-6 w-full max-w-2xl p-5 border shadow-lg rounded-md bg-white">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-medium text-gray-900">
             {template ? 'Edit Template' : 'Create New Template'}
@@ -417,7 +442,20 @@ const TemplateForm = ({ template, onSave, onCancel }) => {
             )}
           </div>
 
-          <div className="flex justify-end space-x-3 pt-4">
+          <div className="flex justify-between items-center pt-4">
+            <div>
+              {template && (
+                <button
+                  type="button"
+                  onClick={() => setShowDeleteModal(true)}
+                  disabled={deleting || loading}
+                  className="px-4 py-2 border border-red-200 text-red-700 font-medium rounded-md hover:bg-red-50 disabled:opacity-50"
+                >
+                  {deleting ? 'Deleting...' : 'Delete Template'}
+                </button>
+              )}
+            </div>
+            <div className="flex gap-3">
             <button
               type="button"
               onClick={onCancel}
@@ -427,15 +465,57 @@ const TemplateForm = ({ template, onSave, onCancel }) => {
             </button>
             <button
               type="submit"
-              disabled={loading}
+                disabled={loading || deleting}
               className="px-4 py-2 bg-primary-600 text-white font-medium rounded-md hover:bg-primary-700 disabled:opacity-50"
             >
               {loading ? 'Saving...' : (template ? 'Update Template' : 'Create Template')}
             </button>
+            </div>
           </div>
         </form>
       </div>
     </div>
+
+    {showDeleteModal && (
+      <div className="fixed inset-0 z-[1100] bg-gray-900/50 overflow-y-auto">
+        <div className="min-h-full flex items-center justify-center p-4">
+          <div className="w-full max-w-md rounded-md bg-white p-5 shadow-lg border">
+            <div className="flex items-start gap-3">
+              <div className="p-2 rounded-full bg-amber-100 text-amber-700">
+                <ExclamationTriangleIcon className="h-5 w-5" />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-medium text-gray-900">Delete Template</h3>
+                <p className="mt-2 text-sm text-gray-600">
+                  Are you sure you want to delete the template "{template?.templateName || formData.templateName}"?
+                  This action cannot be undone and will affect any dates where this template is applied.
+                </p>
+              </div>
+            </div>
+            <div className="mt-6 flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setShowDeleteModal(false)}
+                disabled={deleting}
+                className="px-4 py-2 border border-gray-300 text-gray-700 font-medium rounded-md hover:bg-gray-50 disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmDelete}
+                disabled={deleting}
+                className="px-4 py-2 bg-red-600 text-white font-medium rounded-md hover:bg-red-700 disabled:opacity-50"
+              >
+                {deleting ? 'Deleting...' : 'Delete'}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    )}
+    </div>,
+    document.body
   );
 };
 

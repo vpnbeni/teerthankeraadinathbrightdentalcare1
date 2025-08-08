@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { ChevronLeftIcon, ChevronRightIcon, CalendarIcon, ClockIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import { format, startOfMonth, endOfMonth, addMonths, subMonths, isSameDay, getDaysInMonth, getDay, startOfWeek, endOfWeek, eachDayOfInterval } from 'date-fns';
 import { toast } from 'react-hot-toast';
@@ -174,6 +175,7 @@ const AvailabilityCalendar = ({ templates = [], holidays = [], onRefresh }) => {
   const defaultTemplate = templates.find(t => t.isDefault);
   const customTemplates = templates.filter(t => !t.isDefault);
 
+  // Note: this component renders a confirmation modal; we use a portal for full-viewport overlay
   return (
     <div className="space-y-6">
       {/* Legend */}
@@ -312,60 +314,65 @@ const AvailabilityCalendar = ({ templates = [], holidays = [], onRefresh }) => {
 
       {/* Template Application Confirmation Modal */}
       {showApplyModal && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-          <div className="relative top-20 mx-auto p-5 border max-w-md shadow-lg rounded-md bg-white">
-            <div className="mb-4">
-              <h3 className="text-lg font-medium text-gray-900">Apply Template to Dates</h3>
-              <p className="text-sm text-gray-600 mt-2">
-                Are you sure you want to apply the selected template to {selectedDates.length} date(s)?
-              </p>
-            </div>
-            
-            <div className="space-y-4">
-              <div>
-                <p className="font-medium">Template:</p>
-                <p className="text-sm text-gray-600">
-                  {templates.find(t => t._id === selectedTemplate)?.templateName}
-                </p>
-              </div>
-              
-              <div>
-                <p className="font-medium">Selected Dates:</p>
-                <div className="flex flex-wrap gap-2 mt-2">
-                  {selectedDates.map((date, index) => (
-                    <span key={index} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                      {format(date, 'MMM dd, yyyy')}
-                    </span>
-                  ))}
+        createPortal(
+          <div className="fixed inset-0 z-[1000] bg-gray-600/50 overflow-y-auto">
+            <div className="min-h-full flex items-start justify-center p-4">
+              <div className="relative mt-20 w-full max-w-md p-5 border shadow-lg rounded-md bg-white">
+                <div className="mb-4">
+                  <h3 className="text-lg font-medium text-gray-900">Apply Template to Dates</h3>
+                  <p className="text-sm text-gray-600 mt-2">
+                    Are you sure you want to apply the selected template to {selectedDates.length} date(s)?
+                  </p>
+                </div>
+                
+                <div className="space-y-4">
+                  <div>
+                    <p className="font-medium">Template:</p>
+                    <p className="text-sm text-gray-600">
+                      {templates.find(t => t._id === selectedTemplate)?.templateName}
+                    </p>
+                  </div>
+                  
+                  <div>
+                    <p className="font-medium">Selected Dates:</p>
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {selectedDates.map((date, index) => (
+                        <span key={index} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                          {format(date, 'MMM dd, yyyy')}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-2 p-3 bg-amber-50 border border-amber-200 rounded-md">
+                    <ExclamationTriangleIcon className="h-4 w-4 text-amber-600 mt-0.5 flex-shrink-0" />
+                    <div className="text-sm text-amber-800">
+                      <p className="font-medium">Note:</p>
+                      <p>This will override any existing custom templates for these dates.</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex justify-end gap-3 mt-6">
+                  <button
+                    onClick={() => setShowApplyModal(false)}
+                    className="px-4 py-2 border border-gray-300 text-gray-700 font-medium rounded-md hover:bg-gray-50"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={confirmApplyTemplate}
+                    disabled={loading}
+                    className="px-4 py-2 bg-primary-600 text-white font-medium rounded-md hover:bg-primary-700 disabled:opacity-50"
+                  >
+                    {loading ? 'Applying...' : 'Apply Template'}
+                  </button>
                 </div>
               </div>
-
-              <div className="flex items-start gap-2 p-3 bg-amber-50 border border-amber-200 rounded-md">
-                <ExclamationTriangleIcon className="h-4 w-4 text-amber-600 mt-0.5 flex-shrink-0" />
-                <div className="text-sm text-amber-800">
-                  <p className="font-medium">Note:</p>
-                  <p>This will override any existing custom templates for these dates.</p>
-                </div>
-              </div>
             </div>
-
-            <div className="flex justify-end gap-3 mt-6">
-              <button
-                onClick={() => setShowApplyModal(false)}
-                className="px-4 py-2 border border-gray-300 text-gray-700 font-medium rounded-md hover:bg-gray-50"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={confirmApplyTemplate}
-                disabled={loading}
-                className="px-4 py-2 bg-primary-600 text-white font-medium rounded-md hover:bg-primary-700 disabled:opacity-50"
-              >
-                {loading ? 'Applying...' : 'Apply Template'}
-              </button>
-            </div>
-          </div>
-        </div>
+          </div>,
+          document.body
+        )
       )}
     </div>
   );
