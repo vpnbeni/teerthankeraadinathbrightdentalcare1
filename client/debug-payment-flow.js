@@ -7,7 +7,8 @@ const testPaymentFlow = async () => {
   try {
     // Test 1: Check if API is accessible
     console.log("1. Testing API connection...");
-    const response = await fetch("http://localhost:5000/api/plans");
+    const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+    const response = await fetch(`${apiUrl}/plans`);
     if (response.ok) {
       const data = await response.json();
       console.log("✅ API connection successful");
@@ -18,7 +19,7 @@ const testPaymentFlow = async () => {
 
     // Test 2: Check auth endpoints
     console.log("2. Testing auth endpoints...");
-    const authTest = await fetch("http://localhost:5000/api/auth/check", {
+    const authTest = await fetch(`${apiUrl}/auth/check`, {
       credentials: "include",
     });
     console.log("🔐 Auth check status:", authTest.status);
