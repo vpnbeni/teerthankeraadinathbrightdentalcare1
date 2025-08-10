@@ -1,7 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { LoadingSpinner } from "../../shared/components";
 import Toast from "../../shared/components/Toast";
-import authService, { sendEmailOTP, verifyEmailOTP } from "../../services/auth";
+import authService, {
+  sendEmailOTP,
+  verifyEmailOTP,
+  registerWithEmail,
+} from "../../services/auth";
 
 /**
  * Streamlined authentication modal for plan selection flow
@@ -186,8 +190,13 @@ const StreamlinedAuthModal = ({
       let response;
 
       if (formData.contactType === "email") {
-        // Verify email OTP
-        response = await verifyEmailOTP(formData.contact.trim(), otp.trim());
+        // Register with email (creates user and authenticates)
+        response = await registerWithEmail(
+          formData.contact.trim(),
+          formData.name.trim(),
+          selectedPlan._id,
+          otp.trim()
+        );
       } else {
         // Verify phone OTP
         const verificationData = {

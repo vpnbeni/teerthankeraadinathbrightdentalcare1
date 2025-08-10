@@ -98,10 +98,22 @@ const validationRules = {
   ],
 
   loginOTP: [
+    // Allow either phone or email
     body("phone")
+      .optional({ nullable: true })
       .matches(/^[6-9]\d{9}$/)
       .withMessage("Please provide a valid Indian phone number"),
-
+    body("email")
+      .optional({ nullable: true })
+      .isEmail()
+      .normalizeEmail()
+      .withMessage("Please provide a valid email address"),
+    body().custom((value, { req }) => {
+      if (!req.body.phone && !req.body.email) {
+        throw new Error("Either phone or email is required");
+      }
+      return true;
+    }),
     body("otp")
       .isLength({ min: 6, max: 6 })
       .isNumeric()
@@ -109,9 +121,22 @@ const validationRules = {
   ],
 
   sendOTP: [
+    // Allow either phone or email
     body("phone")
+      .optional({ nullable: true })
       .matches(/^[6-9]\d{9}$/)
       .withMessage("Please provide a valid Indian phone number"),
+    body("email")
+      .optional({ nullable: true })
+      .isEmail()
+      .normalizeEmail()
+      .withMessage("Please provide a valid email address"),
+    body().custom((value, { req }) => {
+      if (!req.body.phone && !req.body.email) {
+        throw new Error("Either phone or email is required");
+      }
+      return true;
+    }),
   ],
 
   setPassword: [

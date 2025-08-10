@@ -77,7 +77,9 @@ const authService = {
  */
 export const checkEmailAvailability = async (email) => {
   try {
-    const response = await api.get(`/auth/check-email?email=${encodeURIComponent(email)}`);
+    const response = await api.get(
+      `/auth/check-email?email=${encodeURIComponent(email)}`
+    );
     return response.data;
   } catch (error) {
     throw error;
@@ -102,6 +104,20 @@ export const sendEmailOTP = async (email) => {
 export const verifyEmailOTP = async (email, otp) => {
   try {
     const response = await api.post("/auth/verify-email-otp", { email, otp });
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const registerWithEmail = async (email, name, planId, otp) => {
+  try {
+    const response = await api.post("/auth/register-with-email", {
+      email,
+      name,
+      planId,
+      otp,
+    });
     return response.data;
   } catch (error) {
     throw error;

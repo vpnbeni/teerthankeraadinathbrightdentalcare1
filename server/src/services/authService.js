@@ -215,15 +215,20 @@ class AuthService {
   /**
    * Login with OTP (passwordless login)
    */
-  async loginWithOTP(phone, otp) {
-    // Verify OTP
-    const isValidOTP = await otpService.verifyOTP(phone, otp);
+  async loginWithOTP(contact, otp) {
+    // Verify OTP for phone or email
+    const isValidOTP = await otpService.verifyOTP(contact, otp);
     if (!isValidOTP) {
       throw new Error("Invalid or expired OTP");
     }
 
-    // Find user
-    const user = await User.findOne({ phone }).select("-passwordHash");
+    // Determine whether contact is email or phone
+    const isEmail = String(contact).includes("@");
+
+    // Find user by phone or email
+    const user = await User.findOne(
+      isEmail ? { email: contact.toLowerCase() } : { phone: contact }
+    ).select("-passwordHash");
 
     if (!user) {
       throw new Error("User not found");
@@ -255,19 +260,28 @@ class AuthService {
   /**
    * Send OTP for login
    */
-  async sendLoginOTP(phone) {
-    // Check if user exists
-    const user = await User.findOne({ phone });
+  async sendLoginOTP(contact) {
+    const isEmail = String(contact).includes("@");
+    // Check if user exists based on contact type
+    const user = await User.findOne(
+      isEmail ? { email: contact.toLowerCase() } : { phone: contact }
+    );
     if (!user) {
-      throw new Error("User not found with this phone number");
+      throw new Error(
+        isEmail
+          ? "User not found with this email"
+          : "User not found with this phone number"
+      );
     }
 
     // Send OTP
-    await otpService.sendOTPToContact(phone);
+    await otpService.sendOTPToContact(contact);
 
     return {
       message: "OTP sent successfully",
-      phone: phone.replace(/(\d{6})(\d{4})/, "******$2"), // Mask phone number
+      contact: isEmail
+        ? contact.replace(/(^.).+(@.*$)/, "$1***$2")
+        : String(contact).replace(/(\d{6})(\d{4})/, "******$2"),
     };
   }
 

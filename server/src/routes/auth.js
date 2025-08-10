@@ -19,6 +19,7 @@ import {
   checkEmailAvailability,
   sendEmailOTP,
   verifyEmailOTP,
+  registerWithEmail,
 } from "../controllers/authController.js";
 import { auth } from "../middleware/auth.js";
 import { validateRequest } from "../middleware/validation.js";
@@ -85,6 +86,7 @@ router.post(
 router.get("/check-email", checkEmailAvailability);
 router.post("/send-email-otp", sendEmailOTP);
 router.post("/verify-email-otp", verifyEmailOTP);
+router.post("/register-with-email", registerWithEmail);
 
 // Test endpoints (development only)
 if (process.env.NODE_ENV === "development") {

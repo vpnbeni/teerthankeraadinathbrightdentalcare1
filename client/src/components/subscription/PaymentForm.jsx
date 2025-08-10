@@ -43,7 +43,11 @@ const PaymentForm = ({ selectedPlan, userDetails, onSuccess, onError }) => {
       // Initialize payment using our simplified service
       const response = await paymentService.initializePayment(
         selectedPlan._id,
-        userDetails
+        {
+          ...userDetails,
+          // Ensure we have the right contact field for Razorpay
+          phone: userDetails.phone || userDetails.email,
+        }
       );
 
       // Payment successful
@@ -112,10 +116,12 @@ const PaymentForm = ({ selectedPlan, userDetails, onSuccess, onError }) => {
               <span>Name:</span>
               <span className="font-medium">{userDetails.name}</span>
             </div>
-            <div className="flex justify-between">
-              <span>Phone:</span>
-              <span>{userDetails.phone}</span>
-            </div>
+            {userDetails.phone && (
+              <div className="flex justify-between">
+                <span>Phone:</span>
+                <span>{userDetails.phone}</span>
+              </div>
+            )}
             {userDetails.email && (
               <div className="flex justify-between">
                 <span>Email:</span>

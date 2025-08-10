@@ -72,8 +72,8 @@ const paymentService = {
           order_id: order.id,
           prefill: {
             name: userData.name,
-            email: userData.email,
-            contact: userData.phone,
+            email: userData.email || "",
+            contact: userData.phone || userData.email || "",
           },
           handler: async function (response) {
             try {

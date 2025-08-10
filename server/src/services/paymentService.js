@@ -124,7 +124,8 @@ class PaymentService {
             phone: user.phone,
             email: user.email,
           },
-        };``
+        };
+        ``;
       } catch (dbError) {
         // If payment record creation fails, log error and throw
         console.error("Payment record creation failed:", dbError);
@@ -246,6 +247,8 @@ class PaymentService {
         planId: plan._id,
         startDate,
         endDate,
+        totalSessions: plan.sessions,
+        sessionsRemaining: plan.sessions,
         status: "active",
       };
 
@@ -256,7 +259,7 @@ class PaymentService {
         await emailService.sendPaymentConfirmationEmail(
           user.email,
           user.name,
-          '',
+          "",
           plan.name,
           payment.amount,
           razorpayOrderId

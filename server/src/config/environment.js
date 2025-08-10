@@ -41,8 +41,12 @@ const optionalEnvVars = [
  */
 const validateEnvironment = () => {
   let allRequired = [...requiredEnvVars];
-  if (process.env.SMS_PROVIDER === 'twilio') {
-    allRequired.push("TWILIO_ACCOUNT_SID", "TWILIO_AUTH_TOKEN", "TWILIO_PHONE_NUMBER");
+  if (process.env.SMS_PROVIDER === "twilio") {
+    allRequired.push(
+      "TWILIO_ACCOUNT_SID",
+      "TWILIO_AUTH_TOKEN",
+      "TWILIO_PHONE_NUMBER"
+    );
   } else {
     allRequired.push("MSG91_AUTH_KEY");
   }
@@ -160,21 +164,22 @@ const config = {
   AUTO_CANCEL: {
     ENABLED: process.env.AUTO_CANCEL_ENABLED !== "false", // Default enabled
     CHECK_INTERVAL: process.env.AUTO_CANCEL_CHECK_INTERVAL || "*/15 * * * *", // Every 15 minutes
-    GRACE_PERIOD_MINUTES: parseInt(process.env.AUTO_CANCEL_GRACE_PERIOD_MINUTES) || 0, // No grace period by default
+    GRACE_PERIOD_MINUTES:
+      parseInt(process.env.AUTO_CANCEL_GRACE_PERIOD_MINUTES) || 0, // No grace period by default
     NOTIFY_PATIENTS: process.env.AUTO_CANCEL_NOTIFY_PATIENTS !== "false", // Default enabled
     RESTORE_SESSIONS: process.env.AUTO_CANCEL_RESTORE_SESSIONS !== "false", // Default enabled
   },
 };
 
 export const emailConfig = {
-  host: process.env.EMAIL_HOST || 'smtp.gmail.com',
+  host: process.env.EMAIL_HOST || "smtp.gmail.com",
   port: parseInt(process.env.EMAIL_PORT, 10) || 587,
-  secure: process.env.EMAIL_SECURE === 'true',
+  secure: process.env.EMAIL_SECURE === "true",
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
   },
-  from: process.env.EMAIL_FROM || 'noreply@teerthankerdentalcare.com',
+  from: process.env.EMAIL_FROM || "noreply@teerthankerdentalcare.com",
 };
 
 /**

@@ -147,16 +147,16 @@ export const login = async (req, res) => {
  */
 export const sendLoginOTP = async (req, res) => {
   try {
-    const { phone } = req.body;
+    const { phone, email } = req.body;
 
-    if (!phone) {
+    if (!phone && !email) {
       return res.status(400).json({
         success: false,
-        message: "Phone number is required",
+        message: "Phone or email is required",
       });
     }
 
-    const result = await authService.sendLoginOTP(phone);
+    const result = await authService.sendLoginOTP(phone || email);
 
     res.status(200).json({
       success: true,
@@ -178,16 +178,16 @@ export const sendLoginOTP = async (req, res) => {
  */
 export const loginWithOTP = async (req, res) => {
   try {
-    const { phone, otp } = req.body;
+    const { phone, email, otp } = req.body;
 
-    if (!phone || !otp) {
+    if ((!phone && !email) || !otp) {
       return res.status(400).json({
         success: false,
-        message: "Phone number and OTP are required",
+        message: "Phone or email and OTP are required",
       });
     }
 
-    const result = await authService.loginWithOTP(phone, otp);
+    const result = await authService.loginWithOTP(phone || email, otp);
 
     // Set token as HTTP-only cookie
     authService.setTokenCookie(res, result.token);
@@ -667,9 +667,7 @@ export const checkEmailAvailability = async (req, res) => {
     res.status(200).json({
       success: true,
       available,
-      message: available 
-        ? "Email is available" 
-        : "Email is already registered",
+      message: available ? "Email is available" : "Email is already registered",
     });
   } catch (error) {
     console.error("Email availability check error:", error);
@@ -755,7 +753,7 @@ export const verifyEmailOTP = async (req, res) => {
     // Verify OTP
     const { otpService } = await import("../services/otpService.js");
     const isValidOTP = await otpService.verifyOTP(email, otp);
-    
+
     if (!isValidOTP) {
       return res.status(400).json({
         success: false,
@@ -781,6 +779,106 @@ export const verifyEmailOTP = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Failed to verify OTP. Please try again.",
+    });
+  }
+};
+
+/**
+ * Register user with email and create authenticated session
+ */
+export const registerWithEmail = async (req, res) => {
+  try {
+    const { name, email, planId, otp } = req.body;
+
+    // Validation
+    if (!name || !email || !planId || !otp) {
+      return res.status(400).json({
+        success: false,
+        message: "Name, email, plan ID, and OTP are required",
+      });
+    }
+
+    // Validate Gmail format
+    const gmailRegex = /^[a-zA-Z0-9._%+-]+@gmail\.com$/;
+    if (!gmailRegex.test(email)) {
+      return res.status(400).json({
+        success: false,
+        message: "Please enter a valid Gmail address",
+      });
+    }
+
+    // Verify OTP first
+    const { otpService } = await import("../services/otpService.js");
+    const isValidOTP = await otpService.verifyOTP(email, otp);
+
+    if (!isValidOTP) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid or expired OTP",
+      });
+    }
+
+    // Check if email is available
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({
+        success: false,
+        message: "Email is already registered",
+      });
+    }
+
+    // Validate plan ID
+    const Plan = (await import("../models/Plan.js")).default;
+    const plan = await Plan.findById(planId);
+    if (!plan || !plan.isActive) {
+      return res.status(400).json({
+        success: false,
+        message: "Please provide a valid plan ID",
+      });
+    }
+
+    // Calculate subscription end date
+    const startDate = new Date();
+    const endDate = plan.calculateEndDate(startDate);
+    const totalSessions = Number(plan.sessions) || 0;
+
+    // Create user (verified since email OTP was successful)
+    const user = await User.create({
+      name,
+      email,
+      subscription: {
+        planId,
+        startDate,
+        endDate,
+        totalSessions,
+        sessionsRemaining: totalSessions,
+        status: "suspended", // Will be activated after payment
+      },
+      isVerified: true, // Email is already verified
+    });
+
+    // Generate token and set cookie
+    const token = authService.generateToken(user._id);
+    authService.setTokenCookie(res, token);
+
+    res.status(201).json({
+      success: true,
+      data: {
+        user: {
+          id: user._id,
+          name: user.name,
+          email: user.email,
+          isVerified: user.isVerified,
+          subscription: user.subscription,
+        },
+        message: "Registration successful. You can now proceed to payment.",
+      },
+    });
+  } catch (error) {
+    console.error("Email registration error:", error);
+    res.status(400).json({
+      success: false,
+      message: error.message,
     });
   }
 };

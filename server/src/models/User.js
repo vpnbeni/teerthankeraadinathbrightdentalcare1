@@ -10,12 +10,14 @@ const userSchema = new mongoose.Schema(
     },
     phone: {
       type: String,
-      required: [true, "Phone number is required"],
       unique: true,
+      sparse: true, // Allow multiple null values
       trim: true,
     },
     email: {
       type: String,
+      unique: true,
+      sparse: true, // Allow multiple null values
       trim: true,
       lowercase: true,
       match: [/\S+@\S+\.\S+/, "Please enter a valid email address"],
@@ -80,18 +82,18 @@ const userSchema = new mongoose.Schema(
       },
       startDate: Date,
       endDate: Date,
-        // Number of sessions remaining for the current subscription period
-        sessionsRemaining: {
-          type: Number,
-          default: 0,
-          min: 0,
-        },
-        // Optional: total sessions allocated for the subscription period
-        totalSessions: {
-          type: Number,
-          default: 0,
-          min: 0,
-        },
+      // Number of sessions remaining for the current subscription period
+      sessionsRemaining: {
+        type: Number,
+        default: 0,
+        min: 0,
+      },
+      // Optional: total sessions allocated for the subscription period
+      totalSessions: {
+        type: Number,
+        default: 0,
+        min: 0,
+      },
       status: {
         type: String,
         enum: ["active", "expired", "cancelled", "suspended"],
@@ -119,11 +121,29 @@ userSchema.methods.isSubscriptionActive = function () {
 
   const now = new Date();
   return (
-    this.subscription.status === "active" &&
-    this.subscription.endDate > now
+    this.subscription.status === "active" && this.subscription.endDate > now
   );
 };
 
+// Method to match password
+userSchema.methods.matchPassword = async function (enteredPassword) {
+  if (!this.passwordHash) {
+    return false;
+  }
+  return await bcrypt.compare(enteredPassword, this.passwordHash);
+};
+
+// Validation middleware to ensure either phone or email is provided
+userSchema.pre("save", function (next) {
+  // Check if both phone and email are empty/null/undefined
+  const hasPhone = this.phone && this.phone.trim();
+  const hasEmail = this.email && this.email.trim();
+
+  if (!hasPhone && !hasEmail) {
+    return next(new Error("Either phone number or email is required"));
+  }
+  next();
+});
 
 // Password hashing middleware
 userSchema.pre("save", async function (next) {
