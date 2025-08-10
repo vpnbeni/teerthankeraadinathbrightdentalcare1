@@ -90,7 +90,7 @@ const PhoneInput = ({
       isAvailable: isCurrentUserPhone ? true : isAvailable, // Current user's phone is always "available"
       isUnique: isCurrentUserPhone || isAvailable !== false,
     });
-  }, [phone, isAvailable, currentUserPhone, onValidationChange]);
+  }, [phone, isAvailable, currentUserPhone]); // Removed onValidationChange from dependencies
 
   // Cleanup timeout on unmount
   useEffect(() => {

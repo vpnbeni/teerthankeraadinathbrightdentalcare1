@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { useSelector } from "react-redux";
 import { VALIDATION_RULES, ERROR_MESSAGES } from "../../shared/constants";
@@ -61,17 +61,17 @@ const PersonalDetailsStep = ({ data, onNext, onDataChange }) => {
   };
 
   // Handle email validation changes
-  const handleEmailValidationChange = (validation) => {
+  const handleEmailValidationChange = useCallback((validation) => {
     setEmailValidation(validation);
-  };
+  }, []);
 
   // Handle email input change
-  const handleEmailChange = (email) => {
+  const handleEmailChange = useCallback((email) => {
     setValue("email", email);
-  };
+  }, [setValue]);
 
   // Handle phone validation changes
-  const handlePhoneValidationChange = (validation) => {
+  const handlePhoneValidationChange = useCallback((validation) => {
     setPhoneValidation(validation);
 
     // Set form error if phone is not unique
@@ -83,12 +83,12 @@ const PersonalDetailsStep = ({ data, onNext, onDataChange }) => {
     } else if (validation.isValid && validation.isUnique) {
       clearErrors("phone");
     }
-  };
+  }, [setError, clearErrors]);
 
   // Handle phone input change
-  const handlePhoneChange = (phone) => {
+  const handlePhoneChange = useCallback((phone) => {
     setValue("phone", phone);
-  };
+  }, [setValue]);
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">

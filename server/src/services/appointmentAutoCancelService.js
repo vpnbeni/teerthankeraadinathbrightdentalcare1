@@ -22,13 +22,16 @@ class AppointmentAutoCancelService {
       sessionRestored: 0,
     };
 
-    // Start the auto-cancellation scheduler if enabled
-    if (this.config.ENABLED) {
-      this.startAutoCancellationScheduler();
-      logger.info("Appointment Auto-Cancellation Service initialized and enabled");
-    } else {
-      logger.info("Appointment Auto-Cancellation Service initialized but disabled");
-    }
+    // Delay initialization to ensure database is connected
+    setTimeout(() => {
+      // Start the auto-cancellation scheduler if enabled
+      if (this.config.ENABLED) {
+        this.startAutoCancellationScheduler();
+        logger.info("Appointment Auto-Cancellation Service initialized and enabled");
+      } else {
+        logger.info("Appointment Auto-Cancellation Service initialized but disabled");
+      }
+    }, 2000); // 2 second delay
   }
 
   /**

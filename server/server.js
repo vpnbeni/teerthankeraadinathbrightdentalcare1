@@ -19,8 +19,7 @@ import { corsOptions } from "./src/middleware/security.js";
 import path from "path";
 import { fileURLToPath } from "url";
 
-// Import background services
-import "./src/services/appointmentAutoCancelService.js";
+// Background services will be imported after database connection
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -117,6 +116,7 @@ const startServer = async () => {
     await connectDB();
 
     // Initialize background services after database connection
+    const { appointmentAutoCancelService } = await import("./src/services/appointmentAutoCancelService.js");
     console.log("✅ Background services initialized");
 
     // Start server after successful database connection

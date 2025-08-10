@@ -149,8 +149,7 @@ const adminNotificationPreferencesSchema = new mongoose.Schema(
   }
 );
 
-// Index for efficient queries
-adminNotificationPreferencesSchema.index({ adminId: 1 });
+// Index for efficient queries (adminId already has unique index from field definition)
 adminNotificationPreferencesSchema.index({ "preferences.type": 1 });
 
 // Static method to get preferences for admin

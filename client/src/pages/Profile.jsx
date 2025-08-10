@@ -4,7 +4,7 @@ import DashboardLayout from "../components/common/DashboardLayout";
 import DocumentUpload from "../components/profile/DocumentUpload";
 import ProfileEditForm from "../components/profile/ProfileEditForm";
 import SubscriptionInfo from "../components/profile/SubscriptionInfo";
-import PhoneVerification from "../components/profile/PhoneVerification";
+
 import { LoadingSpinner } from "../shared/components";
 import userService from "../services/user";
 import { updateUser } from "../store/authSlice";
@@ -15,6 +15,22 @@ const Profile = () => {
   const [activeTab, setActiveTab] = useState("personal");
   const [documents, setDocuments] = useState([]);
   const [loading, setLoading] = useState(false);
+
+  // Fetch latest user profile when component mounts
+  useEffect(() => {
+    const fetchLatestProfile = async () => {
+      try {
+        const response = await userService.getProfile();
+        if (response.data.success && response.data.data) {
+          dispatch(updateUser(response.data.data));
+        }
+      } catch (error) {
+        console.error("Failed to fetch latest profile:", error);
+      }
+    };
+    
+    fetchLatestProfile();
+  }, [dispatch]);
 
   useEffect(() => {
     if (activeTab === "documents") {
@@ -47,14 +63,11 @@ const Profile = () => {
     }
   };
 
-  const handlePhoneVerified = (updatedUser) => {
-    dispatch(updateUser(updatedUser));
-  };
+
 
   const tabs = [
     { id: "personal", label: "Personal Info", icon: "👤" },
     { id: "medical", label: "Medical Info", icon: "🏥" },
-    { id: "security", label: "Account Security", icon: "🔒" },
     { id: "documents", label: "Documents", icon: "📄" },
     { id: "subscription", label: "Subscription", icon: "💳" },
   ];
@@ -87,7 +100,11 @@ const Profile = () => {
               <h3 className="text-lg font-semibold mb-6">
                 Personal Information
               </h3>
-              <ProfileEditForm profile={user} type="personal" />
+              <ProfileEditForm 
+                profile={user} 
+                type="personal" 
+                onUserUpdate={(updatedUser) => dispatch(updateUser(updatedUser))}
+              />
             </div>
           )}
 
@@ -100,69 +117,7 @@ const Profile = () => {
             </div>
           )}
 
-          {activeTab === "security" && (
-            <div className="space-y-6">
-              <h3 className="text-lg font-semibold mb-6">Account Security</h3>
 
-              <div className="space-y-4">
-                <div>
-                  <h4 className="text-md font-medium text-gray-800 mb-3">
-                    Login Methods
-                  </h4>
-
-                  {/* Email Status */}
-                  <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center">
-                        <svg
-                          className="w-5 h-5 text-gray-500 mr-3"
-                          fill="currentColor"
-                          viewBox="0 0 20 20"
-                        >
-                          <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
-                          <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
-                        </svg>
-                        <div>
-                          <p className="font-medium text-gray-800">Email</p>
-                          <p className="text-sm text-gray-600">
-                            {user?.email || "Not set"}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex items-center">
-                        {user?.emailVerified ? (
-                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                            <svg
-                              className="w-3 h-3 mr-1"
-                              fill="currentColor"
-                              viewBox="0 0 20 20"
-                            >
-                              <path
-                                fillRule="evenodd"
-                                d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                                clipRule="evenodd"
-                              />
-                            </svg>
-                            Verified
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                            Unverified
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Phone Verification */}
-                  <PhoneVerification
-                    user={user}
-                    onPhoneVerified={handlePhoneVerified}
-                  />
-                </div>
-              </div>
-            </div>
-          )}
 
           {activeTab === "documents" && (
             <div className="space-y-6">

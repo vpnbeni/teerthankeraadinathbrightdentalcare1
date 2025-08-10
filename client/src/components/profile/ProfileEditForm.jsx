@@ -1,17 +1,31 @@
 import React, { useState, useEffect } from "react";
 import { useDispatch } from "react-redux";
-import { fetchUserProfile } from "../../store/userSlice";
+import { updateUser } from "../../store/authSlice";
 import userService from "../../services/user";
 import { LoadingSpinner } from "../../shared/components";
+import { sendPhoneOTPForProfile, verifyPhoneOTPForProfile, sendEmailOTP, verifyEmailOTP } from "../../services/auth";
+import Toast from "../../shared/components/Toast";
 
-const ProfileEditForm = ({ profile, type }) => {
+const ProfileEditForm = ({ profile, type, onUserUpdate }) => {
   const dispatch = useDispatch();
   const [formData, setFormData] = useState({});
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
+  const [currentUser, setCurrentUser] = useState(profile);
+  
+  // OTP verification states
+  const [phoneOtpStep, setPhoneOtpStep] = useState(false);
+  const [emailOtpStep, setEmailOtpStep] = useState(false);
+  const [phoneOtp, setPhoneOtp] = useState("");
+  const [emailOtp, setEmailOtp] = useState("");
+  const [otpLoading, setOtpLoading] = useState(false);
+  const [toast, setToast] = useState(null);
+  const [resendCooldown, setResendCooldown] = useState(0);
+  const [emailResendCooldown, setEmailResendCooldown] = useState(0);
 
   useEffect(() => {
     if (profile) {
+      setCurrentUser(profile);
       if (type === "personal") {
         setFormData({
           name: profile.name || "",
@@ -34,6 +48,143 @@ const ProfileEditForm = ({ profile, type }) => {
       }
     }
   }, [profile, type]);
+
+  const showToast = (message, type = "success") => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 5000);
+  };
+
+  const validatePhone = (phoneNumber) => {
+    const phoneRegex = /^[6-9]\d{9}$/;
+    return phoneRegex.test(phoneNumber);
+  };
+
+  const handleSendPhoneOTP = async () => {
+    if (!validatePhone(formData.phone)) {
+      showToast("Please enter a valid 10-digit phone number", "error");
+      return;
+    }
+
+    setOtpLoading(true);
+    try {
+      await sendPhoneOTPForProfile(formData.phone);
+      setPhoneOtpStep(true);
+      showToast("OTP sent to your phone number");
+      startResendCooldown();
+    } catch (error) {
+      showToast(error.response?.data?.message || "Failed to send OTP", "error");
+    } finally {
+      setOtpLoading(false);
+    }
+  };
+
+  const handleVerifyPhoneOTP = async () => {
+    if (!phoneOtp || phoneOtp.length !== 6) {
+      showToast("Please enter a valid 6-digit OTP", "error");
+      return;
+    }
+
+    setOtpLoading(true);
+    try {
+      const response = await verifyPhoneOTPForProfile(formData.phone, phoneOtp);
+      showToast("Phone number verified successfully!");
+      setPhoneOtpStep(false);
+      setPhoneOtp("");
+      
+      // Update local user state immediately
+      if (response.data.user) {
+        setCurrentUser(response.data.user);
+        // Update the auth store directly
+        dispatch(updateUser(response.data.user));
+        // Update the user data in parent component
+        if (onUserUpdate) {
+          onUserUpdate(response.data.user);
+        }
+      }
+    } catch (error) {
+      showToast(error.response?.data?.message || "Invalid OTP", "error");
+    } finally {
+      setOtpLoading(false);
+    }
+  };
+
+  const startResendCooldown = () => {
+    setResendCooldown(30);
+    const interval = setInterval(() => {
+      setResendCooldown((prev) => {
+        if (prev <= 1) {
+          clearInterval(interval);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  };
+
+  const startEmailResendCooldown = () => {
+    setEmailResendCooldown(30);
+    const interval = setInterval(() => {
+      setEmailResendCooldown((prev) => {
+        if (prev <= 1) {
+          clearInterval(interval);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  };
+
+  const validateEmail = (email) => {
+    return /\S+@\S+\.\S+/.test(email);
+  };
+
+  const handleSendEmailOTP = async () => {
+    if (!validateEmail(formData.email)) {
+      showToast("Please enter a valid email address", "error");
+      return;
+    }
+
+    setOtpLoading(true);
+    try {
+      await sendEmailOTP(formData.email);
+      setEmailOtpStep(true);
+      showToast("OTP sent to your email address");
+      startEmailResendCooldown();
+    } catch (error) {
+      showToast(error.response?.data?.message || "Failed to send OTP", "error");
+    } finally {
+      setOtpLoading(false);
+    }
+  };
+
+  const handleVerifyEmailOTP = async () => {
+    if (!emailOtp || emailOtp.length !== 6) {
+      showToast("Please enter a valid 6-digit OTP", "error");
+      return;
+    }
+
+    setOtpLoading(true);
+    try {
+      const response = await verifyEmailOTP(formData.email, emailOtp);
+      showToast("Email address verified successfully!");
+      setEmailOtpStep(false);
+      setEmailOtp("");
+      
+      // Update local user state immediately
+      const updatedUser = { ...profile, emailVerified: true };
+      setCurrentUser(updatedUser);
+      // Update the auth store directly
+      dispatch(updateUser(updatedUser));
+      // Update the user data in parent component
+      if (onUserUpdate) {
+        onUserUpdate(updatedUser);
+      }
+    } catch (error) {
+      showToast(error.response?.data?.message || "Invalid OTP", "error");
+    } finally {
+      setOtpLoading(false);
+    }
+  };
 
   const handleChange = (e) => {
     const { name, value, type: inputType, checked } = e.target;
@@ -88,7 +239,12 @@ const ProfileEditForm = ({ profile, type }) => {
           gender: formData.gender || null,
           alternativePhone: formData.alternativePhone?.trim() || null,
         };
-        await userService.updatePersonalInfo(personalData);
+        const response = await userService.updatePersonalInfo(personalData);
+        // Update user in auth store with the response
+        if (response.data.user) {
+          dispatch(updateUser(response.data.user));
+          setCurrentUser(response.data.user);
+        }
       } else if (type === "medical") {
         const medicalData = {
           systemicDiseases: formData.systemicDiseases
@@ -117,11 +273,13 @@ const ProfileEditForm = ({ profile, type }) => {
                 .filter(Boolean)
             : [],
         };
-        await userService.updateMedicalInfo(medicalData);
+        const response = await userService.updateMedicalInfo(medicalData);
+        // Update user in auth store with the response
+        if (response.data.user) {
+          dispatch(updateUser(response.data.user));
+          setCurrentUser(response.data.user);
+        }
       }
-
-      // Refresh user profile in store
-      await dispatch(fetchUserProfile()).unwrap();
     } catch (error) {
       console.error("Error updating profile:", error);
     } finally {
@@ -131,122 +289,234 @@ const ProfileEditForm = ({ profile, type }) => {
 
   if (type === "personal") {
     return (
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="grid md:grid-cols-2 gap-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Full Name *
-            </label>
-            <input
-              type="text"
-              name="name"
-              value={formData.name || ""}
-              onChange={handleChange}
-              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#346870] ${
-                errors.name ? "border-red-500" : "border-gray-300"
-              }`}
-              placeholder="Enter your full name"
-            />
-            {errors.name && (
-              <p className="text-red-500 text-sm mt-1">{errors.name}</p>
-            )}
+      <div className="space-y-6">
+        {toast && <Toast message={toast.message} type={toast.type} />}
+        
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="grid md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Full Name *
+              </label>
+              <input
+                type="text"
+                name="name"
+                value={formData.name || ""}
+                onChange={handleChange}
+                className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#346870] ${
+                  errors.name ? "border-red-500" : "border-gray-300"
+                }`}
+                placeholder="Enter your full name"
+              />
+              {errors.name && (
+                <p className="text-red-500 text-sm mt-1">{errors.name}</p>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Phone Number *
+              </label>
+              <div className="relative">
+                <input
+                  type="tel"
+                  name="phone"
+                  value={formData.phone || ""}
+                  onChange={handleChange}
+                  className={`w-full px-3 py-2 pr-10 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#346870] ${
+                    errors.phone ? "border-red-500" : "border-gray-300"
+                  }`}
+                  placeholder="Enter your phone number"
+                />
+                {profile?.phoneVerified && (
+                  <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
+                    <svg className="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                )}
+              </div>
+              {errors.phone && (
+                <p className="text-red-500 text-sm mt-1">{errors.phone}</p>
+              )}
+              
+              {/* Phone OTP Section */}
+              {formData.phone && !profile?.phoneVerified && (
+                <div className="mt-3 space-y-3">
+                  {!phoneOtpStep ? (
+                    <button
+                      type="button"
+                      onClick={handleSendPhoneOTP}
+                      disabled={otpLoading}
+                      className="text-sm bg-blue-50 text-blue-600 px-3 py-1 rounded-md hover:bg-blue-100 disabled:opacity-50"
+                    >
+                      {otpLoading ? "Sending..." : "Send OTP"}
+                    </button>
+                  ) : (
+                    <div className="flex space-x-2">
+                      <input
+                        type="text"
+                        value={phoneOtp}
+                        onChange={(e) => setPhoneOtp(e.target.value.replace(/\D/g, ""))}
+                        placeholder="Enter 6-digit OTP"
+                        maxLength="6"
+                        className="flex-1 px-3 py-1 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#346870]"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleVerifyPhoneOTP}
+                        disabled={otpLoading || phoneOtp.length !== 6}
+                        className="text-sm bg-green-50 text-green-600 px-3 py-1 rounded-md hover:bg-green-100 disabled:opacity-50"
+                      >
+                        {otpLoading ? "Verifying..." : "Verify"}
+                      </button>
+                    </div>
+                  )}
+                  {phoneOtpStep && (
+                    <button
+                      type="button"
+                      onClick={handleSendPhoneOTP}
+                      disabled={resendCooldown > 0 || otpLoading}
+                      className="text-xs text-blue-600 hover:underline disabled:text-gray-400 disabled:no-underline"
+                    >
+                      {resendCooldown > 0 ? `Resend in ${resendCooldown}s` : "Resend OTP"}
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Email Address
+              </label>
+              <div className="relative">
+                <input
+                  type="email"
+                  name="email"
+                  value={formData.email || ""}
+                  onChange={handleChange}
+                  className={`w-full px-3 py-2 pr-10 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#346870] ${
+                    errors.email ? "border-red-500" : "border-gray-300"
+                  }`}
+                  placeholder="Enter your email address"
+                />
+                {profile?.emailVerified && (
+                  <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
+                    <svg className="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                )}
+              </div>
+              {errors.email && (
+                <p className="text-red-500 text-sm mt-1">{errors.email}</p>
+              )}
+              
+              {/* Email OTP Section */}
+              {formData.email && !profile?.emailVerified && (
+                <div className="mt-3 space-y-3">
+                  {!emailOtpStep ? (
+                    <button
+                      type="button"
+                      onClick={handleSendEmailOTP}
+                      disabled={otpLoading}
+                      className="text-sm bg-blue-50 text-blue-600 px-3 py-1 rounded-md hover:bg-blue-100 disabled:opacity-50"
+                    >
+                      {otpLoading ? "Sending..." : "Send OTP"}
+                    </button>
+                  ) : (
+                    <div className="flex space-x-2">
+                      <input
+                        type="text"
+                        value={emailOtp}
+                        onChange={(e) => setEmailOtp(e.target.value.replace(/\D/g, ""))}
+                        placeholder="Enter 6-digit OTP"
+                        maxLength="6"
+                        className="flex-1 px-3 py-1 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#346870]"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleVerifyEmailOTP}
+                        disabled={otpLoading || emailOtp.length !== 6}
+                        className="text-sm bg-green-50 text-green-600 px-3 py-1 rounded-md hover:bg-green-100 disabled:opacity-50"
+                      >
+                        {otpLoading ? "Verifying..." : "Verify"}
+                      </button>
+                    </div>
+                  )}
+                  {emailOtpStep && (
+                    <button
+                      type="button"
+                      onClick={handleSendEmailOTP}
+                      disabled={emailResendCooldown > 0 || otpLoading}
+                      className="text-xs text-blue-600 hover:underline disabled:text-gray-400 disabled:no-underline"
+                    >
+                      {emailResendCooldown > 0 ? `Resend in ${emailResendCooldown}s` : "Resend OTP"}
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Alternative Phone
+              </label>
+              <input
+                type="tel"
+                name="alternativePhone"
+                value={formData.alternativePhone || ""}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#346870]"
+                placeholder="Enter alternative phone number"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Gender
+              </label>
+              <select
+                name="gender"
+                value={formData.gender || ""}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#346870]"
+              >
+                <option value="">Select Gender</option>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Phone Number *
+              Address
             </label>
-            <input
-              type="tel"
-              name="phone"
-              value={formData.phone || ""}
+            <textarea
+              name="address"
+              value={formData.address || ""}
               onChange={handleChange}
-              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#346870] ${
-                errors.phone ? "border-red-500" : "border-gray-300"
-              }`}
-              placeholder="Enter your phone number"
-            />
-            {errors.phone && (
-              <p className="text-red-500 text-sm mt-1">{errors.phone}</p>
-            )}
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Email Address
-            </label>
-            <input
-              type="email"
-              name="email"
-              value={formData.email || ""}
-              onChange={handleChange}
-              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#346870] ${
-                errors.email ? "border-red-500" : "border-gray-300"
-              }`}
-              placeholder="Enter your email address"
-            />
-            {errors.email && (
-              <p className="text-red-500 text-sm mt-1">{errors.email}</p>
-            )}
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Alternative Phone
-            </label>
-            <input
-              type="tel"
-              name="alternativePhone"
-              value={formData.alternativePhone || ""}
-              onChange={handleChange}
+              rows={3}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#346870]"
-              placeholder="Enter alternative phone number"
+              placeholder="Enter your complete address"
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Gender
-            </label>
-            <select
-              name="gender"
-              value={formData.gender || ""}
-              onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#346870]"
+          <div className="flex justify-end">
+            <button
+              type="submit"
+              disabled={loading}
+              className="btn-primary flex items-center space-x-2"
             >
-              <option value="">Select Gender</option>
-              <option value="male">Male</option>
-              <option value="female">Female</option>
-              <option value="other">Other</option>
-            </select>
+              {loading && <LoadingSpinner size="sm" />}
+              <span>Update Personal Info</span>
+            </button>
           </div>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Address
-          </label>
-          <textarea
-            name="address"
-            value={formData.address || ""}
-            onChange={handleChange}
-            rows={3}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#346870]"
-            placeholder="Enter your complete address"
-          />
-        </div>
-
-        <div className="flex justify-end">
-          <button
-            type="submit"
-            disabled={loading}
-            className="btn-primary flex items-center space-x-2"
-          >
-            {loading && <LoadingSpinner size="sm" />}
-            <span>Update Personal Info</span>
-          </button>
-        </div>
-      </form>
+        </form>
+      </div>
     );
   }
 
