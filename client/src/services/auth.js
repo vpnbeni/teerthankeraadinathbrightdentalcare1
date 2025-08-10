@@ -67,7 +67,10 @@ const authService = {
 
   // Login with OTP
   loginWithOTP: async (data) => {
-    const response = await api.post("/auth/login-otp", data);
+    const response = await api.post("/auth/login-otp", data, {
+      skipErrorMessage: true, // Skip global error toast
+      skipRedirect: true, // Skip global redirect on 401
+    });
     return response;
   },
 };

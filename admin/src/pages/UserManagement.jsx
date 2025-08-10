@@ -146,13 +146,13 @@ const UserManagement = () => {
               <FunnelIcon className="h-4 w-4 mr-2" />
               Filters
             </button>
-            <button
+            {/* <button
               onClick={handleCreateUser}
               className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#346870] hover:bg-[#2a5359] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#346870]"
             >
               <PlusIcon className="h-4 w-4 mr-2" />
               Add User
-            </button>
+            </button> */}
           </div>
         </div>
 

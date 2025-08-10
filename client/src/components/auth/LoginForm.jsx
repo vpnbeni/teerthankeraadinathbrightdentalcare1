@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useForm } from "react-hook-form";
 import { clearError } from "../../store/authSlice";
@@ -13,6 +13,8 @@ const LoginForm = ({ onClose, onSwitchToRegister }) => {
   const [otpSent, setOtpSent] = useState(false);
   const [otpLoading, setOtpLoading] = useState(false);
   const [otpError, setOtpError] = useState(null);
+  const [resendTimer, setResendTimer] = useState(0);
+  const [canResend, setCanResend] = useState(true);
 
   const {
     register,
@@ -25,6 +27,16 @@ const LoginForm = ({ onClose, onSwitchToRegister }) => {
   const [loginMethod, setLoginMethod] = useState("phone"); // 'phone' | 'email'
   const phoneValue = watch("phone");
   const emailValue = watch("email");
+
+  // Countdown timer for resend OTP
+  useEffect(() => {
+    if (resendTimer > 0) {
+      const timer = setTimeout(() => setResendTimer(resendTimer - 1), 1000);
+      return () => clearTimeout(timer);
+    } else if (resendTimer === 0 && otpSent) {
+      setCanResend(true);
+    }
+  }, [resendTimer, otpSent]);
 
   const onSubmit = async (data) => {
     dispatch(clearError());
@@ -44,7 +56,11 @@ const LoginForm = ({ onClose, onSwitchToRegister }) => {
       });
       onClose();
     } catch (error) {
-      setOtpError(error.response?.data?.message || "OTP login failed");
+      // Set error message and don't redirect - stay on the form
+      const errorMessage = error.response?.data?.message || "Invalid OTP. Please try again.";
+      setOtpError(errorMessage);
+      // Clear the OTP field so user can enter again
+      reset({ ...data, otp: "" });
     } finally {
       setSigningIn(false);
     }
@@ -67,6 +83,8 @@ const LoginForm = ({ onClose, onSwitchToRegister }) => {
         loginMethod === "phone" ? { phone: phoneValue } : { email: emailValue }
       );
       setOtpSent(true);
+      setResendTimer(60); // Start 60-second countdown
+      setCanResend(false);
     } catch (error) {
       setOtpError(error.response?.data?.message || "Failed to send OTP");
     } finally {
@@ -79,6 +97,8 @@ const LoginForm = ({ onClose, onSwitchToRegister }) => {
     setLoginMethod(method);
     setOtpSent(false);
     setOtpError(null);
+    setResendTimer(0);
+    setCanResend(true);
     // Reset relevant fields when switching
     reset({ phone: "", email: "", otp: "" });
   };
@@ -214,7 +234,7 @@ const LoginForm = ({ onClose, onSwitchToRegister }) => {
               type="text"
               maxLength="6"
               className={`input-field flex-1 ${
-                errors.otp ? "border-red-500" : ""
+                errors.otp || otpError ? "border-red-500" : ""
               }`}
               placeholder="Enter 6-digit OTP"
               disabled={!otpSent}
@@ -231,12 +251,15 @@ const LoginForm = ({ onClose, onSwitchToRegister }) => {
               onClick={handleSendOTP}
               disabled={
                 otpLoading ||
+                !canResend ||
                 (loginMethod === "phone" ? !phoneValue : !emailValue)
               }
               className="btn-secondary px-4 py-2 whitespace-nowrap disabled:opacity-50"
             >
               {otpLoading ? (
                 <LoadingSpinner size="sm" />
+              ) : otpSent && !canResend ? (
+                `Resend (${resendTimer}s)`
               ) : otpSent ? (
                 "Resend"
               ) : (
@@ -247,7 +270,7 @@ const LoginForm = ({ onClose, onSwitchToRegister }) => {
           {errors.otp && (
             <p className="text-red-500 text-sm mt-1">{errors.otp.message}</p>
           )}
-          {otpSent && (
+          {otpSent && !otpError && (
             <p className="text-green-600 text-sm mt-1">
               {loginMethod === "phone"
                 ? "OTP sent to your phone number"
