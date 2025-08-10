@@ -50,16 +50,7 @@ const Appointments = () => {
     }
   };
 
-  const handleAppointmentCancel = (appointmentId) => {
-    setAppointments(appointments.filter((apt) => apt._id !== appointmentId));
-    // Trigger session info refresh for booking modal
-    setSessionRefreshTrigger((prev) => prev + 1);
-  };
 
-  const handleAppointmentUpdate = (appointment) => {
-    // This would open a reschedule modal - for now just show a message
-    // Implement rescheduling functionality here
-  };
 
   const filterAppointments = (appointments, filter) => {
     const now = new Date();
@@ -299,8 +290,6 @@ const Appointments = () => {
               <AppointmentCard
                 key={appointment._id}
                 appointment={appointment}
-                onUpdate={handleAppointmentUpdate}
-                onCancel={handleAppointmentCancel}
               />
             ))
           )}

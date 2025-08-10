@@ -135,6 +135,22 @@ userSchema.methods.isSubscriptionActive = function () {
   );
 };
 
+// Method to consume a session
+userSchema.methods.consumeSession = async function () {
+  if (!this.subscription || this.subscription.sessionsRemaining <= 0) {
+    throw new Error("No sessions remaining");
+  }
+
+  this.subscription.sessionsRemaining -= 1;
+
+  // If no sessions remaining, mark subscription as expired
+  if (this.subscription.sessionsRemaining === 0) {
+    this.subscription.status = "expired";
+  }
+
+  return await this.save();
+};
+
 // Method to match password
 userSchema.methods.matchPassword = async function (enteredPassword) {
   if (!this.passwordHash) {

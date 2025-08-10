@@ -322,6 +322,7 @@ appointmentSchema.methods.reschedule = async function (
 // Instance method to complete appointment
 appointmentSchema.methods.complete = function () {
   this.status = "completed";
+  this.completedAt = new Date();
   return this.save();
 };
 

@@ -581,6 +581,107 @@ class EmailService {
     });
   }
 
+  async sendAppointmentCompletionEmail(
+    email,
+    name,
+    date,
+    timeSlot,
+    clinicName = "Teerthanker Dental Care"
+  ) {
+    const subject = `Appointment Completed - ${clinicName}`;
+    const formattedDate = new Date(date).toLocaleDateString("en-IN", {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+
+    const html = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>${subject}</title>
+      <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px; }
+        .header { background-color: #4CAF50; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
+        .content { padding: 20px; }
+        .appointment-details { background-color: #f9f9f9; padding: 15px; border-left: 4px solid #4CAF50; margin: 20px 0; }
+        .footer { text-align: center; padding: 20px; color: #666; font-size: 12px; }
+        .thank-you { background-color: #e8f5e8; padding: 15px; border-radius: 5px; margin: 20px 0; text-align: center; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1>✅ Appointment Completed!</h1>
+        </div>
+        <div class="content">
+          <h2>Dear ${name},</h2>
+          <p>Thank you for visiting <strong>${clinicName}</strong>! Your appointment has been successfully completed.</p>
+          <div class="appointment-details">
+            <h3>Completed Appointment Details</h3>
+            <p><strong>Date:</strong> ${formattedDate}</p>
+            <p><strong>Time:</strong> ${timeSlot}</p>
+            <p><strong>Status:</strong> Completed</p>
+          </div>
+          <div class="thank-you">
+            <h3>Thank You for Choosing Us!</h3>
+            <p>We hope you had a positive experience with our dental care services. Your oral health is our priority, and we're glad we could assist you today.</p>
+          </div>
+          <p><strong>What's Next?</strong></p>
+          <ul>
+            <li>Follow any post-treatment instructions provided by your dentist</li>
+            <li>Schedule your next appointment if recommended</li>
+            <li>Contact us if you have any questions or concerns</li>
+            <li>Consider leaving us a review to help other patients</li>
+          </ul>
+          <p>If you need to schedule a follow-up appointment or have any questions about your treatment, please don't hesitate to contact us.</p>
+        </div>
+        <div class="footer">
+          <p>This is an automated notification. Please do not reply to this email.</p>
+          <p>&copy; ${new Date().getFullYear()} ${clinicName}. All rights reserved.</p>
+        </div>
+      </div>
+    </body>
+    </html>
+    `;
+
+    const text = `
+    Dear ${name},
+
+    Thank you for visiting ${clinicName}! Your appointment has been successfully completed.
+
+    Completed Appointment Details:
+    - Date: ${formattedDate}
+    - Time: ${timeSlot}
+    - Status: Completed
+
+    Thank You for Choosing Us!
+    We hope you had a positive experience with our dental care services. Your oral health is our priority, and we're glad we could assist you today.
+
+    What's Next:
+    - Follow any post-treatment instructions provided by your dentist
+    - Schedule your next appointment if recommended
+    - Contact us if you have any questions or concerns
+    - Consider leaving us a review to help other patients
+
+    If you need to schedule a follow-up appointment or have any questions about your treatment, please don't hesitate to contact us.
+
+    Regards,
+    ${clinicName}
+    `;
+
+    await this.sendEmail({
+      to: email,
+      subject,
+      html,
+      text,
+    });
+  }
+
   async sendAdminBookingNotificationEmail(
     appointmentData,
     clinicName = "Teerthanker Dental Care"

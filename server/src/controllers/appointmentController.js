@@ -863,6 +863,32 @@ export const completeAppointment = async (req, res) => {
       appointmentId
     ).populate("userId", "name phone email");
 
+    // Consume a session from the user's subscription
+    try {
+      const user = await User.findById(updatedAppointment.userId._id);
+      if (user && user.subscription && user.subscription.sessionsRemaining > 0) {
+        await user.consumeSession();
+        console.log(`Session consumed for user ${user.name}. Remaining: ${user.subscription.sessionsRemaining}`);
+      }
+    } catch (error) {
+      console.error("Failed to consume session:", error);
+      // Don't fail the appointment completion if session consumption fails
+    }
+
+    // Send appointment completion email (non-blocking)
+    if (updatedAppointment.userId.email) {
+      emailService
+        .sendAppointmentCompletionEmail(
+          updatedAppointment.userId.email,
+          updatedAppointment.userId.name,
+          updatedAppointment.date,
+          updatedAppointment.timeSlot
+        )
+        .catch((error) => {
+          console.error("Failed to send appointment completion email:", error);
+        });
+    }
+
     res.status(200).json({
       success: true,
       data: {
@@ -1134,11 +1160,42 @@ export const bulkUpdateAppointments = async (req, res) => {
 
         await appointment.save();
 
+        const populatedAppointment = await Appointment.findById(appointmentId)
+          .populate("userId", "name phone email")
+          .populate("adminActions.performedBy", "name email");
+
+        // Handle completion-specific actions
+        if (action === "complete") {
+          // Consume a session from the user's subscription
+          try {
+            const user = await User.findById(populatedAppointment.userId._id);
+            if (user && user.subscription && user.subscription.sessionsRemaining > 0) {
+              await user.consumeSession();
+              console.log(`Session consumed for user ${user.name}. Remaining: ${user.subscription.sessionsRemaining}`);
+            }
+          } catch (error) {
+            console.error("Failed to consume session:", error);
+            // Don't fail the appointment completion if session consumption fails
+          }
+
+          // Send completion email
+          if (populatedAppointment.userId.email) {
+            emailService
+              .sendAppointmentCompletionEmail(
+                populatedAppointment.userId.email,
+                populatedAppointment.userId.name,
+                populatedAppointment.date,
+                populatedAppointment.timeSlot
+              )
+              .catch((error) => {
+                console.error("Failed to send appointment completion email:", error);
+              });
+          }
+        }
+
         results.successful.push({
           appointmentId,
-          appointment: await Appointment.findById(appointmentId)
-            .populate("userId", "name phone email")
-            .populate("adminActions.performedBy", "name email"),
+          appointment: populatedAppointment,
         });
       } catch (error) {
         console.error(`Error processing appointment ${appointmentId}:`, error);

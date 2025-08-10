@@ -1,9 +1,6 @@
 import React, { useState } from "react";
-import appointmentService from "../../services/appointments";
-import { LoadingSpinner } from "../../shared/components";
 
-const AppointmentCard = ({ appointment, onUpdate, onCancel }) => {
-  const [isLoading, setIsLoading] = useState(false);
+const AppointmentCard = ({ appointment }) => {
   const [showDetails, setShowDetails] = useState(false);
 
   const formatDate = (dateString) => {
@@ -132,47 +129,7 @@ const AppointmentCard = ({ appointment, onUpdate, onCancel }) => {
     }
   };
 
-  const canCancel = () => {
-    const appointmentDate = new Date(appointment.date);
-    const now = new Date();
-    const hoursDiff = (appointmentDate - now) / (1000 * 60 * 60);
 
-    return (
-      (appointment.status === "scheduled" ||
-        appointment.status === "confirmed") &&
-      hoursDiff > 24
-    );
-  };
-
-  const canReschedule = () => {
-    return canCancel(); // Same conditions as cancel
-  };
-
-  const handleCancel = async () => {
-    if (!canCancel()) return;
-
-    const confirmed = window.confirm(
-      "Are you sure you want to cancel this appointment? This action cannot be undone."
-    );
-
-    if (!confirmed) return;
-
-    setIsLoading(true);
-    try {
-      await appointmentService.cancelAppointment(appointment._id);
-      onCancel(appointment._id);
-    } catch (error) {
-      // Error will be handled by axios interceptor
-      console.error("Cancel appointment error:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleReschedule = () => {
-    if (!canReschedule()) return;
-    onUpdate(appointment);
-  };
 
   const isUpcoming = () => {
     const appointmentDate = new Date(appointment.date);
@@ -321,56 +278,6 @@ const AppointmentCard = ({ appointment, onUpdate, onCancel }) => {
               />
             </svg>
           </button>
-
-          {canReschedule() && (
-            <button
-              onClick={handleReschedule}
-              disabled={isLoading}
-              className="p-2 text-blue-600 hover:text-blue-800 rounded-lg hover:bg-blue-50"
-              title="Reschedule appointment"
-            >
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-                />
-              </svg>
-            </button>
-          )}
-
-          {canCancel() && (
-            <button
-              onClick={handleCancel}
-              disabled={isLoading}
-              className="p-2 text-red-600 hover:text-red-800 rounded-lg hover:bg-red-50"
-              title="Cancel appointment"
-            >
-              {isLoading ? (
-                <LoadingSpinner size="sm" />
-              ) : (
-                <svg
-                  className="w-5 h-5"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
-              )}
-            </button>
-          )}
         </div>
       </div>
 

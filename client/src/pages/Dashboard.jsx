@@ -6,29 +6,79 @@ import AppointmentReminders from "../components/dashboard/AppointmentReminders";
 import SessionLimitIndicator from "../components/common/SessionLimitIndicator";
 import { getTimeBasedGreeting, getTimeBasedMessage } from "../shared/utils";
 import { fetchAppointments } from "../store/appointmentSlice";
+import { updateUser } from "../store/authSlice";
+import authService from "../services/auth";
 
 const Dashboard = () => {
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
-  const { upcomingAppointments } = useSelector((state) => state.appointments);
+  const { upcomingAppointments, appointments } = useSelector((state) => state.appointments);
   const [currentGreeting, setCurrentGreeting] = useState("");
   const [currentMessage, setCurrentMessage] = useState("");
+  const [recentActivity, setRecentActivity] = useState([]);
 
-  // Fetch appointments when component mounts
+  // Fetch profile and appointments when component mounts
   useEffect(() => {
-    if (user) {
-      console.log("Dashboard: Fetching appointments for user:", user);
-      dispatch(fetchAppointments());
+    const fetchData = async () => {
+      if (user) {
+        console.log("Dashboard: Fetching data for user:", user);
+        
+        // Fetch latest profile data to get subscription info
+        try {
+          const profileResponse = await authService.getProfile();
+          if (profileResponse.data.success) {
+            dispatch(updateUser(profileResponse.data.data));
+          }
+        } catch (error) {
+          console.error("Failed to fetch profile:", error);
+        }
+        
+        // Fetch appointments
+        dispatch(fetchAppointments());
+      }
+    };
+    
+    fetchData();
+  }, [dispatch, user?.id]); // Use user.id to avoid infinite re-renders
+
+  // Generate recent activity from appointments
+  useEffect(() => {
+    if (appointments && appointments.length > 0) {
+      const activity = appointments
+        .slice(0, 5) // Get last 5 appointments
+        .map((appointment) => {
+          let message = "";
+          const date = new Date(appointment.date).toLocaleDateString("en-IN", {
+            month: "short",
+            day: "numeric",
+          });
+          
+          switch (appointment.status) {
+            case "completed":
+              message = `Appointment completed on ${date}`;
+              break;
+            case "scheduled":
+            case "confirmed":
+              message = `Appointment scheduled for ${date} at ${appointment.timeSlot}`;
+              break;
+            case "cancelled":
+              message = `Appointment cancelled for ${date}`;
+              break;
+            default:
+              message = `Appointment ${appointment.status} for ${date}`;
+          }
+          
+          return {
+            message,
+            date: appointment.createdAt || appointment.date,
+            type: appointment.status
+          };
+        })
+        .sort((a, b) => new Date(b.date) - new Date(a.date)); // Sort by most recent
+      
+      setRecentActivity(activity);
     }
-  }, [dispatch, user]);
-
-  // Debug upcoming appointments
-  useEffect(() => {
-    console.log(
-      "Dashboard: upcomingAppointments changed:",
-      upcomingAppointments
-    );
-  }, [upcomingAppointments]);
+  }, [appointments]);
 
   // Update greeting every minute to keep it current
   useEffect(() => {
@@ -51,6 +101,13 @@ const Dashboard = () => {
     return user.subscription.status === "active"
       ? `${user.subscription.sessionsRemaining} sessions remaining`
       : "Subscription inactive";
+  };
+
+  const getSubscriptionPlanName = () => {
+    if (!user?.subscription) return "No Active Plan";
+    // For now, return a generic plan name since planId is just an ID
+    // You might want to fetch plan details separately if needed
+    return user.subscription.status === "active" ? "Active Plan" : "Inactive Plan";
   };
 
   const formatDate = (dateString) => {
@@ -146,11 +203,12 @@ const Dashboard = () => {
 
         {/* Quick Stats */}
         <div className="grid md:grid-cols-3 gap-6">
-          <div className="card">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">
-              Session Status
-            </h3>
-            <SessionLimitIndicator showDetails={true} />
+          <div className="card text-center">
+            <div className="text-3xl font-bold text-[#346870] mb-2">
+              {user?.subscription?.sessionsRemaining || 0}
+            </div>
+            <p className="text-gray-600">Sessions Remaining</p>
+            <SessionLimitIndicator showDetails={false} />
           </div>
 
           <div className="card text-center">
@@ -165,9 +223,9 @@ const Dashboard = () => {
 
           <div className="card text-center">
             <div className="text-3xl font-bold text-[#346870] mb-2">
-              {user?.subscription?.status === "active" ? "Active" : "Inactive"}
+              {appointments?.filter(apt => apt.status === "completed").length || 0}
             </div>
-            <p className="text-gray-600">Subscription Status</p>
+            <p className="text-gray-600">Completed Appointments</p>
           </div>
         </div>
 
@@ -278,13 +336,17 @@ const Dashboard = () => {
             Recent Activity
           </h2>
           <div className="space-y-3">
-            {user?.recentActivity?.length > 0 ? (
-              user.recentActivity.map((activity, index) => (
+            {recentActivity.length > 0 ? (
+              recentActivity.map((activity, index) => (
                 <div
                   key={index}
                   className="flex items-center p-3 bg-gray-50 rounded-lg"
                 >
-                  <div className="w-2 h-2 bg-[#346870] rounded-full mr-3"></div>
+                  <div className={`w-2 h-2 rounded-full mr-3 ${
+                    activity.type === 'completed' ? 'bg-green-500' :
+                    activity.type === 'scheduled' || activity.type === 'confirmed' ? 'bg-[#346870]' :
+                    activity.type === 'cancelled' ? 'bg-red-500' : 'bg-gray-400'
+                  }`}></div>
                   <div className="flex-1">
                     <p className="text-sm text-gray-800">{activity.message}</p>
                     <p className="text-xs text-gray-500">
@@ -323,14 +385,24 @@ const Dashboard = () => {
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="text-lg font-semibold mb-2">
-                  {user?.subscription?.planId?.name || "No Active Plan"}
+                  {getSubscriptionPlanName()}
                 </h3>
                 <p className="text-sm opacity-90">{getSubscriptionStatus()}</p>
+                {user?.subscription?.totalSessions && (
+                  <p className="text-sm opacity-90 mt-1">
+                    Total Sessions: {user.subscription.totalSessions}
+                  </p>
+                )}
               </div>
               <div className="text-right">
                 {user?.subscription?.endDate && (
                   <p className="text-sm opacity-90">
                     Valid until {formatDate(user.subscription.endDate)}
+                  </p>
+                )}
+                {user?.subscription?.startDate && (
+                  <p className="text-sm opacity-90 mt-1">
+                    Started: {formatDate(user.subscription.startDate)}
                   </p>
                 )}
                 <Link
