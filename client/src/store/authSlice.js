@@ -95,6 +95,9 @@ const authSlice = createSlice({
       state.tempUserData = null;
       state.registrationStep = "details";
     },
+    updateUser: (state, action) => {
+      state.user = action.payload;
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -188,5 +191,6 @@ export const {
   setRegistrationStep,
   setTempUserData,
   clearTempData,
+  updateUser,
 } = authSlice.actions;
 export default authSlice.reducer;

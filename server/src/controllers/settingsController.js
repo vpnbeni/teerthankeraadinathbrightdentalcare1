@@ -464,7 +464,9 @@ export const resetSettingsToDefault = async (req, res, next) => {
     const { category, confirm } = req.body;
 
     if (!confirm) {
-      return next(new SettingsError("Confirmation required to reset settings", 400));
+      return next(
+        new SettingsError("Confirmation required to reset settings", 400)
+      );
     }
 
     const validCategories = [
@@ -487,25 +489,26 @@ export const resetSettingsToDefault = async (req, res, next) => {
       "email-templates": {
         "booking-confirmation": {
           name: "booking-confirmation",
-          subject: "Appointment Confirmation - {{clinicName}}",
+          subject: "Appointment Scheduled - {{clinicName}}",
           htmlContent: `
-            <h2>Appointment Confirmed</h2>
+            <h2>Appointment Scheduled</h2>
             <p>Dear {{patientName}},</p>
-            <p>Your appointment has been confirmed for:</p>
+            <p>Your appointment has been scheduled and is pending approval:</p>
             <ul>
               <li><strong>Date:</strong> {{appointmentDate}}</li>
               <li><strong>Time:</strong> {{appointmentTime}}</li>
               <li><strong>Type:</strong> {{appointmentType}}</li>
+              <li><strong>Status:</strong> Pending Approval</li>
             </ul>
-            <p>Please arrive 15 minutes early for your appointment.</p>
+            <p>You will receive a confirmation email once our team approves your appointment.</p>
             <p>Best regards,<br>{{clinicName}}</p>
           `,
           textContent: `
-            Appointment Confirmed
+            Appointment Scheduled
             
             Dear {{patientName}},
             
-            Your appointment has been confirmed for:
+            Your appointment has been scheduled and is pending approval:
             Date: {{appointmentDate}}
             Time: {{appointmentTime}}
             Type: {{appointmentType}}
@@ -583,6 +586,63 @@ export const resetSettingsToDefault = async (req, res, next) => {
             {
               name: "cancellationReason",
               description: "Reason for cancellation",
+              required: true,
+            },
+            { name: "clinicName", description: "Clinic name", required: true },
+          ],
+        },
+        "appointment-confirmation": {
+          name: "appointment-confirmation",
+          subject: "Appointment Confirmed - {{clinicName}}",
+          htmlContent: `
+            <h2>Appointment Confirmed!</h2>
+            <p>Dear {{patientName}},</p>
+            <p>Great news! Your appointment with <strong>{{clinicName}}</strong> has been confirmed by our team.</p>
+            <ul>
+              <li><strong>Date:</strong> {{appointmentDate}}</li>
+              <li><strong>Time:</strong> {{appointmentTime}}</li>
+              <li><strong>Type:</strong> {{appointmentType}}</li>
+              <li><strong>Status:</strong> Confirmed</li>
+            </ul>
+            <p>Your appointment is now confirmed and secured. Please arrive 10-15 minutes early for check-in.</p>
+            <p>Best regards,<br>{{clinicName}}</p>
+          `,
+          textContent: `
+            Appointment Confirmed!
+            
+            Dear {{patientName}},
+            
+            Great news! Your appointment with {{clinicName}} has been confirmed by our team.
+            
+            Date: {{appointmentDate}}
+            Time: {{appointmentTime}}
+            Type: {{appointmentType}}
+            Status: Confirmed
+            
+            Your appointment is now confirmed and secured. Please arrive 10-15 minutes early for check-in.
+            
+            Best regards,
+            {{clinicName}}
+          `,
+          variables: [
+            {
+              name: "patientName",
+              description: "Patient full name",
+              required: true,
+            },
+            {
+              name: "appointmentDate",
+              description: "Appointment date",
+              required: true,
+            },
+            {
+              name: "appointmentTime",
+              description: "Appointment time",
+              required: true,
+            },
+            {
+              name: "appointmentType",
+              description: "Type of appointment",
               required: true,
             },
             { name: "clinicName", description: "Clinic name", required: true },

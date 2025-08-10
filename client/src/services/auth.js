@@ -87,6 +87,20 @@ export const checkEmailAvailability = async (email) => {
 };
 
 /**
+ * Check phone availability
+ */
+export const checkPhoneAvailability = async (phone) => {
+  try {
+    const response = await api.get(
+      `/auth/check-phone?phone=${encodeURIComponent(phone)}`
+    );
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+/**
  * Send OTP to email
  */
 export const sendEmailOTP = async (email) => {
@@ -116,6 +130,33 @@ export const registerWithEmail = async (email, name, planId, otp) => {
       email,
       name,
       planId,
+      otp,
+    });
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+/**
+ * Send OTP to phone for profile verification
+ */
+export const sendPhoneOTPForProfile = async (phone) => {
+  try {
+    const response = await api.post("/auth/send-phone-otp-profile", { phone });
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+/**
+ * Verify phone OTP for profile
+ */
+export const verifyPhoneOTPForProfile = async (phone, otp) => {
+  try {
+    const response = await api.post("/auth/verify-phone-otp-profile", {
+      phone,
       otp,
     });
     return response.data;

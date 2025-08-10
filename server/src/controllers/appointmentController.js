@@ -22,7 +22,6 @@ export const createAppointment = async (req, res) => {
   try {
     const { date, timeSlot, notes, personalDetails, medicalInfo } = req.body;
 
-
     // Check if time slot is available using new availability service
     const appointmentDate = new Date(date);
     const slotAvailability = await availabilityService.isTimeSlotAvailable(
@@ -33,7 +32,8 @@ export const createAppointment = async (req, res) => {
     if (!slotAvailability.available) {
       return res.status(400).json({
         success: false,
-        message: slotAvailability.reason || "Selected time slot is not available",
+        message:
+          slotAvailability.reason || "Selected time slot is not available",
       });
     }
 
@@ -81,10 +81,10 @@ export const createAppointment = async (req, res) => {
       appointment._id
     ).populate("userId", "name phone email");
 
-    // Send appointment confirmation email (non-blocking)
+    // Send appointment scheduled email (non-blocking)
     if (populatedAppointment.userId.email) {
       emailService
-        .sendAppointmentConfirmationEmail(
+        .sendAppointmentScheduledEmail(
           populatedAppointment.userId.email,
           populatedAppointment.userId.name,
           populatedAppointment.date,
@@ -275,7 +275,8 @@ export const updateAppointment = async (req, res) => {
       if (!slotAvailability.available) {
         return res.status(400).json({
           success: false,
-          message: slotAvailability.reason || "Selected time slot is not available",
+          message:
+            slotAvailability.reason || "Selected time slot is not available",
         });
       }
 
@@ -390,7 +391,6 @@ export const cancelAppointment = async (req, res) => {
     // Cancel the appointment with reason and user info
     await appointment.cancel(reason, req.user._id);
 
-
     const updatedAppointment = await Appointment.findById(appointmentId)
       .populate("userId", "name phone email")
       .populate("cancellationDetails.cancelledBy", "name email");
@@ -449,7 +449,10 @@ export const getAvailableDates = async (req, res) => {
     }
 
     // Use new availability service
-    const availableDates = await availabilityService.getAvailableDates(start, end);
+    const availableDates = await availabilityService.getAvailableDates(
+      start,
+      end
+    );
 
     // Set cache-control headers with optimized caching
     res.set({
@@ -494,7 +497,10 @@ export const validateSlotBooking = async (req, res) => {
     }
 
     // Use new availability service
-    const validation = await availabilityService.isTimeSlotAvailable(date, timeSlot);
+    const validation = await availabilityService.isTimeSlotAvailable(
+      date,
+      timeSlot
+    );
 
     res.status(200).json({
       success: true,
@@ -791,6 +797,23 @@ export const confirmAppointment = async (req, res) => {
       appointmentId
     ).populate("userId", "name phone email");
 
+    // Send appointment confirmation email to patient (non-blocking)
+    if (updatedAppointment.userId.email) {
+      emailService
+        .sendAppointmentConfirmationEmail(
+          updatedAppointment.userId.email,
+          updatedAppointment.userId.name,
+          updatedAppointment.date,
+          updatedAppointment.timeSlot
+        )
+        .catch((error) => {
+          console.error(
+            "Confirmation email sending failed (non-blocking):",
+            error.message
+          );
+        });
+    }
+
     res.status(200).json({
       success: true,
       data: {
@@ -816,7 +839,9 @@ export const completeAppointment = async (req, res) => {
   try {
     const { appointmentId } = req.params;
 
-    const appointment = await Appointment.findById(appointmentId).populate("userId");
+    const appointment = await Appointment.findById(appointmentId).populate(
+      "userId"
+    );
 
     if (!appointment) {
       return res.status(404).json({
@@ -886,7 +911,6 @@ export const adminCancelAppointment = async (req, res) => {
 
     // Cancel the appointment with reason and admin info
     await appointment.cancel(reason, req.user._id);
-
 
     // Send email notification to patient if requested
     if (notifyPatient && appointment.userId.email) {
@@ -983,7 +1007,6 @@ export const bulkCancelAppointments = async (req, res) => {
 
         // Cancel the appointment
         await appointment.cancel(reason, req.user._id);
-
 
         // Send email notification if requested
         if (notifyPatients && appointment.userId.email) {

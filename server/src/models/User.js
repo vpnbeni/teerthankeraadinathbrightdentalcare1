@@ -72,6 +72,16 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    // Phone verification fields
+    phoneVerified: {
+      type: Boolean,
+      default: false,
+    },
+    // Email verification fields
+    emailVerified: {
+      type: Boolean,
+      default: false,
+    },
     lastLogin: {
       type: Date,
     },

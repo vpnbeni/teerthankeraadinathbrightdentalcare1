@@ -679,6 +679,49 @@ export const checkEmailAvailability = async (req, res) => {
 };
 
 /**
+ * Check if phone number is available for registration
+ */
+export const checkPhoneAvailability = async (req, res) => {
+  try {
+    const { phone } = req.query;
+
+    if (!phone) {
+      return res.status(400).json({
+        success: false,
+        message: "Phone number is required",
+      });
+    }
+
+    // Validate Indian phone number format
+    const phoneRegex = /^[6-9]\d{9}$/;
+    if (!phoneRegex.test(phone)) {
+      return res.status(400).json({
+        success: false,
+        message: "Please enter a valid Indian phone number",
+      });
+    }
+
+    // Check if phone already exists
+    const existingUser = await User.findOne({ phone });
+    const available = !existingUser;
+
+    res.status(200).json({
+      success: true,
+      available,
+      message: available
+        ? "Phone number is available"
+        : "Phone number is already registered",
+    });
+  } catch (error) {
+    console.error("Phone availability check error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to check phone availability",
+    });
+  }
+};
+
+/**
  * Send OTP to email address
  */
 export const sendEmailOTP = async (req, res) => {
@@ -855,6 +898,7 @@ export const registerWithEmail = async (req, res) => {
         status: "suspended", // Will be activated after payment
       },
       isVerified: true, // Email is already verified
+      emailVerified: true,
     });
 
     // Generate token and set cookie
@@ -879,6 +923,116 @@ export const registerWithEmail = async (req, res) => {
     res.status(400).json({
       success: false,
       message: error.message,
+    });
+  }
+};
+
+/**
+ * Send OTP to phone number for profile verification
+ */
+export const sendPhoneOTPForProfile = async (req, res) => {
+  try {
+    const { phone } = req.body;
+    const userId = req.user._id;
+
+    if (!phone) {
+      return res.status(400).json({
+        success: false,
+        message: "Phone number is required",
+      });
+    }
+
+    // Check if phone is already registered by another user
+    const existingUser = await User.findOne({
+      phone,
+      _id: { $ne: userId },
+    });
+
+    if (existingUser) {
+      return res.status(400).json({
+        success: false,
+        message: "Phone number is already registered by another user",
+      });
+    }
+
+    // Send OTP via phone
+    const { otpService } = await import("../services/otpService.js");
+    await otpService.sendOTPToContact(phone);
+
+    res.status(200).json({
+      success: true,
+      message: "OTP sent successfully to your phone",
+    });
+  } catch (error) {
+    console.error("Send phone OTP for profile error:", error);
+    res.status(500).json({
+      success: false,
+      message: error.message || "Failed to send OTP",
+    });
+  }
+};
+
+/**
+ * Verify phone OTP and add to profile
+ */
+export const verifyPhoneOTPForProfile = async (req, res) => {
+  try {
+    const { phone, otp } = req.body;
+    const userId = req.user._id;
+
+    if (!phone || !otp) {
+      return res.status(400).json({
+        success: false,
+        message: "Phone number and OTP are required",
+      });
+    }
+
+    // Check if phone is already registered by another user
+    const existingUser = await User.findOne({
+      phone,
+      _id: { $ne: userId },
+    });
+
+    if (existingUser) {
+      return res.status(400).json({
+        success: false,
+        message: "Phone number is already registered by another user",
+      });
+    }
+
+    // Verify OTP
+    const { otpService } = await import("../services/otpService.js");
+    const isValidOTP = await otpService.verifyOTP(phone, otp);
+
+    if (!isValidOTP) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid or expired OTP",
+      });
+    }
+
+    // Update user with verified phone number
+    const user = await User.findByIdAndUpdate(
+      userId,
+      {
+        phone,
+        phoneVerified: true,
+      },
+      { new: true }
+    ).select("-passwordHash");
+
+    res.status(200).json({
+      success: true,
+      message: "Phone number verified and added to your profile successfully",
+      data: {
+        user,
+      },
+    });
+  } catch (error) {
+    console.error("Verify phone OTP for profile error:", error);
+    res.status(500).json({
+      success: false,
+      message: error.message || "Phone verification failed",
     });
   }
 };

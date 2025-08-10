@@ -17,9 +17,12 @@ import {
   checkPasswordStatus,
   adminLogin,
   checkEmailAvailability,
+  checkPhoneAvailability,
   sendEmailOTP,
   verifyEmailOTP,
   registerWithEmail,
+  sendPhoneOTPForProfile,
+  verifyPhoneOTPForProfile,
 } from "../controllers/authController.js";
 import { auth } from "../middleware/auth.js";
 import { validateRequest } from "../middleware/validation.js";
@@ -88,6 +91,9 @@ router.post("/send-email-otp", sendEmailOTP);
 router.post("/verify-email-otp", verifyEmailOTP);
 router.post("/register-with-email", registerWithEmail);
 
+// Phone validation routes
+router.get("/check-phone", checkPhoneAvailability);
+
 // Test endpoints (development only)
 if (process.env.NODE_ENV === "development") {
   router.post("/test-msg91", async (req, res) => {
@@ -123,5 +129,9 @@ router.post(
   changePassword
 );
 router.get("/password-status", auth, checkPasswordStatus);
+
+// Phone verification for profile routes (protected)
+router.post("/send-phone-otp-profile", auth, sendPhoneOTPForProfile);
+router.post("/verify-phone-otp-profile", auth, verifyPhoneOTPForProfile);
 
 export default router;

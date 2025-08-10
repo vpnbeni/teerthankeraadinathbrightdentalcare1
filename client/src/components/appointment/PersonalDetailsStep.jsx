@@ -1,14 +1,22 @@
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
+import { useSelector } from "react-redux";
 import { VALIDATION_RULES, ERROR_MESSAGES } from "../../shared/constants";
 import EmailInput from "./EmailInput";
+import PhoneInput from "./PhoneInput";
 
 const PersonalDetailsStep = ({ data, onNext, onDataChange }) => {
+  const { user } = useSelector((state) => state.auth);
   const [medicalExpanded, setMedicalExpanded] = useState(false);
   const [emailValidation, setEmailValidation] = useState({
     isValid: false,
     isVerified: false,
     isAvailable: null,
+  });
+  const [phoneValidation, setPhoneValidation] = useState({
+    isValid: false,
+    isAvailable: null,
+    isUnique: true,
   });
 
   const {
@@ -17,6 +25,8 @@ const PersonalDetailsStep = ({ data, onNext, onDataChange }) => {
     formState: { errors },
     watch,
     setValue,
+    setError,
+    clearErrors,
   } = useForm({
     defaultValues: {
       ...data.personalDetails,
@@ -25,6 +35,11 @@ const PersonalDetailsStep = ({ data, onNext, onDataChange }) => {
   });
 
   const onSubmit = (formData) => {
+    // Validate phone uniqueness before proceeding
+    if (!phoneValidation.isUnique) {
+      return; // Don't proceed if phone is not unique
+    }
+
     const personalDetails = {
       name: formData.name,
       phone: formData.phone,
@@ -53,6 +68,26 @@ const PersonalDetailsStep = ({ data, onNext, onDataChange }) => {
   // Handle email input change
   const handleEmailChange = (email) => {
     setValue("email", email);
+  };
+
+  // Handle phone validation changes
+  const handlePhoneValidationChange = (validation) => {
+    setPhoneValidation(validation);
+
+    // Set form error if phone is not unique
+    if (validation.isValid && !validation.isUnique) {
+      setError("phone", {
+        type: "manual",
+        message: "This phone number is already registered",
+      });
+    } else if (validation.isValid && validation.isUnique) {
+      clearErrors("phone");
+    }
+  };
+
+  // Handle phone input change
+  const handlePhoneChange = (phone) => {
+    setValue("phone", phone);
   };
 
   return (
@@ -99,24 +134,30 @@ const PersonalDetailsStep = ({ data, onNext, onDataChange }) => {
             >
               Phone Number *
             </label>
+            <PhoneInput
+              value={watch("phone")}
+              onChange={handlePhoneChange}
+              onValidationChange={handlePhoneValidationChange}
+              error={errors.phone?.message}
+              currentUserPhone={user?.phone}
+            />
+            {/* Register the phone field for form validation */}
             <input
-              id="phone"
-              type="tel"
-              className={`input-field ${errors.phone ? "border-red-500" : ""}`}
-              placeholder="Enter your phone number"
+              type="hidden"
               {...register("phone", {
                 required: ERROR_MESSAGES.REQUIRED,
                 pattern: {
                   value: VALIDATION_RULES.PHONE.PATTERN,
                   message: VALIDATION_RULES.PHONE.MESSAGE,
                 },
+                validate: (value) => {
+                  if (!phoneValidation.isUnique) {
+                    return "This phone number is already registered";
+                  }
+                  return true;
+                },
               })}
             />
-            {errors.phone && (
-              <p className="text-red-500 text-sm mt-1">
-                {errors.phone.message}
-              </p>
-            )}
           </div>
 
           <div>
@@ -281,7 +322,11 @@ const PersonalDetailsStep = ({ data, onNext, onDataChange }) => {
 
       {/* Action Buttons */}
       <div className="flex justify-end pt-4 border-t">
-        <button type="submit" className="btn-primary px-6 py-2">
+        <button
+          type="submit"
+          className="btn-primary px-6 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          disabled={!phoneValidation.isUnique || !phoneValidation.isValid}
+        >
           Continue to Date Selection
         </button>
       </div>

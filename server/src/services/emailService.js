@@ -336,6 +336,88 @@ class EmailService {
     });
   }
 
+  async sendAppointmentScheduledEmail(
+    email,
+    name,
+    date,
+    timeSlot,
+    clinicName = "Teerthanker Dental Care"
+  ) {
+    const subject = `Appointment Scheduled - ${clinicName}`;
+    const formattedDate = new Date(date).toLocaleDateString("en-IN", {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+
+    const html = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>${subject}</title>
+      <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px; }
+        .header { background-color: #2563eb; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
+        .content { padding: 20px; }
+        .appointment-details { background-color: #f9f9f9; padding: 15px; border-left: 4px solid #2563eb; margin: 20px 0; }
+        .footer { text-align: center; padding: 20px; color: #666; font-size: 12px; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1>Appointment Scheduled!</h1>
+        </div>
+        <div class="content">
+          <h2>Dear ${name},</h2>
+          <p>Your appointment with <strong>${clinicName}</strong> has been scheduled and is pending approval. We will notify you once it's confirmed.</p>
+          <div class="appointment-details">
+            <h3>Appointment Details</h3>
+            <p><strong>Date:</strong> ${formattedDate}</p>
+            <p><strong>Time:</strong> ${timeSlot}</p>
+            <p><strong>Status:</strong> Pending Approval</p>
+          </div>
+          <p>You will receive a confirmation email once our team approves your appointment. If you need to reschedule or have any questions, please contact us at your earliest convenience.</p>
+        </div>
+        <div class="footer">
+          <p>This is an automated notification. Please do not reply to this email.</p>
+          <p>&copy; ${new Date().getFullYear()} ${clinicName}. All rights reserved.</p>
+        </div>
+      </div>
+    </body>
+    </html>
+    `;
+
+    const text = `
+    Dear ${name},
+
+    Your appointment with ${clinicName} has been scheduled and is pending approval.
+
+    Appointment Details:
+    - Date: ${formattedDate}
+    - Time: ${timeSlot}
+    - Status: Pending Approval
+
+    You will receive a confirmation email once our team approves your appointment.
+
+    If you need to reschedule, please contact us.
+
+    Regards,
+    ${clinicName}
+    `;
+
+    await this.sendEmail({
+      to: email,
+      subject,
+      html,
+      text,
+    });
+  }
+
   async sendAppointmentConfirmationEmail(
     email,
     name,
@@ -343,7 +425,7 @@ class EmailService {
     timeSlot,
     clinicName = "Teerthanker Dental Care"
   ) {
-    const subject = `Appointment Confirmation - ${clinicName}`;
+    const subject = `Appointment Confirmed - ${clinicName}`;
     const formattedDate = new Date(date).toLocaleDateString("en-IN", {
       weekday: "long",
       year: "numeric",
@@ -374,13 +456,14 @@ class EmailService {
         </div>
         <div class="content">
           <h2>Dear ${name},</h2>
-          <p>Your appointment with <strong>${clinicName}</strong> is confirmed. We look forward to seeing you!</p>
+          <p>Great news! Your appointment with <strong>${clinicName}</strong> has been confirmed by our team. We look forward to seeing you!</p>
           <div class="appointment-details">
-            <h3>Appointment Details</h3>
+            <h3>Confirmed Appointment Details</h3>
             <p><strong>Date:</strong> ${formattedDate}</p>
             <p><strong>Time:</strong> ${timeSlot}</p>
+            <p><strong>Status:</strong> Confirmed</p>
           </div>
-          <p>If you need to reschedule or have any questions, please contact us at your earliest convenience.</p>
+          <p>Your appointment is now confirmed and secured. Please arrive 10-15 minutes early for check-in. If you need to reschedule or have any questions, please contact us at your earliest convenience.</p>
         </div>
         <div class="footer">
           <p>This is an automated confirmation. Please do not reply to this email.</p>
@@ -394,11 +477,14 @@ class EmailService {
     const text = `
     Dear ${name},
 
-    Your appointment with ${clinicName} is confirmed.
+    Great news! Your appointment with ${clinicName} has been confirmed by our team.
 
-    Appointment Details:
+    Confirmed Appointment Details:
     - Date: ${formattedDate}
     - Time: ${timeSlot}
+    - Status: Confirmed
+
+    Your appointment is now confirmed and secured. Please arrive 10-15 minutes early for check-in.
 
     If you need to reschedule, please contact us.
 

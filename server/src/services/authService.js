@@ -137,7 +137,7 @@ class AuthService {
     // Update user verification status
     const user = await User.findOneAndUpdate(
       { phone },
-      { isVerified: true },
+      { isVerified: true, phoneVerified: true },
       { new: true }
     ).select("-passwordHash");
 
