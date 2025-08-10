@@ -1,7 +1,7 @@
 // API Base URLs
 export const API_BASE_URL =
   process.env.NODE_ENV === "production"
-    ? "https://teerthankeraadinathbrightdentalcare.vercel.app"
+    ? "https://teerthanker-server.vercel.app"
     : "http://localhost:5000";
 
 // API Endpoints

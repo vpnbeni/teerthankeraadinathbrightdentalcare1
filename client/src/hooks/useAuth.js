@@ -42,6 +42,13 @@ export const useAuth = () => {
       setError(error.response?.data?.message || 'Authentication check failed');
       setIsAuthenticated(false);
       setUser(null);
+      
+      // Redirect to home page if auth fails and we're not already there
+      if (window.location.pathname !== '/' && window.location.pathname !== '/home') {
+        console.log('🔍 checkAuthStatus: Redirecting to home page due to auth failure');
+        window.location.href = '/';
+      }
+      
       return null;
     } finally {
       console.log('🔍 checkAuthStatus: Auth check completed');
