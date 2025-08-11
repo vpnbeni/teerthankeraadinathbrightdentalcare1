@@ -79,92 +79,102 @@ const paymentTransports = [
       })
     ),
   }),
-
-  // Payment operations log
-  new DailyRotateFile({
-    filename: "logs/payment-operations-%DATE%.log",
-    datePattern: "YYYY-MM-DD",
-    level: "info",
-    handleExceptions: true,
-    json: true,
-    maxSize: "50m",
-    maxFiles: "30d",
-    format: paymentLoggerFormat,
-  }),
-
-  // Payment errors log
-  new DailyRotateFile({
-    filename: "logs/payment-errors-%DATE%.log",
-    datePattern: "YYYY-MM-DD",
-    level: "error",
-    handleExceptions: true,
-    json: true,
-    maxSize: "50m",
-    maxFiles: "90d", // Keep error logs longer
-    format: paymentLoggerFormat,
-  }),
-
-  // Payment metrics log
-  new DailyRotateFile({
-    filename: "logs/payment-metrics-%DATE%.log",
-    datePattern: "YYYY-MM-DD",
-    level: "info",
-    handleExceptions: false,
-    json: true,
-    maxSize: "20m",
-    maxFiles: "7d",
-    format: winston.format.combine(
-      winston.format.timestamp(),
-      winston.format.json(),
-      winston.format.printf((info) => {
-        // Only log metrics-related entries
-        if (info.event && info.event.includes("metrics")) {
-          return JSON.stringify({
-            timestamp: info.timestamp,
-            event: info.event,
-            metrics: info.metrics,
-            performance: info.performance,
-            environment: config.NODE_ENV,
-          });
-        }
-        return null;
-      }),
-      winston.format.filter((info) => info.message !== null)
-    ),
-  }),
-
-  // Payment analytics log
-  new DailyRotateFile({
-    filename: "logs/payment-analytics-%DATE%.log",
-    datePattern: "YYYY-MM-DD",
-    level: "info",
-    handleExceptions: false,
-    json: true,
-    maxSize: "30m",
-    maxFiles: "14d",
-    format: winston.format.combine(
-      winston.format.timestamp(),
-      winston.format.json(),
-      winston.format.printf((info) => {
-        // Only log analytics-related entries
-        if (
-          info.event &&
-          (info.event.includes("analytics") || info.event.includes("cache"))
-        ) {
-          return JSON.stringify({
-            timestamp: info.timestamp,
-            event: info.event,
-            data: info.data,
-            performance: info.performance,
-            environment: config.NODE_ENV,
-          });
-        }
-        return null;
-      }),
-      winston.format.filter((info) => info.message !== null)
-    ),
-  }),
 ];
+
+// Only add file transports in non-serverless environments
+const isServerless =
+  process.env.VERCEL ||
+  process.env.AWS_LAMBDA_FUNCTION_NAME ||
+  process.env.FUNCTIONS_WORKER_RUNTIME;
+
+if (!isServerless) {
+  paymentTransports.push(
+    // Payment operations log
+    new DailyRotateFile({
+      filename: "logs/payment-operations-%DATE%.log",
+      datePattern: "YYYY-MM-DD",
+      level: "info",
+      handleExceptions: true,
+      json: true,
+      maxSize: "50m",
+      maxFiles: "30d",
+      format: paymentLoggerFormat,
+    }),
+
+    // Payment errors log
+    new DailyRotateFile({
+      filename: "logs/payment-errors-%DATE%.log",
+      datePattern: "YYYY-MM-DD",
+      level: "error",
+      handleExceptions: true,
+      json: true,
+      maxSize: "50m",
+      maxFiles: "90d", // Keep error logs longer
+      format: paymentLoggerFormat,
+    }),
+
+    // Payment metrics log
+    new DailyRotateFile({
+      filename: "logs/payment-metrics-%DATE%.log",
+      datePattern: "YYYY-MM-DD",
+      level: "info",
+      handleExceptions: false,
+      json: true,
+      maxSize: "20m",
+      maxFiles: "7d",
+      format: winston.format.combine(
+        winston.format.timestamp(),
+        winston.format.json(),
+        winston.format.printf((info) => {
+          // Only log metrics-related entries
+          if (info.event && info.event.includes("metrics")) {
+            return JSON.stringify({
+              timestamp: info.timestamp,
+              event: info.event,
+              metrics: info.metrics,
+              performance: info.performance,
+              environment: config.NODE_ENV,
+            });
+          }
+          return null;
+        }),
+        winston.format.filter((info) => info.message !== null)
+      ),
+    }),
+
+    // Payment analytics log
+    new DailyRotateFile({
+      filename: "logs/payment-analytics-%DATE%.log",
+      datePattern: "YYYY-MM-DD",
+      level: "info",
+      handleExceptions: false,
+      json: true,
+      maxSize: "30m",
+      maxFiles: "14d",
+      format: winston.format.combine(
+        winston.format.timestamp(),
+        winston.format.json(),
+        winston.format.printf((info) => {
+          // Only log analytics-related entries
+          if (
+            info.event &&
+            (info.event.includes("analytics") || info.event.includes("cache"))
+          ) {
+            return JSON.stringify({
+              timestamp: info.timestamp,
+              event: info.event,
+              data: info.data,
+              performance: info.performance,
+              environment: config.NODE_ENV,
+            });
+          }
+          return null;
+        }),
+        winston.format.filter((info) => info.message !== null)
+      ),
+    })
+  );
+}
 
 // Create specialized payment logger
 export const paymentLogger = winston.createLogger({
