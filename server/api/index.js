@@ -22,7 +22,7 @@ const connectDB = async () => {
       family: 4,
       maxPoolSize: 10,
       retryWrites: true,
-      w: 'majority'
+      w: "majority",
     };
 
     const conn = await mongoose.connect(process.env.MONGODB_URI, options);
@@ -74,8 +74,8 @@ const corsOptions = {
 // Middleware
 app.use(cors(corsOptions));
 app.use(compression());
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(express.json({ limit: "10mb" }));
+app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 app.use(cookieParser());
 
 // Health check routes
@@ -85,7 +85,7 @@ app.get("/", (req, res) => {
     message: "Teerthanker Dental Care API is running on Vercel!",
     timestamp: new Date().toISOString(),
     environment: process.env.NODE_ENV || "production",
-    version: "1.0.0"
+    version: "1.0.0",
   });
 });
 
@@ -95,7 +95,7 @@ app.get("/api", (req, res) => {
     message: "Teerthanker Dental Care API is running!",
     timestamp: new Date().toISOString(),
     environment: process.env.NODE_ENV || "production",
-    version: "1.0.0"
+    version: "1.0.0",
   });
 });
 
@@ -120,14 +120,14 @@ app.get("/api/test", async (req, res) => {
         jwt_secret: process.env.JWT_SECRET ? "✅ Set" : "❌ Missing",
         razorpay_key: process.env.RAZORPAY_KEY_ID ? "✅ Set" : "❌ Missing",
         node_env: process.env.NODE_ENV || "development",
-        database_status: dbStatus
-      }
+        database_status: dbStatus,
+      },
     });
   } catch (error) {
     res.status(500).json({
       success: false,
       message: "Test endpoint error",
-      error: error.message
+      error: error.message,
     });
   }
 });
@@ -140,13 +140,13 @@ app.get("/api/health", async (req, res) => {
       success: true,
       message: "API is healthy",
       database: "connected",
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
   } catch (error) {
     res.status(500).json({
       success: false,
       message: "Health check failed",
-      error: error.message
+      error: error.message,
     });
   }
 });
@@ -161,7 +161,7 @@ app.use("/api/auth", async (req, res, next) => {
     res.status(500).json({
       success: false,
       message: "Auth route loading failed",
-      error: error.message
+      error: error.message,
     });
   }
 });
@@ -169,13 +169,15 @@ app.use("/api/auth", async (req, res, next) => {
 app.use("/api/payments", async (req, res, next) => {
   try {
     await connectDB();
-    const { default: paymentRoutes } = await import("../src/routes/payments.js");
+    const { default: paymentRoutes } = await import(
+      "../src/routes/payments.js"
+    );
     paymentRoutes(req, res, next);
   } catch (error) {
     res.status(500).json({
       success: false,
       message: "Payment route loading failed",
-      error: error.message
+      error: error.message,
     });
   }
 });
@@ -189,7 +191,99 @@ app.use("/api/plans", async (req, res, next) => {
     res.status(500).json({
       success: false,
       message: "Plans route loading failed",
-      error: error.message
+      error: error.message,
+    });
+  }
+});
+
+app.use("/api/users", async (req, res, next) => {
+  try {
+    await connectDB();
+    const { default: userRoutes } = await import("../src/routes/users.js");
+    userRoutes(req, res, next);
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "User route loading failed",
+      error: error.message,
+    });
+  }
+});
+
+app.use("/api/appointments", async (req, res, next) => {
+  try {
+    await connectDB();
+    const { default: appointmentRoutes } = await import(
+      "../src/routes/appointments.js"
+    );
+    appointmentRoutes(req, res, next);
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Appointments route loading failed",
+      error: error.message,
+    });
+  }
+});
+
+app.use("/api/admin", async (req, res, next) => {
+  try {
+    await connectDB();
+    const { default: adminRoutes } = await import("../src/routes/admin.js");
+    adminRoutes(req, res, next);
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Admin route loading failed",
+      error: error.message,
+    });
+  }
+});
+
+app.use("/api/analytics", async (req, res, next) => {
+  try {
+    await connectDB();
+    const { default: analyticsRoutes } = await import(
+      "../src/routes/analytics.js"
+    );
+    analyticsRoutes(req, res, next);
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Analytics route loading failed",
+      error: error.message,
+    });
+  }
+});
+
+app.use("/api/availability", async (req, res, next) => {
+  try {
+    await connectDB();
+    const { default: availabilityRoutes } = await import(
+      "../src/routes/availability.js"
+    );
+    availabilityRoutes(req, res, next);
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Availability route loading failed",
+      error: error.message,
+    });
+  }
+});
+
+app.use("/api/session-limits", async (req, res, next) => {
+  try {
+    await connectDB();
+    const { default: sessionLimitsRoutes } = await import(
+      "../src/routes/sessionLimits.js"
+    );
+    sessionLimitsRoutes(req, res, next);
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Session limits route loading failed",
+      error: error.message,
     });
   }
 });
@@ -206,9 +300,15 @@ app.use("*", (req, res) => {
       "GET /api/health - Database health check",
       "POST /api/auth/* - Authentication endpoints",
       "GET /api/payments/* - Payment endpoints",
-      "GET /api/plans - Plans endpoint"
+      "GET /api/plans - Plans endpoint",
+      "GET /api/users/* - User management endpoints",
+      "GET /api/appointments - Appointments endpoints",
+      "GET /api/admin/* - Admin management endpoints",
+      "GET /api/analytics/* - Analytics endpoints",
+      "GET /api/availability/* - Availability endpoints",
+      "GET /api/session-limits/* - Session limits endpoints",
     ],
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   });
 });
 
@@ -218,8 +318,11 @@ app.use((err, req, res, next) => {
   res.status(err.statusCode || 500).json({
     success: false,
     message: err.message || "Internal server error",
-    error: process.env.NODE_ENV === "development" ? err.stack : "Something went wrong",
-    timestamp: new Date().toISOString()
+    error:
+      process.env.NODE_ENV === "development"
+        ? err.stack
+        : "Something went wrong",
+    timestamp: new Date().toISOString(),
   });
 });
 
