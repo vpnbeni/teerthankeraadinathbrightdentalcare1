@@ -142,8 +142,13 @@ const config = {
       "http://127.0.0.1:5173",
     ],
     production: [
+      process.env.CLIENT_URL ||
+        "https://teerthankeraadinathbrightdentalcare-ten.vercel.app",
+      process.env.ADMIN_URL ||
+        "https://teerthankeraadinathbrightdentalcare-ten.vercel.app",
       process.env.PROD_CLIENT_URL || "https://client.teerthankerdentalcare.com",
       process.env.PROD_ADMIN_URL || "https://admin.teerthankerdentalcare.com",
+      "https://teerthankeraadinathbrightdentalcare.vercel.app",
     ],
   },
 

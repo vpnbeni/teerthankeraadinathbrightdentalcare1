@@ -2,6 +2,8 @@ import { User, Appointment, Payment } from "../models/index.js";
 import path from "path";
 import fs from "fs";
 import { fileService } from "../services/fileService.js";
+import { v2 as cloudinary } from "cloudinary";
+import { config } from "../config/environment.js";
 
 /**
  * User Management Controller
@@ -742,27 +744,69 @@ export const uploadDocument = async (req, res) => {
     });
 
     try {
-      const result = await fileService.uploadUserDocument(
-        req.user._id,
-        req.file,
-        type
+      // Configure Cloudinary
+      cloudinary.config({
+        cloud_name: config.CLOUDINARY.CLOUD_NAME,
+        api_key: config.CLOUDINARY.API_KEY,
+        api_secret: config.CLOUDINARY.API_SECRET,
+      });
+
+      // Direct Cloudinary upload
+      const timestamp = Date.now();
+      const publicId = `users/${req.user._id}/documents/${type}_${timestamp}`;
+
+      const uploadResult = await new Promise((resolve, reject) => {
+        cloudinary.uploader
+          .upload_stream(
+            {
+              resource_type: "auto",
+              folder: "dental-care/documents",
+              public_id: publicId,
+            },
+            (error, result) => {
+              if (error) {
+                console.error("Cloudinary upload stream error:", error);
+                reject(error);
+              } else {
+                console.log("Cloudinary upload successful:", {
+                  public_id: result.public_id,
+                  secure_url: result.secure_url,
+                  resource_type: result.resource_type,
+                });
+                resolve(result);
+              }
+            }
+          )
+          .end(req.file.buffer);
+      });
+
+      // Remove existing document of same type
+      const existingDocIndex = user.documents.findIndex(
+        (doc) => doc.type === type
       );
 
-      console.log("Document uploaded to Cloudinary:", result);
+      if (existingDocIndex !== -1) {
+        user.documents.splice(existingDocIndex, 1);
+      }
 
-      // Get the updated user to return the document with the correct structure
-      const updatedUser = await User.findById(req.user._id);
-      const uploadedDocument =
-        updatedUser.documents[updatedUser.documents.length - 1];
+      // Add new document to user
+      const newDocument = {
+        type,
+        url: uploadResult.secure_url,
+        uploadDate: new Date(),
+      };
+
+      user.documents.push(newDocument);
+      await user.save();
 
       res.json({
         success: true,
         message: "Document uploaded successfully",
         data: {
-          _id: uploadedDocument._id,
-          type: uploadedDocument.type,
-          fileUrl: uploadedDocument.url, // Map url to fileUrl for consistency
-          uploadDate: uploadedDocument.uploadDate,
+          _id: newDocument._id,
+          type: newDocument.type,
+          fileUrl: newDocument.url,
+          uploadDate: newDocument.uploadDate,
           fileName: req.file.originalname,
           fileSize: req.file.size,
         },
@@ -842,27 +886,40 @@ export const deleteDocument = async (req, res) => {
 
     const document = user.documents[documentIndex];
 
-    // Try fileService first, fallback to local deletion
-    try {
-      await fileService.deleteUserDocument(req.user._id, document.type);
-    } catch (fileServiceError) {
-      console.warn(
-        "FileService delete failed, using local deletion:",
-        fileServiceError.message
-      );
+    // Handle Cloudinary or local file deletion
+    if (document.url && document.url.includes("cloudinary.com")) {
+      // Extract public_id from Cloudinary URL
+      const urlParts = document.url.split("/");
+      const publicIdWithExtension = urlParts.slice(-2).join("/");
+      const publicId = publicIdWithExtension.split(".")[0];
 
-      // Fallback to local file deletion
-      if (document.fileUrl && document.fileUrl.startsWith("uploads/")) {
-        const filePath = path.join(process.cwd(), document.fileUrl);
-        if (fs.existsSync(filePath)) {
-          fs.unlinkSync(filePath);
-        }
+      try {
+        cloudinary.config({
+          cloud_name: config.CLOUDINARY.CLOUD_NAME,
+          api_key: config.CLOUDINARY.API_KEY,
+          api_secret: config.CLOUDINARY.API_SECRET,
+        });
+
+        await cloudinary.uploader.destroy(publicId, { resource_type: "auto" });
+        console.log("Deleted from Cloudinary:", publicId);
+      } catch (cloudinaryError) {
+        console.warn(
+          "Failed to delete from Cloudinary:",
+          cloudinaryError.message
+        );
       }
-
-      // Remove from user documents
-      user.documents.splice(documentIndex, 1);
-      await user.save();
+    } else if (document.fileUrl && document.fileUrl.startsWith("uploads/")) {
+      // Local file deletion
+      const filePath = path.join(process.cwd(), document.fileUrl);
+      if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
+        console.log("Deleted local file:", filePath);
+      }
     }
+
+    // Remove from user documents
+    user.documents.splice(documentIndex, 1);
+    await user.save();
 
     res.json({
       success: true,

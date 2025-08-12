@@ -38,12 +38,10 @@ class AuthService {
       ),
       httpOnly: true,
       secure: config.NODE_ENV === "production",
-      sameSite: config.NODE_ENV === "production" ? "strict" : "lax",
+      sameSite: config.NODE_ENV === "production" ? "none" : "lax",
       path: "/",
-      domain:
-        config.NODE_ENV === "production"
-          ? ".teerthankerdentalcare.com"
-          : undefined,
+      // Don't set domain for Vercel deployments to avoid cross-domain issues
+      domain: undefined,
     };
 
     res.cookie("token", token, cookieOptions);

@@ -189,18 +189,8 @@ export const corsOptions = {
   origin: (origin, callback) => {
     const allowedOrigins =
       config.NODE_ENV === "production"
-        ? [
-            "https://client.teerthankerdentalcare.com",
-            "https://admin.teerthankerdentalcare.com",
-          ]
-        : [
-            "http://localhost:3000",
-            "http://localhost:3001",
-            "http://localhost:5173",
-            "http://127.0.0.1:3000",
-            "http://127.0.0.1:3001",
-            "http://127.0.0.1:5173",
-          ];
+        ? config.CORS_ORIGINS.production
+        : config.CORS_ORIGINS.development;
 
     // Allow requests with no origin (mobile apps, etc.)
     if (!origin) return callback(null, true);
@@ -208,6 +198,8 @@ export const corsOptions = {
     if (allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
+      console.log(`CORS blocked origin: ${origin}`);
+      console.log(`Allowed origins: ${allowedOrigins.join(", ")}`);
       callback(new Error("Not allowed by CORS"));
     }
   },

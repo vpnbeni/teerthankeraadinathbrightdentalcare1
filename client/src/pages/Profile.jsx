@@ -145,12 +145,7 @@ const Profile = () => {
                   <p className="text-sm text-gray-500">
                     Found {documents.length} documents
                   </p>
-                  <div className="text-xs text-gray-400 mb-2">
-                    Debug:{" "}
-                    {JSON.stringify(
-                      documents.map((d) => ({ id: d._id, type: d.type }))
-                    )}
-                  </div>
+
                   {documents.length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {documents.map((doc) => (
