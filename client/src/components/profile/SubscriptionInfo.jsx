@@ -1,6 +1,8 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 
 const SubscriptionInfo = ({ subscription }) => {
+  const navigate = useNavigate();
   if (!subscription) {
     return (
       <div className="text-center py-8">
@@ -26,7 +28,7 @@ const SubscriptionInfo = ({ subscription }) => {
           You don't have any active subscription plan.
         </p>
         <button
-          onClick={() => (window.location.href = "/plans")}
+          onClick={() => navigate("/plans")}
           className="btn-primary px-6 py-2"
         >
           View Available Plans
@@ -166,7 +168,7 @@ const SubscriptionInfo = ({ subscription }) => {
       {subscription.status === "active" && (
         <div className="flex justify-end">
           <button
-            onClick={() => (window.location.href = "/plans")}
+            onClick={() => navigate("/plans")}
             className="btn-secondary px-6 py-2"
           >
             Upgrade Plan
@@ -179,7 +181,7 @@ const SubscriptionInfo = ({ subscription }) => {
         subscription.status === "cancelled") && (
         <div className="flex justify-end">
           <button
-            onClick={() => (window.location.href = "/plans")}
+            onClick={() => navigate("/plans")}
             className="btn-primary px-6 py-2"
           >
             Renew Subscription

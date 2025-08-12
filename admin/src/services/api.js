@@ -115,9 +115,9 @@ api.interceptors.response.use(
       localStorage.removeItem("adminToken");
 
       // Don't redirect if already on login page
-      if (!window.location.pathname.includes("/login")) {
+      if (!window.location.hash.includes("#/login")) {
         setTimeout(() => {
-          window.location.href = "/login";
+          window.location.hash = "#/login";
         }, 1000);
       }
 

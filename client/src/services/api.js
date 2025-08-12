@@ -118,7 +118,7 @@ api.interceptors.response.use(
     if (response?.status === 401) {
       // Don't redirect if this is an auth check request (initial load) or if skipRedirect is true
       if (!config.url?.includes("/auth/check") && !config.skipRedirect) {
-        window.location.href = "/";
+        window.location.hash = "#/";
         toast.error("Your session has expired. Please log in again.");
       }
       return Promise.reject(error);

@@ -1,7 +1,7 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { Provider } from "react-redux";
-import { BrowserRouter } from "react-router-dom";
+import { HashRouter } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 import App from "./App.jsx";
 import { store } from "./store/store.js";
@@ -12,7 +12,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
   process.env.NODE_ENV === "development" ? (
     <React.StrictMode>
       <Provider store={store}>
-        <BrowserRouter
+        <HashRouter
           future={{
             v7_startTransition: true,
             v7_relativeSplatPath: true,
@@ -39,12 +39,12 @@ ReactDOM.createRoot(document.getElementById("root")).render(
               },
             }}
           />
-        </BrowserRouter>
+        </HashRouter>
       </Provider>
     </React.StrictMode>
   ) : (
     <Provider store={store}>
-      <BrowserRouter
+      <HashRouter
         future={{
           v7_startTransition: true,
           v7_relativeSplatPath: true,
@@ -71,7 +71,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
             },
           }}
         />
-      </BrowserRouter>
+      </HashRouter>
     </Provider>
   )
 );

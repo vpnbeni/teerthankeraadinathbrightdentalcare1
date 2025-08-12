@@ -248,7 +248,7 @@ class ErrorBoundary extends React.Component {
               {/* Back to dashboard link */}
               <div className="mt-6">
                 <a
-                  href="/admin"
+                  href="#/dashboard"
                   className="text-sm text-blue-600 hover:text-blue-500 font-medium"
                 >
                   ← Back to Dashboard

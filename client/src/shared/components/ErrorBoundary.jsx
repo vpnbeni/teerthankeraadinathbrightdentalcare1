@@ -76,7 +76,7 @@ class ErrorBoundary extends React.Component {
                 Refresh Page
               </button>
               <button
-                onClick={() => (window.location.href = "/")}
+                onClick={() => (window.location.hash = "#/")}
                 className="w-full bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium py-2 px-4 rounded-lg transition-colors duration-200"
               >
                 Go to Home

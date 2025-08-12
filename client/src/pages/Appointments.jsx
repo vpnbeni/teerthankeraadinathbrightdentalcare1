@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
+import { Link } from "react-router-dom";
 import DashboardLayout from "../components/common/DashboardLayout";
 import BookingModal from "../components/appointment/BookingModal";
 import AppointmentCard from "../components/appointment/AppointmentCard";
@@ -49,8 +50,6 @@ const Appointments = () => {
       console.log("Profile updated with verified email and information");
     }
   };
-
-
 
   const filterAppointments = (appointments, filter) => {
     const now = new Date();
@@ -184,8 +183,8 @@ const Appointments = () => {
                 </p>
                 {needsUpgrade(user, appointments) && (
                   <div className="mt-3">
-                    <a
-                      href="/payments"
+                    <Link
+                      to="/payments"
                       className="inline-flex items-center px-4 py-2 bg-[#346870] text-white text-sm font-medium rounded-lg hover:bg-[#2a5359] transition-colors"
                     >
                       <svg
@@ -202,7 +201,7 @@ const Appointments = () => {
                         />
                       </svg>
                       Upgrade Plan
-                    </a>
+                    </Link>
                   </div>
                 )}
               </div>

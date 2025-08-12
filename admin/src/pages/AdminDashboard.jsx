@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { Link } from "react-router-dom";
 import AdminLayout from "../components/common/AdminLayout";
 import StatsCards from "../components/analytics/StatsCards";
 import { LoadingSpinner } from "../shared/components";
@@ -115,12 +116,12 @@ const AdminDashboard = () => {
               <h2 className="text-lg font-semibold text-gray-900">
                 Recent Users
               </h2>
-              <a
-                href="/users"
+              <Link
+                to="/users"
                 className="text-sm text-[#346870] hover:text-[#2a5359] font-medium"
               >
                 View all
-              </a>
+              </Link>
             </div>
             <div className="space-y-3">
               {recentUsers?.length > 0 ? (
@@ -166,12 +167,12 @@ const AdminDashboard = () => {
               <h2 className="text-lg font-semibold text-gray-900">
                 Recent Appointments
               </h2>
-              <a
-                href="/appointments"
+              <Link
+                to="/appointments"
                 className="text-sm text-[#346870] hover:text-[#2a5359] font-medium"
               >
                 View all
-              </a>
+              </Link>
             </div>
             <div className="space-y-3">
               {recentAppointments?.length > 0 ? (
@@ -228,8 +229,8 @@ const AdminDashboard = () => {
             Quick Actions
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <a
-              href="/users"
+            <Link
+              to="/users"
               className="flex items-center p-4 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
             >
               <UsersIcon className="h-8 w-8 text-blue-600 mr-3" />
@@ -237,9 +238,9 @@ const AdminDashboard = () => {
                 <p className="font-medium text-blue-900">Manage Users</p>
                 <p className="text-sm text-blue-600">View and edit users</p>
               </div>
-            </a>
-            <a
-              href="/appointments"
+            </Link>
+            <Link
+              to="/appointments"
               className="flex items-center p-4 bg-green-50 rounded-lg hover:bg-green-100 transition-colors"
             >
               <CalendarIcon className="h-8 w-8 text-green-600 mr-3" />
@@ -247,9 +248,9 @@ const AdminDashboard = () => {
                 <p className="font-medium text-green-900">Appointments</p>
                 <p className="text-sm text-green-600">Schedule & manage</p>
               </div>
-            </a>
-            <a
-              href="/sessions"
+            </Link>
+            <Link
+              to="/sessions"
               className="flex items-center p-4 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors"
             >
               <DocumentTextIcon className="h-8 w-8 text-purple-600 mr-3" />
@@ -257,9 +258,9 @@ const AdminDashboard = () => {
                 <p className="font-medium text-purple-900">Sessions</p>
                 <p className="text-sm text-purple-600">Record examinations</p>
               </div>
-            </a>
-            <a
-              href="/analytics"
+            </Link>
+            <Link
+              to="/analytics"
               className="flex items-center p-4 bg-yellow-50 rounded-lg hover:bg-yellow-100 transition-colors"
             >
               <CurrencyRupeeIcon className="h-8 w-8 text-yellow-600 mr-3" />
