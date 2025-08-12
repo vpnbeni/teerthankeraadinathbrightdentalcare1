@@ -62,6 +62,8 @@ class FileService {
    */
   async uploadToCloudinary(fileBuffer, options = {}) {
     try {
+      console.log("Cloudinary upload starting with options:", options);
+
       const uploadOptions = {
         resource_type: "auto",
         folder: options.folder || "dental-care",
@@ -74,8 +76,14 @@ class FileService {
         cloudinary.uploader
           .upload_stream(uploadOptions, (error, result) => {
             if (error) {
+              console.error("Cloudinary upload stream error:", error);
               reject(error);
             } else {
+              console.log("Cloudinary upload successful:", {
+                public_id: result.public_id,
+                secure_url: result.secure_url,
+                resource_type: result.resource_type,
+              });
               resolve(result);
             }
           })
@@ -107,6 +115,25 @@ class FileService {
    */
   async uploadUserDocument(userId, file, documentType) {
     try {
+      console.log(
+        "FileService: Starting upload for user:",
+        userId,
+        "type:",
+        documentType
+      );
+      console.log("Cloudinary config:", {
+        cloud_name: cloudinary.config().cloud_name,
+        api_key: cloudinary.config().api_key ? "***" : "missing",
+      });
+
+      // Validate file
+      console.log("Validating file:", {
+        mimetype: file.mimetype,
+        size: file.size,
+        hasBuffer: !!file.buffer,
+      });
+      this.validateFile(file);
+
       // Validate document type
       const validTypes = ["id_proof", "medical_record", "insurance"];
       if (!validTypes.includes(documentType)) {

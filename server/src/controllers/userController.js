@@ -1,4 +1,7 @@
 import { User, Appointment, Payment } from "../models/index.js";
+import path from "path";
+import fs from "fs";
+import { fileService } from "../services/fileService.js";
 
 /**
  * User Management Controller
@@ -337,24 +340,26 @@ export const getUserDashboardStats = async (req, res) => {
   try {
     const userId = req.user._id;
 
-    const [
-      totalAppointments,
-      upcomingAppointments,
-      totalPayments,
-    ] = await Promise.all([
-      Appointment.countDocuments({ userId }),
-      Appointment.countDocuments({
-        userId,
-        status: { $in: ["scheduled", "confirmed"] },
-        date: { $gte: new Date() },
-      }),
-      Payment.countDocuments({ userId, status: "completed" }),
-    ]);
+    const [totalAppointments, upcomingAppointments, totalPayments] =
+      await Promise.all([
+        Appointment.countDocuments({ userId }),
+        Appointment.countDocuments({
+          userId,
+          status: { $in: ["scheduled", "confirmed"] },
+          date: { $gte: new Date() },
+        }),
+        Payment.countDocuments({ userId, status: "completed" }),
+      ]);
 
-    const recentAppointments = await Appointment.find({ userId })
+    const recentAppointmentsRaw = await Appointment.find({ userId })
       .sort({ date: -1 })
       .limit(5)
       .populate("userId", "name phone email");
+
+    // Filter out appointments with deleted users
+    const recentAppointments = recentAppointmentsRaw.filter(
+      (appointment) => appointment.userId !== null
+    );
 
     res.status(200).json({
       success: true,
@@ -412,13 +417,18 @@ export const getAdminDashboardStats = async (req, res) => {
       .limit(5)
       .populate("subscription.planId", "name sessions price");
 
-    const upcomingAppointments = await Appointment.find({
+    const upcomingAppointmentsRaw = await Appointment.find({
       date: { $gte: new Date() },
       status: { $in: ["scheduled", "confirmed"] },
     })
       .sort({ date: 1 })
       .limit(10)
       .populate("userId", "name phone email");
+
+    // Filter out appointments with deleted users
+    const upcomingAppointments = upcomingAppointmentsRaw.filter(
+      (appointment) => appointment.userId !== null
+    );
 
     res.status(200).json({
       success: true,
@@ -462,7 +472,7 @@ export const getUserActivity = async (req, res) => {
     }
 
     // Get user's appointments, sessions, and payments
-    const [appointments, payments] = await Promise.all([
+    const [appointmentsRaw, payments] = await Promise.all([
       Appointment.find({ userId })
         .sort({ createdAt: -1 })
         .populate("userId", "name phone"),
@@ -470,6 +480,11 @@ export const getUserActivity = async (req, res) => {
         .sort({ transactionDate: -1 })
         .populate("planId", "name sessions price"),
     ]);
+
+    // Filter out appointments with deleted users
+    const appointments = appointmentsRaw.filter(
+      (appointment) => appointment.userId !== null
+    );
 
     // Combine and sort all activities
     const activities = [
@@ -653,14 +668,27 @@ export const updateMedicalInfo = async (req, res) => {
 // Get user documents
 export const getDocuments = async (req, res) => {
   try {
+    // Get user documents directly from database
     const user = await User.findById(req.user._id).select("documents");
+
+    // Map documents to ensure consistent structure
+    const documents = user.documents.map((doc) => ({
+      _id: doc._id,
+      type: doc.type,
+      fileUrl: doc.url || doc.fileUrl, // Handle both Cloudinary (url) and local (fileUrl)
+      uploadDate: doc.uploadDate,
+      fileName: doc.fileName,
+      fileSize: doc.fileSize,
+    }));
+
     res.json({
       success: true,
       data: {
-        documents: user.documents || [],
+        documents: documents || [],
       },
     });
   } catch (error) {
+    console.error("Get documents error:", error);
     res.status(500).json({
       success: false,
       message: error.message,
@@ -671,6 +699,18 @@ export const getDocuments = async (req, res) => {
 // Upload document
 export const uploadDocument = async (req, res) => {
   try {
+    console.log("Upload request received:", {
+      file: req.file
+        ? {
+            originalname: req.file.originalname,
+            mimetype: req.file.mimetype,
+            size: req.file.size,
+          }
+        : null,
+      body: req.body,
+      userId: req.user?._id,
+    });
+
     if (!req.file) {
       return res.status(400).json({
         success: false,
@@ -687,21 +727,94 @@ export const uploadDocument = async (req, res) => {
     }
 
     const user = await User.findById(req.user._id);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
 
-    user.documents.push({
-      type,
-      fileUrl: req.file.path, // Assuming file is saved and path is available
-      uploadDate: new Date(),
+    // Try to use Cloudinary first, fallback to local storage
+    console.log("Attempting Cloudinary upload with credentials:", {
+      cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+      api_key: process.env.CLOUDINARY_API_KEY ? "***" : "missing",
+      api_secret: process.env.CLOUDINARY_API_SECRET ? "***" : "missing",
     });
 
-    await user.save();
+    try {
+      const result = await fileService.uploadUserDocument(
+        req.user._id,
+        req.file,
+        type
+      );
 
-    res.json({
-      success: true,
-      message: "Document uploaded successfully",
-      data: user.documents[user.documents.length - 1],
-    });
+      console.log("Document uploaded to Cloudinary:", result);
+
+      // Get the updated user to return the document with the correct structure
+      const updatedUser = await User.findById(req.user._id);
+      const uploadedDocument =
+        updatedUser.documents[updatedUser.documents.length - 1];
+
+      res.json({
+        success: true,
+        message: "Document uploaded successfully",
+        data: {
+          _id: uploadedDocument._id,
+          type: uploadedDocument.type,
+          fileUrl: uploadedDocument.url, // Map url to fileUrl for consistency
+          uploadDate: uploadedDocument.uploadDate,
+          fileName: req.file.originalname,
+          fileSize: req.file.size,
+        },
+      });
+    } catch (cloudinaryError) {
+      console.error(
+        "Cloudinary upload failed with full error:",
+        cloudinaryError
+      );
+      console.warn(
+        "Cloudinary upload failed, using local storage:",
+        cloudinaryError.message
+      );
+
+      // Fallback to local storage approach
+      const timestamp = Date.now();
+      const randomSuffix = Math.round(Math.random() * 1e9);
+      const fileName = `file-${timestamp}-${randomSuffix}${path.extname(
+        req.file.originalname
+      )}`;
+      const filePath = path.join(
+        process.cwd(),
+        "uploads",
+        "documents",
+        fileName
+      );
+
+      // Save file locally
+      fs.writeFileSync(filePath, req.file.buffer);
+
+      const newDocument = {
+        type,
+        fileUrl: `uploads/documents/${fileName}`,
+        fileName: req.file.originalname,
+        fileSize: req.file.size,
+        uploadDate: new Date(),
+      };
+
+      user.documents.push(newDocument);
+      await user.save();
+
+      console.log("Document saved locally:", newDocument);
+
+      res.json({
+        success: true,
+        message: "Document uploaded successfully",
+        data: user.documents[user.documents.length - 1],
+      });
+    }
   } catch (error) {
+    console.error("Upload document error:", error);
+
     res.status(500).json({
       success: false,
       message: error.message,
@@ -713,8 +826,9 @@ export const uploadDocument = async (req, res) => {
 export const deleteDocument = async (req, res) => {
   try {
     const { documentId } = req.params;
-    const user = await User.findById(req.user._id);
 
+    // Find the document first
+    const user = await User.findById(req.user._id);
     const documentIndex = user.documents.findIndex(
       (doc) => doc._id.toString() === documentId
     );
@@ -726,14 +840,73 @@ export const deleteDocument = async (req, res) => {
       });
     }
 
-    user.documents.splice(documentIndex, 1);
-    await user.save();
+    const document = user.documents[documentIndex];
+
+    // Try fileService first, fallback to local deletion
+    try {
+      await fileService.deleteUserDocument(req.user._id, document.type);
+    } catch (fileServiceError) {
+      console.warn(
+        "FileService delete failed, using local deletion:",
+        fileServiceError.message
+      );
+
+      // Fallback to local file deletion
+      if (document.fileUrl && document.fileUrl.startsWith("uploads/")) {
+        const filePath = path.join(process.cwd(), document.fileUrl);
+        if (fs.existsSync(filePath)) {
+          fs.unlinkSync(filePath);
+        }
+      }
+
+      // Remove from user documents
+      user.documents.splice(documentIndex, 1);
+      await user.save();
+    }
 
     res.json({
       success: true,
       message: "Document deleted successfully",
     });
   } catch (error) {
+    console.error("Delete document error:", error);
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+// Get document file
+export const getDocumentFile = async (req, res) => {
+  try {
+    const { documentId } = req.params;
+    const user = await User.findById(req.user._id);
+
+    const document = user.documents.find(
+      (doc) => doc._id.toString() === documentId
+    );
+
+    if (!document) {
+      return res.status(404).json({
+        success: false,
+        message: "Document not found",
+      });
+    }
+
+    const filePath = path.join(process.cwd(), document.fileUrl);
+
+    // Check if file exists
+    if (!fs.existsSync(filePath)) {
+      return res.status(404).json({
+        success: false,
+        message: "File not found on server",
+      });
+    }
+
+    res.sendFile(filePath);
+  } catch (error) {
+    console.error("Get document file error:", error);
     res.status(500).json({
       success: false,
       message: error.message,
@@ -1118,7 +1291,7 @@ export const getUserBookings = async (req, res) => {
     const sortOptions = {};
     sortOptions[sortBy] = sortOrder === "desc" ? -1 : 1;
 
-    const [appointments, total] = await Promise.all([
+    const [appointmentsRaw, total] = await Promise.all([
       Appointment.find(query)
         .populate("userId", "name phone email")
         .populate("cancellationDetails.cancelledBy", "name role")
@@ -1127,6 +1300,11 @@ export const getUserBookings = async (req, res) => {
         .limit(parseInt(limit)),
       Appointment.countDocuments(query),
     ]);
+
+    // Filter out appointments with deleted users
+    const appointments = appointmentsRaw.filter(
+      (appointment) => appointment.userId !== null
+    );
 
     // Calculate appointment statistics
     const appointmentStats = await Appointment.aggregate([

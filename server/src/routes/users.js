@@ -1,6 +1,5 @@
 import express from "express";
 import multer from "multer";
-import path from "path";
 import { auth } from "../middleware/auth.js";
 import {
   getProfile,
@@ -9,25 +8,13 @@ import {
   getDocuments,
   uploadDocument,
   deleteDocument,
+  getDocumentFile,
   getSubscription,
 } from "../controllers/userController.js";
 
-// Configure multer for file uploads
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, "uploads/documents");
-  },
-  filename: function (req, file, cb) {
-    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    cb(
-      null,
-      file.fieldname + "-" + uniqueSuffix + path.extname(file.originalname)
-    );
-  },
-});
-
+// Configure multer for memory storage (for Cloudinary)
 const upload = multer({
-  storage: storage,
+  storage: multer.memoryStorage(),
   limits: {
     fileSize: 5 * 1024 * 1024, // 5MB limit
   },
@@ -58,6 +45,32 @@ router.put("/profile/medical", updateMedicalInfo);
 router.get("/documents", getDocuments);
 router.post("/documents", upload.single("file"), uploadDocument);
 router.delete("/documents/:documentId", deleteDocument);
+router.get("/documents/:documentId/file", getDocumentFile);
+
+// Test Cloudinary connection
+router.get("/test-cloudinary", async (req, res) => {
+  try {
+    const { v2: cloudinary } = await import("cloudinary");
+    const config = cloudinary.config();
+
+    res.json({
+      success: true,
+      cloudinary_configured: !!(
+        config.cloud_name &&
+        config.api_key &&
+        config.api_secret
+      ),
+      cloud_name: config.cloud_name,
+      has_api_key: !!config.api_key,
+      has_api_secret: !!config.api_secret,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.message,
+    });
+  }
+});
 
 // Subscription routes
 router.get("/subscription", getSubscription);

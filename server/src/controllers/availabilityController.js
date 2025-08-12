@@ -13,11 +13,11 @@ export const getTemplates = async (req, res) => {
   try {
     const { isDefault, isActive } = req.query;
     const filters = {};
-    
+
     if (isDefault !== undefined) {
       filters.isDefault = isDefault === "true";
     }
-    
+
     if (isActive !== undefined) {
       filters.isActive = isActive === "true";
     }
@@ -44,9 +44,11 @@ export const getTemplates = async (req, res) => {
 export const getTemplate = async (req, res) => {
   try {
     const { templateId } = req.params;
-    
-    const template = await AvailabilityTemplate.findById(templateId)
-      .populate("createdBy", "name email");
+
+    const template = await AvailabilityTemplate.findById(templateId).populate(
+      "createdBy",
+      "name email"
+    );
 
     if (!template) {
       return res.status(404).json({
@@ -78,7 +80,7 @@ export const createTemplate = async (req, res) => {
 
     // Validate required fields
     const { templateName, workingHours, slotDuration } = templateData;
-    
+
     if (!templateName || !workingHours || !slotDuration) {
       return res.status(400).json({
         success: false,
@@ -86,7 +88,10 @@ export const createTemplate = async (req, res) => {
       });
     }
 
-    const template = await availabilityService.createTemplate(templateData, userId);
+    const template = await availabilityService.createTemplate(
+      templateData,
+      userId
+    );
 
     res.status(201).json({
       success: true,
@@ -110,7 +115,10 @@ export const updateTemplate = async (req, res) => {
     const { templateId } = req.params;
     const updateData = req.body;
 
-    const template = await availabilityService.updateTemplate(templateId, updateData);
+    const template = await availabilityService.updateTemplate(
+      templateId,
+      updateData
+    );
 
     res.status(200).json({
       success: true,
@@ -163,7 +171,10 @@ export const applyTemplateToDate = async (req, res) => {
       });
     }
 
-    const template = await availabilityService.applyTemplateToDate(templateId, dates);
+    const template = await availabilityService.applyTemplateToDate(
+      templateId,
+      dates
+    );
 
     res.status(200).json({
       success: true,
@@ -194,7 +205,10 @@ export const removeTemplateFromDates = async (req, res) => {
       });
     }
 
-    const template = await availabilityService.removeTemplateFromDates(templateId, dates);
+    const template = await availabilityService.removeTemplateFromDates(
+      templateId,
+      dates
+    );
 
     res.status(200).json({
       success: true,
@@ -254,9 +268,11 @@ export const getHolidays = async (req, res) => {
 export const getHoliday = async (req, res) => {
   try {
     const { holidayId } = req.params;
-    
-    const holiday = await Holiday.findById(holidayId)
-      .populate("createdBy", "name email");
+
+    const holiday = await Holiday.findById(holidayId).populate(
+      "createdBy",
+      "name email"
+    );
 
     if (!holiday) {
       return res.status(404).json({
@@ -288,7 +304,7 @@ export const createHoliday = async (req, res) => {
 
     // Validate required fields
     const { date, reason } = holidayData;
-    
+
     if (!date || !reason) {
       return res.status(400).json({
         success: false,
@@ -300,7 +316,7 @@ export const createHoliday = async (req, res) => {
     const cleanedData = { ...holidayData };
     if (!cleanedData.isRecurring) {
       delete cleanedData.recurringPattern;
-    } else if (cleanedData.recurringPattern === '') {
+    } else if (cleanedData.recurringPattern === "") {
       // If recurringPattern is empty string, remove it to trigger validation
       delete cleanedData.recurringPattern;
     }
@@ -319,7 +335,7 @@ export const createHoliday = async (req, res) => {
     });
   } catch (error) {
     console.error("Error creating holiday:", error);
-    
+
     // Handle duplicate date error
     if (error.code === 11000) {
       return res.status(400).json({
@@ -347,7 +363,7 @@ export const updateHoliday = async (req, res) => {
     const cleanedData = { ...updateData };
     if (!cleanedData.isRecurring) {
       cleanedData.recurringPattern = undefined;
-    } else if (cleanedData.recurringPattern === '') {
+    } else if (cleanedData.recurringPattern === "") {
       // If recurringPattern is empty string, remove it to trigger validation
       delete cleanedData.recurringPattern;
     }
@@ -418,11 +434,34 @@ export const getAvailabilityForDate = async (req, res) => {
     const { date } = req.params;
     const { onlyAvailable } = req.query;
 
+    // Validate date format
+    const targetDate = new Date(date);
+    if (isNaN(targetDate.getTime())) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid date format. Use YYYY-MM-DD format",
+      });
+    }
+
     const options = {
       onlyAvailable: onlyAvailable === "true",
     };
 
-    const availability = await availabilityService.getAvailabilityForDate(date, options);
+    const availability = await availabilityService.getAvailabilityForDate(
+      date,
+      options
+    );
+
+    // Set cache headers for better performance
+    const today = new Date().toISOString().split("T")[0];
+    const isPastDate = date < today;
+
+    res.set({
+      "Cache-Control": isPastDate
+        ? "public, max-age=86400"
+        : "public, max-age=300", // Cache past dates for 24h, future dates for 5min
+      ETag: `"${date}-${onlyAvailable || "false"}"`,
+    });
 
     res.status(200).json({
       success: true,
@@ -452,6 +491,35 @@ export const getAvailabilityForDateRange = async (req, res) => {
       });
     }
 
+    // Validate date format and range
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+
+    if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid date format. Use YYYY-MM-DD format",
+      });
+    }
+
+    if (start > end) {
+      return res.status(400).json({
+        success: false,
+        message: "Start date must be before or equal to end date",
+      });
+    }
+
+    // Limit the range to prevent excessive computation (max 90 days)
+    const maxRangeDays = 90;
+    const rangeDays = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
+
+    if (rangeDays > maxRangeDays) {
+      return res.status(400).json({
+        success: false,
+        message: `Date range cannot exceed ${maxRangeDays} days. Current range: ${rangeDays} days`,
+      });
+    }
+
     const options = {
       onlyAvailable: onlyAvailable === "true",
     };
@@ -462,9 +530,21 @@ export const getAvailabilityForDateRange = async (req, res) => {
       options
     );
 
+    // Set cache headers for better performance
+    res.set({
+      "Cache-Control": "public, max-age=120", // Cache for 2 minutes
+      ETag: `"${startDate}-${endDate}-${onlyAvailable || "false"}"`,
+    });
+
     res.status(200).json({
       success: true,
       data: availability,
+      meta: {
+        startDate,
+        endDate,
+        totalDays: rangeDays + 1,
+        onlyAvailable: onlyAvailable === "true",
+      },
     });
   } catch (error) {
     console.error("Error getting availability for date range:", error);
@@ -523,7 +603,10 @@ export const getAvailableDates = async (req, res) => {
       });
     }
 
-    const availableDates = await availabilityService.getAvailableDates(startDate, endDate);
+    const availableDates = await availabilityService.getAvailableDates(
+      startDate,
+      endDate
+    );
 
     res.status(200).json({
       success: true,

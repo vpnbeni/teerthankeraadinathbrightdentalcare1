@@ -1,6 +1,7 @@
 import AvailabilityTemplate from "../models/AvailabilityTemplate.js";
 import Holiday from "../models/Holiday.js";
 import Appointment from "../models/Appointment.js";
+import performanceMonitor from "../utils/performanceMonitor.js";
 
 class AvailabilityService {
   /**
@@ -13,6 +14,27 @@ class AvailabilityService {
     try {
       const targetDate = new Date(date);
       targetDate.setHours(0, 0, 0, 0);
+
+      // 0. Early return for past dates to optimize performance
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      if (targetDate < today) {
+        // Track performance optimization
+        performanceMonitor.trackPastDateSkip();
+
+        return {
+          available: false,
+          reason: "Past date",
+          type: "past_date",
+          holiday: null,
+          slots: [],
+          template: null,
+          totalSlots: 0,
+          availableSlots: 0,
+          bookedSlots: 0,
+        };
+      }
 
       // 1. Check if it's a holiday first
       const holiday = await Holiday.isHoliday(targetDate);
@@ -28,8 +50,10 @@ class AvailabilityService {
       }
 
       // 2. Check if any custom template applies to this date
-      const template = await AvailabilityTemplate.getTemplateForDate(targetDate);
-      
+      const template = await AvailabilityTemplate.getTemplateForDate(
+        targetDate
+      );
+
       if (!template) {
         return {
           available: false,
@@ -53,10 +77,10 @@ class AvailabilityService {
         status: { $nin: ["cancelled"] },
       }).select("timeSlot");
 
-      const bookedTimeSlots = bookedAppointments.map(apt => apt.timeSlot);
+      const bookedTimeSlots = bookedAppointments.map((apt) => apt.timeSlot);
 
       // 5. Mark slots as available or booked
-      const slotsWithAvailability = allSlots.map(slot => ({
+      const slotsWithAvailability = allSlots.map((slot) => ({
         ...slot,
         isAvailable: !bookedTimeSlots.includes(slot.timeSlot),
         isBooked: bookedTimeSlots.includes(slot.timeSlot),
@@ -65,7 +89,7 @@ class AvailabilityService {
       // 6. Filter slots based on options
       let finalSlots = slotsWithAvailability;
       if (options.onlyAvailable) {
-        finalSlots = slotsWithAvailability.filter(slot => slot.isAvailable);
+        finalSlots = slotsWithAvailability.filter((slot) => slot.isAvailable);
       }
 
       return {
@@ -83,8 +107,10 @@ class AvailabilityService {
           breakTimes: template.breakTimes,
         },
         totalSlots: allSlots.length,
-        availableSlots: slotsWithAvailability.filter(slot => slot.isAvailable).length,
-        bookedSlots: slotsWithAvailability.filter(slot => slot.isBooked).length,
+        availableSlots: slotsWithAvailability.filter((slot) => slot.isAvailable)
+          .length,
+        bookedSlots: slotsWithAvailability.filter((slot) => slot.isBooked)
+          .length,
       };
     } catch (error) {
       console.error("Error getting availability for date:", error);
@@ -103,13 +129,40 @@ class AvailabilityService {
     try {
       const start = new Date(startDate);
       const end = new Date(endDate);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0); // Set to start of today for accurate comparison
+
       const dateAvailability = {};
 
       // Iterate through each date in the range
       const currentDate = new Date(start);
       while (currentDate <= end) {
-        const dateKey = currentDate.toISOString().split('T')[0];
-        dateAvailability[dateKey] = await this.getAvailabilityForDate(currentDate, options);
+        const dateKey = currentDate.toISOString().split("T")[0];
+
+        // Skip past dates - mark them as unavailable without processing
+        if (currentDate < today) {
+          // Track performance optimization
+          performanceMonitor.trackPastDateSkip();
+
+          dateAvailability[dateKey] = {
+            available: false,
+            reason: "Past date",
+            type: "past_date",
+            holiday: null,
+            slots: [],
+            template: null,
+            totalSlots: 0,
+            availableSlots: 0,
+            bookedSlots: 0,
+          };
+        } else {
+          // Only process current and future dates
+          dateAvailability[dateKey] = await this.getAvailabilityForDate(
+            currentDate,
+            options
+          );
+        }
+
         currentDate.setDate(currentDate.getDate() + 1);
       }
 
@@ -132,6 +185,18 @@ class AvailabilityService {
       const targetDate = new Date(date);
       targetDate.setHours(0, 0, 0, 0);
 
+      // Early return for past dates - they're never available
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      if (targetDate < today) {
+        return {
+          available: false,
+          reason: "Cannot book appointments for past dates",
+          type: "past_date",
+        };
+      }
+
       // Check if date is a holiday
       const holiday = await Holiday.isHoliday(targetDate);
       if (holiday) {
@@ -143,7 +208,9 @@ class AvailabilityService {
       }
 
       // Get template for the date
-      const template = await AvailabilityTemplate.getTemplateForDate(targetDate);
+      const template = await AvailabilityTemplate.getTemplateForDate(
+        targetDate
+      );
       if (!template) {
         return {
           available: false,
@@ -154,8 +221,8 @@ class AvailabilityService {
 
       // Check if the time slot is valid for this template
       const validSlots = template.generateTimeSlots();
-      const isValidSlot = validSlots.some(slot => slot.timeSlot === timeSlot);
-      
+      const isValidSlot = validSlots.some((slot) => slot.timeSlot === timeSlot);
+
       if (!isValidSlot) {
         return {
           available: false,
@@ -179,7 +246,7 @@ class AvailabilityService {
       }
 
       const existingAppointment = await Appointment.findOne(query);
-      
+
       if (existingAppointment) {
         return {
           available: false,
@@ -218,18 +285,20 @@ class AvailabilityService {
 
       const currentDate = new Date(start);
       while (currentDate <= end) {
-        const availability = await this.getAvailabilityForDate(currentDate, { onlyAvailable: true });
-        
+        const availability = await this.getAvailabilityForDate(currentDate, {
+          onlyAvailable: true,
+        });
+
         if (availability.available && availability.slots.length > 0) {
           availableDates.push({
             date: new Date(currentDate),
-            dateString: currentDate.toISOString().split('T')[0],
+            dateString: currentDate.toISOString().split("T")[0],
             availableSlots: availability.slots.length,
             totalSlots: availability.totalSlots,
             template: availability.template,
           });
         }
-        
+
         currentDate.setDate(currentDate.getDate() + 1);
       }
 
@@ -294,7 +363,7 @@ class AvailabilityService {
   async deleteTemplate(templateId) {
     try {
       const template = await AvailabilityTemplate.findById(templateId);
-      
+
       if (!template) {
         throw new Error("Template not found");
       }
@@ -339,7 +408,7 @@ class AvailabilityService {
   async applyTemplateToDate(templateId, dates) {
     try {
       const template = await AvailabilityTemplate.findById(templateId);
-      
+
       if (!template) {
         throw new Error("Template not found");
       }
@@ -365,7 +434,7 @@ class AvailabilityService {
   async removeTemplateFromDates(templateId, dates) {
     try {
       const template = await AvailabilityTemplate.findById(templateId);
-      
+
       if (!template) {
         throw new Error("Template not found");
       }

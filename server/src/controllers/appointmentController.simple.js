@@ -13,7 +13,7 @@ const validateAppointmentData = (data) => {
   if (!date || !timeSlot) {
     throw new Error("Date and time slot are required");
   }
-  
+
   const appointmentDate = new Date(date);
   if (appointmentDate < new Date()) {
     throw new Error("Cannot book appointments in the past");
@@ -65,14 +65,19 @@ export const getAllAppointments = async (req, res) => {
     // Fetch appointments
     const appointments = await Appointment.find(query)
       .populate("userId", "name phone email")
-      .sort({ date: -1, timeSlot: 1 })
+      .sort({ createdAt: -1 })
       .skip(skip)
       .limit(parseInt(limit));
+
+    // Filter out appointments with deleted users
+    const validAppointments = appointments.filter(
+      (appointment) => appointment.userId !== null
+    );
 
     res.json({
       success: true,
       data: {
-        appointments,
+        appointments: validAppointments,
         pagination: {
           currentPage: parseInt(page),
           totalPages: Math.ceil(total / parseInt(limit)),
@@ -375,9 +380,15 @@ export const completeAppointment = async (req, res) => {
     // Consume a session from the user's subscription
     try {
       const user = await User.findById(updatedAppointment.userId._id);
-      if (user && user.subscription && user.subscription.sessionsRemaining > 0) {
+      if (
+        user &&
+        user.subscription &&
+        user.subscription.sessionsRemaining > 0
+      ) {
         await user.consumeSession();
-        console.log(`Session consumed for user ${user.name}. Remaining: ${user.subscription.sessionsRemaining}`);
+        console.log(
+          `Session consumed for user ${user.name}. Remaining: ${user.subscription.sessionsRemaining}`
+        );
       }
     } catch (error) {
       console.error("Failed to consume session:", error);
@@ -643,14 +654,22 @@ export const bulkUpdateAppointments = async (req, res) => {
 
         // Handle completion-specific actions
         if (action === "complete") {
-          const populatedAppointment = await Appointment.findById(appointmentId).populate("userId", "name phone email");
-          
+          const populatedAppointment = await Appointment.findById(
+            appointmentId
+          ).populate("userId", "name phone email");
+
           // Consume a session from the user's subscription
           try {
             const user = await User.findById(populatedAppointment.userId._id);
-            if (user && user.subscription && user.subscription.sessionsRemaining > 0) {
+            if (
+              user &&
+              user.subscription &&
+              user.subscription.sessionsRemaining > 0
+            ) {
               await user.consumeSession();
-              console.log(`Session consumed for user ${user.name}. Remaining: ${user.subscription.sessionsRemaining}`);
+              console.log(
+                `Session consumed for user ${user.name}. Remaining: ${user.subscription.sessionsRemaining}`
+              );
             }
           } catch (error) {
             console.error("Failed to consume session:", error);
@@ -667,7 +686,10 @@ export const bulkUpdateAppointments = async (req, res) => {
                 populatedAppointment.timeSlot
               )
               .catch((error) => {
-                console.error("Failed to send appointment completion email:", error);
+                console.error(
+                  "Failed to send appointment completion email:",
+                  error
+                );
               });
           }
         }

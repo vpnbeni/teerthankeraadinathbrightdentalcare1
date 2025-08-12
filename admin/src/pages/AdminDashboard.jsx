@@ -186,7 +186,7 @@ const AdminDashboard = () => {
                       </div>
                       <div>
                         <p className="text-sm font-medium text-gray-900">
-                          {appointment.user?.name || "Unknown User"}
+                          {appointment.userId?.name || "Unknown User"}
                         </p>
                         <p className="text-xs text-gray-500">
                           {appointment.timeSlot}

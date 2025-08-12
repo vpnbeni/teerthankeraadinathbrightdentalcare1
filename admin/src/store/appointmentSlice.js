@@ -148,10 +148,7 @@ export const fetchRecentAppointments = createAsyncThunk(
   async (params = {}, { rejectWithValue }) => {
     try {
       console.log("Appointment slice: Fetching recent appointments...");
-      const response = await appointmentService.getAppointments({
-        ...params,
-        sort: "-createdAt",
-      });
+      const response = await appointmentService.getAllAppointments(params);
       console.log("Appointment slice: Recent appointments response:", response);
       return response;
     } catch (error) {

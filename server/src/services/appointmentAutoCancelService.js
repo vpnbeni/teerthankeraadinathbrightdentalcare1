@@ -27,9 +27,13 @@ class AppointmentAutoCancelService {
       // Start the auto-cancellation scheduler if enabled
       if (this.config.ENABLED) {
         this.startAutoCancellationScheduler();
-        logger.info("Appointment Auto-Cancellation Service initialized and enabled");
+        logger.info(
+          "Appointment Auto-Cancellation Service initialized and enabled"
+        );
       } else {
-        logger.info("Appointment Auto-Cancellation Service initialized but disabled");
+        logger.info(
+          "Appointment Auto-Cancellation Service initialized but disabled"
+        );
       }
     }, 2000); // 2 second delay
   }
@@ -45,12 +49,14 @@ class AppointmentAutoCancelService {
 
     // Use configured interval or default to every 15 minutes
     const cronPattern = this.config.CHECK_INTERVAL;
-    
+
     cron.schedule(cronPattern, async () => {
       if (!this.isProcessing) {
         await this.processExpiredAppointments();
       } else {
-        logger.warn("Auto-cancellation process already running, skipping this interval");
+        logger.warn(
+          "Auto-cancellation process already running, skipping this interval"
+        );
       }
     });
 
@@ -61,7 +67,9 @@ class AppointmentAutoCancelService {
       }, 30000);
     }
 
-    logger.info(`Auto-cancellation scheduler started - running with pattern: ${cronPattern}`);
+    logger.info(
+      `Auto-cancellation scheduler started - running with pattern: ${cronPattern}`
+    );
   }
 
   /**
@@ -75,14 +83,16 @@ class AppointmentAutoCancelService {
 
     this.isProcessing = true;
     const startTime = new Date();
-    
+
     try {
       logger.info("Starting auto-cancellation process...");
 
       // Find appointments that should be auto-cancelled
       const expiredAppointments = await this.findExpiredAppointments();
-      
-      logger.info(`Found ${expiredAppointments.length} expired appointments to process`);
+
+      logger.info(
+        `Found ${expiredAppointments.length} expired appointments to process`
+      );
 
       if (expiredAppointments.length === 0) {
         this.stats.lastRunTime = startTime;
@@ -105,7 +115,10 @@ class AppointmentAutoCancelService {
             originalDateTime: appointment.appointmentDateTime,
           });
         } catch (error) {
-          logger.error(`Failed to auto-cancel appointment ${appointment._id}:`, error.message);
+          logger.error(
+            `Failed to auto-cancel appointment ${appointment._id}:`,
+            error.message
+          );
           results.failed.push({
             appointmentId: appointment._id,
             error: error.message,
@@ -122,16 +135,25 @@ class AppointmentAutoCancelService {
       // Log summary
       const duration = new Date() - startTime;
       logger.info(`Auto-cancellation process completed in ${duration}ms`);
-      logger.info(`Results: ${results.successful.length} cancelled, ${results.failed.length} failed`);
+      logger.info(
+        `Results: ${results.successful.length} cancelled, ${results.failed.length} failed`
+      );
 
       if (results.successful.length > 0) {
-        logger.info(`Successfully auto-cancelled appointments: ${results.successful.map(r => r.appointmentId).join(', ')}`);
+        logger.info(
+          `Successfully auto-cancelled appointments: ${results.successful
+            .map((r) => r.appointmentId)
+            .join(", ")}`
+        );
       }
 
       if (results.failed.length > 0) {
-        logger.error(`Failed to auto-cancel appointments: ${results.failed.map(r => r.appointmentId).join(', ')}`);
+        logger.error(
+          `Failed to auto-cancel appointments: ${results.failed
+            .map((r) => r.appointmentId)
+            .join(", ")}`
+        );
       }
-
     } catch (error) {
       logger.error("Auto-cancellation process failed:", error);
       this.stats.totalErrors++;
@@ -147,7 +169,7 @@ class AppointmentAutoCancelService {
   async findExpiredAppointments() {
     try {
       const now = new Date();
-      
+
       // Find appointments that are still "scheduled" (no admin action taken)
       // and whose appointment time has already passed
       const expiredAppointments = await Appointment.find({
@@ -161,8 +183,8 @@ class AppointmentAutoCancelService {
                   $dateFromParts: {
                     year: { $year: "$date" },
                     month: { $month: "$date" },
-                    day: { $dayOfMonth: "$date" }
-                  }
+                    day: { $dayOfMonth: "$date" },
+                  },
                 },
                 unit: "minute",
                 amount: {
@@ -173,14 +195,19 @@ class AppointmentAutoCancelService {
                         {
                           $toInt: {
                             $substr: [
-                              { $arrayElemAt: [{ $split: ["$timeSlot", "-"] }, 0] },
+                              {
+                                $arrayElemAt: [
+                                  { $split: ["$timeSlot", "-"] },
+                                  0,
+                                ],
+                              },
                               0,
-                              2
-                            ]
-                          }
+                              2,
+                            ],
+                          },
                         },
-                        60
-                      ]
+                        60,
+                      ],
                     },
                     // Extract start minute
                     {
@@ -188,24 +215,24 @@ class AppointmentAutoCancelService {
                         $substr: [
                           { $arrayElemAt: [{ $split: ["$timeSlot", "-"] }, 0] },
                           3,
-                          2
-                        ]
-                      }
-                    }
-                  ]
-                }
-              }
+                          2,
+                        ],
+                      },
+                    },
+                  ],
+                },
+              },
             },
-            now
-          ]
-        }
+            now,
+          ],
+        },
       })
-      .populate("userId", "name phone email subscription")
-      .sort({ date: 1, timeSlot: 1 });
+        .populate("userId", "name phone email subscription")
+        .sort({ date: 1, timeSlot: 1 });
 
-      // Additional filtering using the virtual field for accuracy
-      const filteredAppointments = expiredAppointments.filter(appointment => {
-        return appointment.isPast;
+      // Additional filtering using the virtual field for accuracy and exclude deleted users
+      const filteredAppointments = expiredAppointments.filter((appointment) => {
+        return appointment.isPast && appointment.userId !== null;
       });
 
       return filteredAppointments;
@@ -220,11 +247,14 @@ class AppointmentAutoCancelService {
    */
   async autoCancelAppointment(appointment) {
     try {
-      logger.info(`Auto-cancelling appointment ${appointment._id} for patient ${appointment.userId.name}`);
+      logger.info(
+        `Auto-cancelling appointment ${appointment._id} for patient ${appointment.userId.name}`
+      );
 
       // Cancel the appointment using the existing cancel method
-      const cancellationReason = "Appointment automatically cancelled - no admin action taken and appointment time has passed";
-      
+      const cancellationReason =
+        "Appointment automatically cancelled - no admin action taken and appointment time has passed";
+
       await appointment.cancel(cancellationReason, null); // null for system cancellation
 
       // Try to restore session if user has a subscription and restoration is enabled
@@ -238,10 +268,15 @@ class AppointmentAutoCancelService {
           // Update appointment record
           appointment.cancellationDetails.sessionRestored = true;
           await appointment.save();
-          
-          logger.info(`Session restored for user ${appointment.userId.name} after auto-cancellation`);
+
+          logger.info(
+            `Session restored for user ${appointment.userId.name} after auto-cancellation`
+          );
         } catch (error) {
-          logger.error(`Session restoration failed for appointment ${appointment._id}:`, error.message);
+          logger.error(
+            `Session restoration failed for appointment ${appointment._id}:`,
+            error.message
+          );
           // Continue with cancellation even if session restoration fails
         }
       }
@@ -257,10 +292,13 @@ class AppointmentAutoCancelService {
             cancellationReason,
             sessionRestored
           );
-          
+
           logger.info(`Cancellation email sent to ${appointment.userId.email}`);
         } catch (error) {
-          logger.error(`Failed to send cancellation email for appointment ${appointment._id}:`, error.message);
+          logger.error(
+            `Failed to send cancellation email for appointment ${appointment._id}:`,
+            error.message
+          );
           // Don't fail the cancellation if email fails
         }
       }
@@ -269,21 +307,26 @@ class AppointmentAutoCancelService {
       try {
         await this.notifyAdminOfAutoCancellation(appointment, sessionRestored);
       } catch (error) {
-        logger.error(`Failed to send admin notification for auto-cancelled appointment ${appointment._id}:`, error.message);
+        logger.error(
+          `Failed to send admin notification for auto-cancelled appointment ${appointment._id}:`,
+          error.message
+        );
         // Don't fail the cancellation if admin notification fails
       }
 
       logger.info(`Successfully auto-cancelled appointment ${appointment._id}`);
-      
+
       return {
         success: true,
         appointmentId: appointment._id,
         sessionRestored,
         emailSent: !!appointment.userId.email,
       };
-
     } catch (error) {
-      logger.error(`Error auto-cancelling appointment ${appointment._id}:`, error);
+      logger.error(
+        `Error auto-cancelling appointment ${appointment._id}:`,
+        error
+      );
       throw error;
     }
   }
@@ -295,7 +338,7 @@ class AppointmentAutoCancelService {
     try {
       // This could be enhanced to send to specific admin emails
       // For now, we'll just log it as an audit event
-      
+
       const message = `
 Appointment Auto-Cancellation Notification
 
@@ -303,10 +346,10 @@ Appointment Details:
 - ID: ${appointment._id}
 - Patient: ${appointment.userId.name}
 - Phone: ${appointment.userId.phone}
-- Email: ${appointment.userId.email || 'Not provided'}
+- Email: ${appointment.userId.email || "Not provided"}
 - Date: ${appointment.date.toLocaleDateString()}
 - Time: ${appointment.timeSlot}
-- Session Restored: ${sessionRestored ? 'Yes' : 'No'}
+- Session Restored: ${sessionRestored ? "Yes" : "No"}
 
 Reason: Appointment time passed without admin confirmation.
 
@@ -318,7 +361,6 @@ This is an automated system notification.
 
       // If you have admin email notification set up, you could send an email here
       // await emailService.sendAdminNotificationEmail(message);
-
     } catch (error) {
       logger.error("Error sending admin notification:", error);
       // Don't throw here as this is not critical

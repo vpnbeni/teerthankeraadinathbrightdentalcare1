@@ -1,52 +1,74 @@
-import React, { useState, useEffect } from 'react';
-import AdminLayout from '../components/common/AdminLayout';
-import { CalendarIcon, ClockIcon, CogIcon, PlusIcon } from '@heroicons/react/24/outline';
-import { LoadingSpinner } from '../shared/components';
-import { toast } from 'react-hot-toast';
+import React, { useState, useEffect } from "react";
+import AdminLayout from "../components/common/AdminLayout";
+import {
+  CalendarIcon,
+  ClockIcon,
+  CogIcon,
+  PlusIcon,
+} from "@heroicons/react/24/outline";
+import { LoadingSpinner } from "../shared/components";
+import { toast } from "react-hot-toast";
 
-import TemplateList from '../components/availability/TemplateList';
-import TemplateForm from '../components/availability/TemplateForm';
-import HolidayList from '../components/availability/HolidayList';
-import HolidayForm from '../components/availability/HolidayForm';
-import AvailabilityCalendar from '../components/availability/AvailabilityCalendar';
-import { availabilityService } from '../services/availability';
+import TemplateList from "../components/availability/TemplateList";
+import TemplateForm from "../components/availability/TemplateForm";
+import HolidayList from "../components/availability/HolidayList";
+import HolidayForm from "../components/availability/HolidayForm";
+import OptimizedAvailabilityCalendar from "../components/availability/OptimizedAvailabilityCalendar";
+import {
+  useTemplates,
+  useHolidays,
+  useCreateTemplate,
+  useUpdateTemplate,
+  useDeleteTemplate,
+  useCreateHoliday,
+  useUpdateHoliday,
+  useDeleteHoliday,
+  useInvalidateAvailability,
+  useCalendarAvailabilitySimple,
+} from "../hooks/useAvailability";
 
 const AvailabilityManagement = () => {
-  const [activeTab, setActiveTab] = useState('templates');
+  const [activeTab, setActiveTab] = useState("templates");
   const [showTemplateForm, setShowTemplateForm] = useState(false);
   const [showHolidayForm, setShowHolidayForm] = useState(false);
   const [editingTemplate, setEditingTemplate] = useState(null);
   const [editingHoliday, setEditingHoliday] = useState(null);
-  const [templates, setTemplates] = useState([]);
-  const [holidays, setHolidays] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [refreshKey, setRefreshKey] = useState(0);
+  // React Query hooks
+  const {
+    data: templatesData,
+    isLoading: templatesLoading,
+    error: templatesError,
+  } = useTemplates();
+  const {
+    data: holidaysData,
+    isLoading: holidaysLoading,
+    error: holidaysError,
+  } = useHolidays();
 
-  // Load initial data
-  useEffect(() => {
-    loadData();
-  }, [refreshKey]);
+  // Preload current month calendar data when page loads (without prefetching to avoid multiple calls)
+  const currentDate = new Date();
+  const { data: calendarData } = useCalendarAvailabilitySimple(
+    currentDate.getFullYear(),
+    currentDate.getMonth(),
+    { enabled: true } // Always enabled to preload data
+  );
 
-  const loadData = async () => {
-    try {
-      setLoading(true);
-      const [templatesResponse, holidaysResponse] = await Promise.all([
-        availabilityService.getTemplates(),
-        availabilityService.getHolidays()
-      ]);
-      
-      setTemplates(templatesResponse.data || []);
-      setHolidays(holidaysResponse.data || []);
-    } catch (error) {
-      console.error('Error loading availability data:', error);
-      toast.error('Failed to load availability data');
-    } finally {
-      setLoading(false);
-    }
-  };
+  // Mutation hooks
+  const createTemplateMutation = useCreateTemplate();
+  const updateTemplateMutation = useUpdateTemplate();
+  const deleteTemplateMutation = useDeleteTemplate();
+  const createHolidayMutation = useCreateHoliday();
+  const updateHolidayMutation = useUpdateHoliday();
+  const deleteHolidayMutation = useDeleteHoliday();
+  const invalidateAvailability = useInvalidateAvailability();
+
+  // Extract data from React Query responses
+  const templates = templatesData?.data || [];
+  const holidays = holidaysData?.data || [];
+  const loading = templatesLoading || holidaysLoading;
 
   const handleRefresh = () => {
-    setRefreshKey(prev => prev + 1);
+    invalidateAvailability();
   };
 
   // Template handlers
@@ -65,20 +87,28 @@ const AvailabilityManagement = () => {
     setEditingTemplate(null);
   };
 
-  const handleTemplateSaved = () => {
-    handleCloseTemplateForm();
-    handleRefresh();
-    toast.success(editingTemplate ? 'Template updated successfully' : 'Template created successfully');
+  const handleTemplateSaved = async (templateData) => {
+    try {
+      if (editingTemplate) {
+        await updateTemplateMutation.mutateAsync({
+          templateId: editingTemplate._id,
+          updateData: templateData,
+        });
+      } else {
+        await createTemplateMutation.mutateAsync(templateData);
+      }
+      handleCloseTemplateForm();
+    } catch (error) {
+      // Error handling is done in the mutation hooks
+      throw error;
+    }
   };
 
   const handleDeleteTemplate = async (templateId) => {
     try {
-      await availabilityService.deleteTemplate(templateId);
-      handleRefresh();
-      toast.success('Template deleted successfully');
+      await deleteTemplateMutation.mutateAsync(templateId);
     } catch (error) {
-      console.error('Error deleting template:', error);
-      toast.error('Failed to delete template');
+      // Error handling is done in the mutation hook
     }
   };
 
@@ -98,20 +128,28 @@ const AvailabilityManagement = () => {
     setEditingHoliday(null);
   };
 
-  const handleHolidaySaved = () => {
-    handleCloseHolidayForm();
-    handleRefresh();
-    toast.success(editingHoliday ? 'Holiday updated successfully' : 'Holiday created successfully');
+  const handleHolidaySaved = async (holidayData) => {
+    try {
+      if (editingHoliday) {
+        await updateHolidayMutation.mutateAsync({
+          holidayId: editingHoliday._id,
+          updateData: holidayData,
+        });
+      } else {
+        await createHolidayMutation.mutateAsync(holidayData);
+      }
+      handleCloseHolidayForm();
+    } catch (error) {
+      // Error handling is done in the mutation hooks
+      throw error;
+    }
   };
 
   const handleDeleteHoliday = async (holidayId) => {
     try {
-      await availabilityService.deleteHoliday(holidayId);
-      handleRefresh();
-      toast.success('Holiday deleted successfully');
+      await deleteHolidayMutation.mutateAsync(holidayId);
     } catch (error) {
-      console.error('Error deleting holiday:', error);
-      toast.error('Failed to delete holiday');
+      // Error handling is done in the mutation hook
     }
   };
 
@@ -140,7 +178,8 @@ const AvailabilityManagement = () => {
                       Availability Management
                     </h1>
                     <p className="text-gray-600 mt-1 text-lg">
-                      Manage appointment availability templates, holidays, and schedule configuration
+                      Manage appointment availability templates, holidays, and
+                      schedule configuration
                     </p>
                   </div>
                 </div>
@@ -159,33 +198,33 @@ const AvailabilityManagement = () => {
             <div className="border-b border-gray-200">
               <nav className="-mb-px flex space-x-8">
                 <button
-                  onClick={() => setActiveTab('templates')}
+                  onClick={() => setActiveTab("templates")}
                   className={`py-2 px-1 border-b-2 font-medium text-sm flex items-center gap-2 ${
-                    activeTab === 'templates'
-                      ? 'border-primary-500 text-primary-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    activeTab === "templates"
+                      ? "border-primary-500 text-primary-600"
+                      : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
                   }`}
                 >
                   <CogIcon className="h-5 w-5" />
                   Templates
                 </button>
                 <button
-                  onClick={() => setActiveTab('holidays')}
+                  onClick={() => setActiveTab("holidays")}
                   className={`py-2 px-1 border-b-2 font-medium text-sm flex items-center gap-2 ${
-                    activeTab === 'holidays'
-                      ? 'border-primary-500 text-primary-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    activeTab === "holidays"
+                      ? "border-primary-500 text-primary-600"
+                      : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
                   }`}
                 >
                   <CalendarIcon className="h-5 w-5" />
                   Holidays
                 </button>
                 <button
-                  onClick={() => setActiveTab('calendar')}
+                  onClick={() => setActiveTab("calendar")}
                   className={`py-2 px-1 border-b-2 font-medium text-sm flex items-center gap-2 ${
-                    activeTab === 'calendar'
-                      ? 'border-primary-500 text-primary-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    activeTab === "calendar"
+                      ? "border-primary-500 text-primary-600"
+                      : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
                   }`}
                 >
                   <ClockIcon className="h-5 w-5" />
@@ -198,21 +237,29 @@ const AvailabilityManagement = () => {
           {loading ? (
             <div className="flex items-center justify-center h-64">
               <div className="text-center">
-                <LoadingSpinner size="large" ariaLabel="Loading availability data" />
-                <p className="text-gray-500 mt-4">Loading availability data...</p>
+                <LoadingSpinner
+                  size="large"
+                  ariaLabel="Loading availability data"
+                />
+                <p className="text-gray-500 mt-4">
+                  Loading availability data...
+                </p>
               </div>
             </div>
           ) : (
             <>
               {/* Templates Tab */}
-              {activeTab === 'templates' && (
+              {activeTab === "templates" && (
                 <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                   <div className="p-6 border-b border-gray-100">
                     <div className="flex items-center justify-between">
                       <div>
-                        <h2 className="text-xl font-semibold text-gray-900">Availability Templates</h2>
+                        <h2 className="text-xl font-semibold text-gray-900">
+                          Availability Templates
+                        </h2>
                         <p className="text-gray-600 mt-1">
-                          Create and manage time slot templates for different scenarios
+                          Create and manage time slot templates for different
+                          scenarios
                         </p>
                       </div>
                       <button
@@ -236,12 +283,14 @@ const AvailabilityManagement = () => {
               )}
 
               {/* Holidays Tab */}
-              {activeTab === 'holidays' && (
+              {activeTab === "holidays" && (
                 <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                   <div className="p-6 border-b border-gray-100">
                     <div className="flex items-center justify-between">
                       <div>
-                        <h2 className="text-xl font-semibold text-gray-900">Holidays & Unavailable Dates</h2>
+                        <h2 className="text-xl font-semibold text-gray-900">
+                          Holidays & Unavailable Dates
+                        </h2>
                         <p className="text-gray-600 mt-1">
                           Manage dates when appointments are not available
                         </p>
@@ -267,21 +316,23 @@ const AvailabilityManagement = () => {
               )}
 
               {/* Calendar Tab */}
-              {activeTab === 'calendar' && (
+              {activeTab === "calendar" && (
                 <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                   <div className="p-6 border-b border-gray-100">
                     <div>
-                      <h2 className="text-xl font-semibold text-gray-900">Availability Calendar</h2>
+                      <h2 className="text-xl font-semibold text-gray-900">
+                        Availability Calendar
+                      </h2>
                       <p className="text-gray-600 mt-1">
-                        View and manage availability across dates with template applications
+                        View and manage availability across dates with template
+                        applications
                       </p>
                     </div>
                   </div>
                   <div className="p-6">
-                    <AvailabilityCalendar
+                    <OptimizedAvailabilityCalendar
                       templates={templates}
                       holidays={holidays}
-                      onRefresh={handleRefresh}
                     />
                   </div>
                 </div>
