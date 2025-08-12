@@ -11,6 +11,15 @@ const api = axios.create({
   timeout: 10000, // 10 second timeout
 });
 
+// Request deduplication to prevent double API calls
+const pendingRequests = new Map();
+
+const generateRequestKey = (config) => {
+  return `${config.method}:${config.url}:${JSON.stringify(
+    config.data || {}
+  )}:${JSON.stringify(config.params || {})}`;
+};
+
 // Retry configuration
 const MAX_RETRIES = 3;
 const RETRY_DELAY = 1000;
@@ -21,7 +30,9 @@ const retryRequest = async (config, retryCount = 0) => {
   try {
     return await api(config);
   } catch (error) {
+    // Don't retry POST requests to prevent duplicate operations
     const shouldRetry =
+      config.method !== "post" &&
       retryCount < MAX_RETRIES &&
       (RETRY_STATUS_CODES.includes(error.response?.status) ||
         error.code === "NETWORK_ERROR" ||
@@ -42,6 +53,21 @@ api.interceptors.request.use(
   (config) => {
     // Add request timestamp for debugging
     config.metadata = { startTime: new Date() };
+
+    // Request deduplication for POST requests (to prevent double booking)
+    if (config.method === "post") {
+      const requestKey = generateRequestKey(config);
+
+      // If there's already a pending request with the same key, return the existing promise
+      if (pendingRequests.has(requestKey)) {
+        console.log(`Deduplicating request: ${requestKey}`);
+        return pendingRequests.get(requestKey);
+      }
+
+      // Store the request promise
+      config.requestKey = requestKey;
+    }
+
     return config;
   },
   (error) => {
@@ -52,6 +78,11 @@ api.interceptors.request.use(
 // Response interceptor
 api.interceptors.response.use(
   (response) => {
+    // Clean up pending request
+    if (response.config.requestKey) {
+      pendingRequests.delete(response.config.requestKey);
+    }
+
     // Log response time in development
     if (process.env.NODE_ENV === "development" && response.config.metadata) {
       const endTime = new Date();
@@ -72,6 +103,11 @@ api.interceptors.response.use(
   },
   async (error) => {
     const { response, config } = error;
+
+    // Clean up pending request on error
+    if (config.requestKey) {
+      pendingRequests.delete(config.requestKey);
+    }
 
     // Don't show error toast if skipErrorMessage is true
     if (config.skipErrorMessage) {

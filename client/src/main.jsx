@@ -8,12 +8,46 @@ import { store } from "./store/store.js";
 import "./index.css";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
-  <React.StrictMode>
+  // Remove StrictMode in production to prevent double API calls
+  process.env.NODE_ENV === "development" ? (
+    <React.StrictMode>
+      <Provider store={store}>
+        <BrowserRouter
+          future={{
+            v7_startTransition: true,
+            v7_relativeSplatPath: true,
+          }}
+        >
+          <App />
+          <Toaster
+            position="top-right"
+            toastOptions={{
+              duration: 4000,
+              style: {
+                background: "#363636",
+                color: "#fff",
+              },
+              success: {
+                style: {
+                  background: "#346870",
+                },
+              },
+              error: {
+                style: {
+                  background: "#ef4444",
+                },
+              },
+            }}
+          />
+        </BrowserRouter>
+      </Provider>
+    </React.StrictMode>
+  ) : (
     <Provider store={store}>
       <BrowserRouter
         future={{
           v7_startTransition: true,
-          v7_relativeSplatPath: true
+          v7_relativeSplatPath: true,
         }}
       >
         <App />
@@ -39,5 +73,5 @@ ReactDOM.createRoot(document.getElementById("root")).render(
         />
       </BrowserRouter>
     </Provider>
-  </React.StrictMode>
+  )
 );

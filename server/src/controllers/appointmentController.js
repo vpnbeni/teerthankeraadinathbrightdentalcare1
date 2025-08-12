@@ -15,12 +15,45 @@ const availabilityService = new AvailabilityService();
  * @route   POST /api/appointments
  * @access  Private
  */
+// Track recent booking requests to prevent duplicates
+const recentBookings = new Map();
+const DUPLICATE_WINDOW = 5000; // 5 seconds
+
 export const createAppointment = async (req, res) => {
   const requestId = Math.random().toString(36).substr(2, 9);
   console.log(`🎯 REQUEST ${requestId}: Starting appointment creation`);
 
   try {
     const { date, timeSlot, notes, personalDetails, medicalInfo } = req.body;
+
+    // Create a unique key for this booking request
+    const bookingKey = `${req.user._id}-${date}-${timeSlot}`;
+    const now = Date.now();
+
+    // Check for recent duplicate requests
+    if (recentBookings.has(bookingKey)) {
+      const lastRequest = recentBookings.get(bookingKey);
+      if (now - lastRequest < DUPLICATE_WINDOW) {
+        console.log(
+          `🚫 REQUEST ${requestId}: Duplicate booking request blocked`
+        );
+        return res.status(429).json({
+          success: false,
+          message:
+            "Duplicate booking request. Please wait before trying again.",
+        });
+      }
+    }
+
+    // Record this booking request
+    recentBookings.set(bookingKey, now);
+
+    // Clean up old entries (older than 1 minute)
+    for (const [key, timestamp] of recentBookings.entries()) {
+      if (now - timestamp > 60000) {
+        recentBookings.delete(key);
+      }
+    }
 
     // Check if time slot is available using new availability service
     const appointmentDate = new Date(date);
