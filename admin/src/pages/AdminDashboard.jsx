@@ -268,7 +268,7 @@ const AdminDashboard = () => {
                 <p className="font-medium text-yellow-900">Analytics</p>
                 <p className="text-sm text-yellow-600">View reports</p>
               </div>
-            </a>
+            </Link>
           </div>
         </div>
       </div>
