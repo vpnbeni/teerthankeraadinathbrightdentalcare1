@@ -155,6 +155,16 @@
       "Clear OTP UI state when phone input changes."
     ]
   },
+  "verifiedContacts": {
+    "enforceReadOnly": true,
+    "rule": "Verified contact fields (email, phone) must be disabled in UI to prevent editing after verification.",
+    "implementation": [
+      "Derive `canEditPhone` and `canEditEmail` from `user.phoneVerified` and `user.emailVerified`.",
+      "After successful verification and profile update, set the respective flag to false.",
+      "Disable inputs via `disabled` and `readOnly`, block changes in `handleChange` when not editable.",
+      "Optionally show a tooltip title like 'Verified email cannot be changed.'"
+    ]
+  },
   "backendGuidelines": {
     "requestFlow": "route -> middleware (auth/admin) -> controller -> service -> model",
     "auth": "Read token from cookie or Authorization header; attach `req.user`",

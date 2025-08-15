@@ -12,6 +12,9 @@ const ProfileEditForm = ({ profile, type, onUserUpdate }) => {
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
   const [currentUser, setCurrentUser] = useState(profile);
+  // Control editability of verified fields
+  const [canEditPhone, setCanEditPhone] = useState(true);
+  const [canEditEmail, setCanEditEmail] = useState(true);
   
   // OTP verification states
   const [phoneOtpStep, setPhoneOtpStep] = useState(false);
@@ -40,6 +43,9 @@ const ProfileEditForm = ({ profile, type, onUserUpdate }) => {
   useEffect(() => {
     if (profile) {
       setCurrentUser(profile);
+      // Initialize editability based on verification flags from profile
+      setCanEditPhone(!Boolean(profile.phoneVerified));
+      setCanEditEmail(!Boolean(profile.emailVerified));
       if (type === "personal") {
         setFormData({
           name: profile.name || "",
@@ -109,6 +115,10 @@ const ProfileEditForm = ({ profile, type, onUserUpdate }) => {
         // Update the user data in parent component
         if (onUserUpdate) {
           onUserUpdate(result.user);
+        }
+        // Lock phone editing after successful verification/update
+        if (result.user.phoneVerified) {
+          setCanEditPhone(false);
         }
       }
     } catch (error) {
@@ -189,6 +199,8 @@ const ProfileEditForm = ({ profile, type, onUserUpdate }) => {
       if (onUserUpdate) {
         onUserUpdate(updatedUser);
       }
+      // Lock email editing after successful verification/update
+      setCanEditEmail(false);
     } catch (error) {
       showToast.error(error.response?.data?.message || "Invalid OTP");
     } finally {
@@ -198,6 +210,10 @@ const ProfileEditForm = ({ profile, type, onUserUpdate }) => {
 
   const handleChange = (e) => {
     const { name, value, type: inputType, checked } = e.target;
+    // Prevent editing of verified contact fields
+    if ((name === "phone" && !canEditPhone) || (name === "email" && !canEditEmail)) {
+      return;
+    }
     let nextValue = inputType === "checkbox" ? checked : value;
     if (name === "phone" || name === "alternativePhone") {
       nextValue = nextValue.replace(/\D/g, "");
@@ -283,6 +299,13 @@ const ProfileEditForm = ({ profile, type, onUserUpdate }) => {
             setVerifiedPhone(response.data.user.phone);
           }
           showToast.success("Personal information updated successfully");
+          // Lock fields based on verification flags after successful update
+          if (response.data.user.phoneVerified) {
+            setCanEditPhone(false);
+          }
+          if (response.data.user.emailVerified) {
+            setCanEditEmail(false);
+          }
         }
       } else if (type === "medical") {
         const medicalData = {
@@ -364,6 +387,9 @@ const ProfileEditForm = ({ profile, type, onUserUpdate }) => {
                   value={formData.phone || ""}
                   onChange={handleChange}
                   maxLength="10"
+                  disabled={!canEditPhone}
+                  readOnly={!canEditPhone}
+                  title={!canEditPhone ? "Verified phone cannot be changed." : undefined}
                   className={`w-full px-3 py-2 pr-10 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#346870] ${
                     errors.phone ? "border-red-500" : "border-gray-300"
                   }`}
@@ -437,6 +463,9 @@ const ProfileEditForm = ({ profile, type, onUserUpdate }) => {
                   name="email"
                   value={formData.email || ""}
                   onChange={handleChange}
+                  disabled={!canEditEmail}
+                  readOnly={!canEditEmail}
+                  title={!canEditEmail ? "Verified email cannot be changed." : undefined}
                   className={`w-full px-3 py-2 pr-10 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#346870] ${
                     errors.email ? "border-red-500" : "border-gray-300"
                   }`}
