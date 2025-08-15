@@ -6,6 +6,7 @@ import DateSelectionStep from "./DateSelectionStep";
 import TimeSlotStep from "./TimeSlotStep";
 import BookingConfirmation from "./BookingConfirmation";
 import appointmentService from "../../services/appointments";
+import toast from "react-hot-toast";
 import sessionLimitsService from "../../services/sessionLimits";
 import { LoadingSpinner } from "../../shared/components";
 import { canUserBookAppointment } from "../../utils/sessionLimits";
@@ -194,29 +195,37 @@ const BookingModal = ({ isOpen, onClose, onSuccess, refreshTrigger }) => {
         // Refresh session info to get updated counts
         await fetchSessionInfo();
         onSuccess(response.data.data);
+        toast.success(
+          response.data.message || "Appointment booked successfully"
+        );
         handleClose();
       }
     } catch (error) {
       // Handle specific session limit errors
       if (error.response?.data?.requiresUpgrade) {
-        setError(
-          error.response.data.message +
-            " Please upgrade your plan to book more appointments."
-        );
+        const msg =
+          (error.response.data.message ||
+            "Booking requires an upgrade.") +
+          " Please upgrade your plan to book more appointments.";
+        setError(msg);
+        toast.error(msg);
       } else if (error.response?.status === 400) {
-        setError(
+        const msg =
           error.response.data.message ||
-            "Invalid booking request. Please check your selection and try again."
-        );
+          "Invalid booking request. Please check your selection and try again.";
+        setError(msg);
+        toast.error(msg);
       } else if (error.response?.status === 409) {
-        setError(
-          "This time slot has been booked by another patient. Please select a different time."
-        );
+        const msg =
+          "This time slot has been booked by another patient. Please select a different time.";
+        setError(msg);
+        toast.error(msg);
       } else {
-        setError(
+        const msg =
           error.response?.data?.message ||
-            "Failed to book appointment. Please try again."
-        );
+          "Failed to book appointment. Please try again.";
+        setError(msg);
+        toast.error(msg);
         console.error("Booking error:", error);
       }
     } finally {

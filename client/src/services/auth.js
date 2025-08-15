@@ -108,7 +108,10 @@ export const checkPhoneAvailability = async (phone) => {
  */
 export const sendEmailOTP = async (email) => {
   try {
-    const response = await api.post("/auth/send-email-otp", { email });
+    const response = await api.post("/auth/send-email-otp", { email }, {
+      skipSuccessMessage: true,
+      skipErrorMessage: true,
+    });
     return response.data;
   } catch (error) {
     throw error;
@@ -120,7 +123,10 @@ export const sendEmailOTP = async (email) => {
  */
 export const verifyEmailOTP = async (email, otp) => {
   try {
-    const response = await api.post("/auth/verify-email-otp", { email, otp });
+    const response = await api.post("/auth/verify-email-otp", { email, otp }, {
+      skipSuccessMessage: true,
+      skipErrorMessage: true,
+    });
     return response.data;
   } catch (error) {
     throw error;
@@ -146,7 +152,14 @@ export const registerWithEmail = async (email, name, planId, otp) => {
  */
 export const sendPhoneOTPForProfile = async (phone) => {
   try {
-    const response = await api.post("/auth/send-phone-otp-profile", { phone });
+    const response = await api.post(
+      "/auth/send-phone-otp-profile",
+      { phone },
+      {
+        skipSuccessMessage: true,
+        skipErrorMessage: true,
+      }
+    );
     return response.data;
   } catch (error) {
     throw error;
@@ -158,10 +171,17 @@ export const sendPhoneOTPForProfile = async (phone) => {
  */
 export const verifyPhoneOTPForProfile = async (phone, otp) => {
   try {
-    const response = await api.post("/auth/verify-phone-otp-profile", {
-      phone,
-      otp,
-    });
+    const response = await api.post(
+      "/auth/verify-phone-otp-profile",
+      {
+        phone,
+        otp,
+      },
+      {
+        skipSuccessMessage: true,
+        skipErrorMessage: true,
+      }
+    );
     return response.data;
   } catch (error) {
     throw error;

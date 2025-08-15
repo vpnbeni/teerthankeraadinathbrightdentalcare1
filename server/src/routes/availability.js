@@ -2,27 +2,30 @@ import express from "express";
 import { auth } from "../middleware/auth.js";
 import { adminOnly } from "../middleware/adminAuth.js";
 import {
-  // Template Management
-  getTemplates,
-  getTemplate,
-  createTemplate,
-  updateTemplate,
-  deleteTemplate,
-  applyTemplateToDate,
-  removeTemplateFromDates,
-  
-  // Holiday Management
-  getHolidays,
-  getHoliday,
-  createHoliday,
-  updateHoliday,
-  deleteHoliday,
-  
-  // Availability Queries
-  getAvailabilityForDate,
-  getAvailabilityForDateRange,
-  checkTimeSlotAvailability,
-  getAvailableDates,
+	// Template Management
+	getTemplates,
+	getTemplate,
+	createTemplate,
+	updateTemplate,
+	deleteTemplate,
+	applyTemplateToDate,
+	removeTemplateFromDates,
+	
+	// Holiday Management
+	getHolidays,
+	getHoliday,
+	createHoliday,
+	updateHoliday,
+	deleteHoliday,
+	
+	// Availability Queries
+	getAvailabilityForDate,
+	getAvailabilityForDateRange,
+	getAvailabilityTemplateForDate,
+	getAvailabilityTemplatesForDateRange,
+	getAvailabilityDataForRange,
+	checkTimeSlotAvailability,
+	getAvailableDates,
 } from "../controllers/availabilityController.js";
 
 const router = express.Router();
@@ -30,6 +33,13 @@ const router = express.Router();
 // Public routes (no authentication required)
 router.get("/availability/date/:date", getAvailabilityForDate);
 router.get("/availability/range", getAvailabilityForDateRange);
+
+// New frontend-focused routes
+router.get("/availability/template/date/:date", getAvailabilityTemplateForDate);
+router.get("/availability/templates/range", getAvailabilityTemplatesForDateRange);
+router.get("/availability/data/range", getAvailabilityDataForRange);
+
+// Legacy public routes still needed by client
 router.get("/availability/dates", getAvailableDates);
 router.post("/availability/check-slot", checkTimeSlotAvailability);
 

@@ -1,4 +1,5 @@
 import api from "./api";
+import availabilityService from "./availability";
 
 // Track ongoing booking requests to prevent duplicates
 const ongoingBookings = new Set();
@@ -34,13 +35,22 @@ const appointmentService = {
         "0"
       )}-${String(d.getDate()).padStart(2, "0")}`;
 
-      const response = await api.post("/appointments", {
-        date: localDate,
-        timeSlot: appointmentData.timeSlot,
-        notes: appointmentData.notes,
-        personalDetails: appointmentData.personalDetails,
-        medicalInfo: appointmentData.medicalInfo,
-      });
+      const response = await api.post(
+        "/appointments",
+        {
+          date: localDate,
+          timeSlot: appointmentData.timeSlot,
+          notes: appointmentData.notes,
+          personalDetails: appointmentData.personalDetails,
+          medicalInfo: appointmentData.medicalInfo,
+        },
+        {
+          // Prevent interceptor from showing success/error toasts.
+          // Booking component will handle toasts explicitly to avoid duplicates.
+          skipSuccessMessage: true,
+          skipErrorMessage: true,
+        }
+      );
 
       return response;
     } finally {
@@ -63,32 +73,69 @@ const appointmentService = {
     ).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 
     try {
-      // First try the new availability endpoint for enhanced data
-      const availabilityResponse = await api.get(
-        `/availability/availability/date/${formattedDate}`
+      // Use the new frontend availability processing
+      const availabilityResponse = await availabilityService.getAvailableTimeSlotsForDate(
+        formattedDate
       );
 
-      if (
-        availabilityResponse.data.success &&
-        availabilityResponse.data.data.available
-      ) {
-        const availability = availabilityResponse.data.data;
-        // Format response to match expected structure
+      if (availabilityResponse.data.success) {
+        const slots = availabilityResponse.data.data.availableSlots || [];
+        const metadata = availabilityResponse.data.data.metadata || {};
+
+        // Handle special cases based on new availability system metadata
+        if (metadata.isHoliday) {
+          return {
+            data: {
+              success: true,
+              data: {
+                availableSlots: [],
+                metadata: {
+                  isWorkingDay: false,
+                  isHoliday: true,
+                  holidayName: metadata.holidayName,
+                  reason: metadata.reason,
+                  type: metadata.type,
+                },
+              },
+            },
+          };
+        }
+
+        if (!metadata.isWorkingDay) {
+          return {
+            data: {
+              success: true,
+              data: {
+                availableSlots: [],
+                metadata: {
+                  isWorkingDay: false,
+                  isHoliday: false,
+                  reason: metadata.reason,
+                  type: metadata.type,
+                },
+              },
+            },
+          };
+        }
+
+        // Filter out any undefined or invalid slots
+        const validSlots = slots.filter(
+          (slot) => slot && typeof slot === "string" && slot.includes("-")
+        );
+
         return {
           data: {
             success: true,
             data: {
-              availableSlots: availability.slots
-                .filter((slot) => slot.isAvailable)
-                .map((slot) => slot.timeSlot),
+              availableSlots: validSlots,
               metadata: {
-                isWorkingDay: availability.available,
-                isHoliday: availability.type === "holiday",
-                holidayName: availability.holiday?.reason,
-                template: availability.template,
-                totalSlots: availability.totalSlots,
-                availableSlots: availability.availableSlots,
-                bookedSlots: availability.bookedSlots,
+                isWorkingDay: metadata.isWorkingDay,
+                isHoliday: metadata.isHoliday,
+                holidayName: metadata.holidayName,
+                template: metadata.template,
+                totalSlots: metadata.totalSlots,
+                availableSlots: metadata.availableSlots,
+                bookedSlots: metadata.bookedSlots,
               },
             },
           },
@@ -96,7 +143,7 @@ const appointmentService = {
       }
     } catch (error) {
       console.warn(
-        "New availability endpoint failed, falling back to legacy:",
+        "New availability processing failed, falling back to legacy:",
         error
       );
     }

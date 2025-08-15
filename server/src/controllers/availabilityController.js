@@ -621,3 +621,209 @@ export const getAvailableDates = async (req, res) => {
     });
   }
 };
+
+/**
+ * Get availability template data for a specific date (for frontend processing)
+ */
+export const getAvailabilityTemplateForDate = async (req, res) => {
+  try {
+    const { date } = req.params;
+    const { onlyAvailable } = req.query;
+
+    if (!date) {
+      return res.status(400).json({
+        success: false,
+        message: "Date parameter is required",
+      });
+    }
+
+    // Validate date format
+    const appointmentDate = new Date(date);
+    if (isNaN(appointmentDate.getTime())) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid date format. Use YYYY-MM-DD format",
+      });
+    }
+
+    const options = {
+      onlyAvailable: onlyAvailable === "true",
+    };
+
+    const availability = await availabilityService.getAvailabilityTemplateForDate(
+      appointmentDate,
+      options
+    );
+
+    // Set cache headers for better performance
+    res.set({
+      "Cache-Control": "public, max-age=60", // Cache for 1 minute
+      ETag: `"${date}-${availability.type}"`,
+    });
+
+    res.status(200).json({
+      success: true,
+      data: availability,
+    });
+  } catch (error) {
+    console.error("Error getting availability template for date:", error);
+    res.status(500).json({
+      success: false,
+      message: error.message || "Failed to get availability template for date",
+    });
+  }
+};
+
+/**
+ * Get availability templates for a date range (for frontend processing)
+ */
+export const getAvailabilityTemplatesForDateRange = async (req, res) => {
+  try {
+    const { startDate, endDate } = req.query;
+    const { onlyAvailable } = req.query;
+
+    if (!startDate || !endDate) {
+      return res.status(400).json({
+        success: false,
+        message: "Start date and end date are required",
+      });
+    }
+
+    // Validate date format and range
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+
+    if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid date format. Use YYYY-MM-DD format",
+      });
+    }
+
+    if (start > end) {
+      return res.status(400).json({
+        success: false,
+        message: "Start date must be before or equal to end date",
+      });
+    }
+
+    // Limit the range to prevent excessive computation (max 90 days)
+    const maxRangeDays = 90;
+    const rangeDays = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
+
+    if (rangeDays > maxRangeDays) {
+      return res.status(400).json({
+        success: false,
+        message: `Date range cannot exceed ${maxRangeDays} days. Current range: ${rangeDays} days`,
+      });
+    }
+
+    const options = {
+      onlyAvailable: onlyAvailable === "true",
+    };
+
+    const availability = await availabilityService.getAvailabilityTemplatesForDateRange(
+      startDate,
+      endDate,
+      options
+    );
+
+    // Set cache headers for better performance
+    res.set({
+      "Cache-Control": "public, max-age=120", // Cache for 2 minutes
+      ETag: `"${startDate}-${endDate}-${onlyAvailable || "false"}"`,
+    });
+
+    res.status(200).json({
+      success: true,
+      data: availability,
+      meta: {
+        startDate,
+        endDate,
+        totalDays: rangeDays + 1,
+        onlyAvailable: onlyAvailable === "true",
+      },
+    });
+  } catch (error) {
+    console.error("Error getting availability templates for date range:", error);
+    res.status(500).json({
+      success: false,
+      message: error.message || "Failed to get availability templates for date range",
+    });
+  }
+};
+
+/**
+ * Get all availability data for a date range (templates, holidays, booked slots)
+ */
+export const getAvailabilityDataForRange = async (req, res) => {
+  try {
+    const { startDate, endDate } = req.query;
+
+    if (!startDate || !endDate) {
+      return res.status(400).json({
+        success: false,
+        message: "Start date and end date are required",
+      });
+    }
+
+    // Validate date format and range
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+
+    if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid date format. Use YYYY-MM-DD format",
+      });
+    }
+
+    if (start > end) {
+      return res.status(400).json({
+        success: false,
+        message: "Start date must be before or equal to end date",
+      });
+    }
+
+    // Limit the range to prevent excessive computation (max 90 days)
+    const maxRangeDays = 90;
+    const rangeDays = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
+
+    if (rangeDays > maxRangeDays) {
+      return res.status(400).json({
+        success: false,
+        message: `Date range cannot exceed ${maxRangeDays} days. Current range: ${rangeDays} days`,
+      });
+    }
+
+    const availabilityData = await availabilityService.getAvailabilityDataForRange(
+      startDate,
+      endDate
+    );
+
+    // Disable caching to ensure newly booked slots are reflected immediately
+    res.set({
+      "Cache-Control": "no-store, no-cache, must-revalidate",
+      Pragma: "no-cache",
+      Expires: "0",
+    });
+
+    res.status(200).json({
+      success: true,
+      data: availabilityData,
+      meta: {
+        startDate,
+        endDate,
+        totalDays: rangeDays + 1,
+        templateCount: availabilityData.templates.length,
+        holidayCount: availabilityData.holidays.length,
+      },
+    });
+  } catch (error) {
+    console.error("Error getting availability data for range:", error);
+    res.status(500).json({
+      success: false,
+      message: error.message || "Failed to get availability data for range",
+    });
+  }
+};

@@ -29,8 +29,8 @@ const DateSelectionStep = ({ data, onNext, onBack, onDataChange }) => {
         0
       );
 
-      // Use the new availability service to get complete availability data
-      const response = await availabilityService.getAvailabilityForDateRange(
+      // Use the new frontend availability processing for better performance
+      const response = await availabilityService.generateAvailabilityForDateRange(
         startDate,
         endDate
       );

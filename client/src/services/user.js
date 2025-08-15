@@ -14,13 +14,29 @@ const userService = {
 
   // Update personal information
   updatePersonalInfo: async (personalData) => {
-    const response = await api.put("/users/profile/personal", personalData);
+    const response = await api.put(
+      "/users/profile/personal",
+      personalData,
+      {
+        // Avoid global interceptor toasts; component will handle toasts
+        skipSuccessMessage: true,
+        skipErrorMessage: true,
+      }
+    );
     return response;
   },
 
   // Update medical information
   updateMedicalInfo: async (medicalData) => {
-    const response = await api.put("/users/profile/medical", medicalData);
+    const response = await api.put(
+      "/users/profile/medical",
+      medicalData,
+      {
+        // Avoid global interceptor toasts; component will handle toasts
+        skipSuccessMessage: true,
+        skipErrorMessage: true,
+      }
+    );
     return response;
   },
 

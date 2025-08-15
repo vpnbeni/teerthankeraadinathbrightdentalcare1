@@ -1,0 +1,204 @@
+{
+  "meta": {
+    "project": "Teerthanker Aadinath Bright Dental Care",
+    "monorepo": true,
+    "workspaces": ["client", "admin", "server", "shared"]
+  },
+  "techStack": {
+    "frontend": ["React 18", "Vite", "Tailwind CSS", "Redux Toolkit", "React Router", "Axios", "React Hook Form", "React Hot Toast"],
+    "adminExtras": ["@tanstack/react-query", "@tanstack/react-table", "recharts"],
+    "backend": ["Node.js", "Express.js", "Mongoose", "JWT", "bcrypt", "multer", "Cloudinary", "Razorpay"],
+    "database": ["MongoDB"],
+    "testing": {
+      "client": ["Vitest", "Testing Library", "MSW"],
+      "admin": ["Vitest", "Testing Library", "MSW", "jest-axe"],
+      "server": ["Jest", "Supertest", "mongodb-memory-server"]
+    },
+    "ops": ["Docker", "Nginx"]
+  },
+  "architecture": {
+    "packages": {
+      "client": "React client portal",
+      "admin": "React admin dashboard",
+      "server": "Express API",
+      "shared": "Shared UI, hooks, constants, utils"
+    },
+    "folderStructure": {
+      "frontend": ["src/components", "src/pages", "src/services", "src/store", "src/shared", "src/hooks", "src/utils"],
+      "backend": ["src/controllers", "src/routes", "src/models", "src/services", "src/middleware", "src/utils", "src/config"]
+    },
+    "boundaries": {
+      "noCrossImports": "Do not import code across apps directly; use `shared/` for common code.",
+      "shared": "Expose via `shared/index.js` and app-level `shared/index.js` barrel files."
+    },
+    "routing": {
+      "client": "React Router v6 with protected routes via `components/common/ProtectedRoute`",
+      "admin": "React Router v6 with role-based guard `requiredRole=\"admin\"`"
+    }
+  },
+  "editorRules": {
+    "language": "JavaScript (ES Modules)",
+    "typescript": false,
+    "indentation": "2 spaces",
+    "semi": true,
+    "quotes": "double",
+    "trailingCommas": "never",
+    "fileExtensions": { "react": "jsx", "js": "js" },
+    "preserveExistingIndentation": true
+  },
+  "conventions": {
+    "naming": {
+      "components": "PascalCase (e.g., AppointmentCard.jsx)",
+      "files": {
+        "react": "*.jsx",
+        "js": "*.js",
+        "reduxSlices": "*Slice.js",
+        "barrels": "index.js"
+      },
+      "variablesFunctions": "camelCase",
+      "constants": "UPPER_SNAKE_CASE",
+      "directories": "kebab-case"
+    },
+    "imports": {
+      "order": ["react/react-dom", "vendor libs", "shared/*", "app shared/*", "components", "pages", "services", "store", "utils", "styles"],
+      "avoidAbsolute": true,
+      "preferBarrels": true
+    },
+    "components": {
+      "type": "functional components with hooks",
+      "props": "destructure at function signature",
+      "styling": "Tailwind classes + predefined utility classes in `index.css` (e.g., btn-primary, btn-secondary, input-field, card, plan-card*)",
+      "accessibility": "Use ARIA attributes; follow WCAG via `shared/hooks/useAccessibility.jsx` and `shared/utils/accessibility.js`"
+    },
+    "hooks": {
+      "customHooks": "Place in `src/hooks` or `src/shared/hooks`, export from barrel files",
+      "prefix": "use",
+      "avoidSideEffects": true
+    },
+    "services": {
+      "http": "Use the axios instance from `src/services/api.js`",
+      "naming": "getX, createX, updateX, deleteX, sendX, verifyX",
+      "errors": "Throw with `error.response?.data?.message || fallback`"
+    },
+    "redux": {
+      "toolkit": true,
+      "async": "createAsyncThunk",
+      "slices": "one slice per domain in `src/store`",
+      "selectors": "useSelector in components",
+      "dispatch": "useDispatch in components",
+      "errorClearing": "expose `clearError` reducer on slices"
+    },
+    "validation": {
+      "constants": "Use `shared/constants/validation.js` + `ERROR_MESSAGES` for form rules",
+      "forms": "Use React Hook Form with `register` and `formState.errors`"
+    },
+    "api": {
+      "baseURL": "import.meta.env.VITE_API_URL || http://localhost:5000/api",
+      "withCredentials": true,
+      "timeoutsMs": 10000,
+      "deduplication": "Use pendingRequests map for POST dedupe",
+      "retries": "Exponential backoff on GET-like requests (status 408/429/5xx, ECONNABORTED/NETWORK_ERROR)",
+      "toasts": "Success toasts unless `config.skipSuccessMessage` is true",
+      "logging": "Dev-only timing logs via request metadata"
+    },
+    "backend": {
+      "routes": "Define in `server/src/routes`, mount auth middleware at router level where needed",
+      "controllers": "Stateless, async, return JSON with { success, message, data? }",
+      "services": "Business logic in `server/src/services` (e.g., availability, email)",
+      "middleware": "Auth via cookie/Bearer; adminOnly where required",
+      "models": "Mongoose with validation messages and enums; timestamps maintained",
+      "errors": "Status codes 4xx/5xx, messages human-readable",
+      "security": ["helmet", "cors", "rate-limit", "xss-clean", "mongo-sanitize", "hpp"],
+      "uploads": "multer + Cloudinary"
+    },
+    "testing": {
+      "client": "Vitest + Testing Library; mock network with MSW",
+      "admin": "Vitest + Testing Library; include jest-axe for a11y",
+      "server": "Jest + Supertest; use mongodb-memory-server for DB",
+      "coverage": "Prefer >=80% as in server/jest config"
+    }
+  },
+  "frontendGuidelines": {
+    "forms": {
+      "library": "react-hook-form",
+      "validation": "Use `VALIDATION_RULES` and error messages from `shared/constants`",
+      "otpFlows": "Follow `LoginForm.jsx` patterns (send OTP, resend timer, error states)"
+    },
+    "auth": {
+      "state": "Redux slice `authSlice.js` with createAsyncThunk actions",
+      "check": "Dispatch `checkAuthStatus` on app init",
+      "protectedRoutes": "Wrap with `ProtectedRoute` and redirect unauthenticated"
+    },
+    "accessibility": {
+      "provider": "Wrap app with `AccessibilityProvider`",
+      "skipLinks": "Include SkipLinks or equivalent",
+      "keyboardFocus": "Use utilities from `shared/utils/accessibility.js`"
+    },
+    "ui": {
+      "components": "Favor `shared/components` where possible",
+      "styles": "Tailwind + utility classes defined in `index.css`"
+    }
+  },
+  "uiToasts": {
+    "rule": "Toast messages should be triggered either by API interceptors or within component/mutation callbacks, but never both for the same action.",
+    "guidelines": [
+      "For user actions like booking, pass `{ skipSuccessMessage: true, skipErrorMessage: true }` to the API call when you intend to handle toasts in the component.",
+      "Do not call `toast.*` in both `try/catch` and in an `onSuccess/onError` from a mutation for the same request.",
+      "Ensure there is only one `<Toaster />` mounted (use `shared/components/ToastContainer`)."
+    ]
+  },
+  "phoneVerification": {
+    "rule": "When phone number field changes, reset verification status unless it matches previously verified number.",
+    "implementation": [
+      "Track `verifiedPhone` in component state when verification succeeds.",
+      "Hide the verified badge unless `formData.phone === verifiedPhone`.",
+      "Clear OTP UI state when phone input changes."
+    ]
+  },
+  "backendGuidelines": {
+    "requestFlow": "route -> middleware (auth/admin) -> controller -> service -> model",
+    "auth": "Read token from cookie or Authorization header; attach `req.user`",
+    "appointments": "Prevent duplicate bookings; validate availability via `AvailabilityService`",
+    "responses": {
+      "shape": { "success": "boolean", "message": "string", "data": "optional" }
+    }
+  },
+  "whenAddingNewCode": {
+    "component": [
+      "Place in `src/components/<domain>` or `src/shared/components` if reusable.",
+      "Functional component with hooks; export default.",
+      "Use Tailwind and predefined utility classes.",
+      "Add a11y attributes and keyboard handling when interactive."
+    ],
+    "page": [
+      "Place in `src/pages` and register in router.",
+      "Gate with `ProtectedRoute` if auth required."
+    ],
+    "service": [
+      "Add functions to `src/services/<domain>.js` using shared axios instance.",
+      "Return axios response; let callers access `.data`.",
+      "Propagate meaningful error messages."
+    ],
+    "reduxSlice": [
+      "Create `src/store/<name>Slice.js` using RTK.",
+      "Expose async thunks for side effects.",
+      "Export actions like `clearError`."
+    ],
+    "apiRoute": [
+      "Add file in `server/src/routes`, protect with `auth`/`adminOnly` as needed.",
+      "Add controller in `server/src/controllers`; keep thin and async."
+    ],
+    "model": [
+      "Define in `server/src/models` with validations and enums.",
+      "Export via `server/src/models/index.js`."
+    ]
+  },
+  "doNot": [
+    "Do not use fetch directly; always use the configured axios instance.",
+    "Do not introduce TypeScript or convert file extensions.",
+    "Do not bypass shared validation or constants.",
+    "Do not hardcode API URLs; use env-driven baseURL.",
+    "Do not mutate Redux state directly outside RTK reducers.",
+    "Do not add class components; use function components only."
+  ]
+}
