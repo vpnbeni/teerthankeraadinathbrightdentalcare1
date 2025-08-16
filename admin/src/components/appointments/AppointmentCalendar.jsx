@@ -46,21 +46,35 @@ const AppointmentCalendar = ({
     setCalendarDays(days);
   };
 
+  const getLocalDateKey = (input) => {
+    const d = new Date(input);
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${y}-${m}-${day}`;
+  };
+
   const getAppointmentsForDate = (date) => {
-    const dateStr = date.toISOString().split("T")[0];
+    const targetKey = getLocalDateKey(date);
     const filteredAppointments = appointments.filter((apt) => {
-      // Handle different date formats from the server
-      let aptDate;
-      if (typeof apt.date === "string") {
-        aptDate = new Date(apt.date);
-      } else if (apt.date instanceof Date) {
-        aptDate = apt.date;
-      } else {
-        return false;
+      // Prefer appointmentDateTime to avoid timezone shifting from UTC midnight dates
+      if (apt.appointmentDateTime) {
+        return getLocalDateKey(apt.appointmentDateTime) === targetKey;
       }
 
-      const aptDateStr = aptDate.toISOString().split("T")[0];
-      return aptDateStr === dateStr;
+      // Fallback: if only apt.date exists, parse the YYYY-MM-DD part as a local date
+      if (apt.date) {
+        if (typeof apt.date === "string" && /^\d{4}-\d{2}-\d{2}/.test(apt.date)) {
+          const [yy, mm, dd] = apt.date.slice(0, 10).split("-").map(Number);
+          const localDateFromUtcMidnight = new Date(yy, mm - 1, dd);
+          return getLocalDateKey(localDateFromUtcMidnight) === targetKey;
+        }
+
+        // If it's already a Date or another string, fall back to local key comparison
+        return getLocalDateKey(apt.date) === targetKey;
+      }
+
+      return false;
     });
 
     return filteredAppointments;

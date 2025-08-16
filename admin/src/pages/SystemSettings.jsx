@@ -6,11 +6,13 @@ import { fetchSystemSettings, setActiveTab } from "../store/settingsSlice";
 import EmailTemplateEditor from "../components/settings/EmailTemplateEditor";
 import BusinessRulesConfig from "../components/settings/BusinessRulesConfig";
 import TimeSlotDefaults from "../components/settings/TimeSlotDefaults";
+import AdminNotificationConfig from "../components/settings/AdminNotificationConfig";
 import {
   EnvelopeIcon,
   Cog6ToothIcon,
   ClockIcon,
   DocumentTextIcon,
+  BellIcon,
 } from "@heroicons/react/24/outline";
 
 const SystemSettings = () => {
@@ -44,6 +46,13 @@ const SystemSettings = () => {
       icon: ClockIcon,
       component: TimeSlotDefaults,
       description: "Set default availability time slots",
+    },
+    {
+      id: "admin-notifications",
+      name: "Admin Notifications",
+      icon: BellIcon,
+      component: AdminNotificationConfig,
+      description: "Configure admin notification email for appointment alerts",
     },
   ];
 
@@ -197,6 +206,10 @@ const SystemSettings = () => {
                   <li>
                     <strong>Time Slot Defaults:</strong> Configure default
                     availability patterns for appointment scheduling
+                  </li>
+                  <li>
+                    <strong>Admin Notifications:</strong> Set up email notifications
+                    for appointment bookings and other admin alerts
                   </li>
                 </ul>
               </div>

@@ -456,6 +456,59 @@ export const getSettingsByCategory = async (req, res, next) => {
 };
 
 /**
+ * Update admin notification email
+ * PUT /api/admin/settings/notification-email
+ */
+export const updateNotificationEmail = async (req, res, next) => {
+  try {
+    const { notificationEmail } = req.body;
+
+    // Validate email format if provided
+    if (notificationEmail && notificationEmail.trim()) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(notificationEmail.trim())) {
+        return next(new SettingsError("Invalid email format", 400));
+      }
+    }
+
+    // Update or create notification email setting in general category
+    const settingData = {
+      generalSettings: new Map([
+        ["notificationEmail", notificationEmail?.trim() || ""],
+      ]),
+    };
+
+    const updatedSetting = await Settings.updateSetting(
+      "general",
+      "admin-config",
+      settingData,
+      req.user.id
+    );
+
+    logger.info("Admin notification email updated", {
+      adminId: req.user.id,
+      hasEmail: !!(notificationEmail?.trim()),
+      version: updatedSetting.version,
+    });
+
+    res.json({
+      success: true,
+      message: notificationEmail?.trim()
+        ? "Admin notification email updated successfully"
+        : "Admin notification email removed successfully",
+      data: {
+        notificationEmail: notificationEmail?.trim() || "",
+        version: updatedSetting.version,
+        updatedAt: updatedSetting.updatedAt,
+      },
+    });
+  } catch (error) {
+    logger.error("Error updating admin notification email:", error);
+    next(new SettingsError("Failed to update notification email", 500));
+  }
+};
+
+/**
  * Reset settings to default values
  * POST /api/admin/settings/reset
  */

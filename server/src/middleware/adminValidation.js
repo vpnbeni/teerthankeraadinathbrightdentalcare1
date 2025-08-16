@@ -1068,6 +1068,21 @@ export const adminValidationRules = {
       .isMongoId()
       .withMessage("Each custom date ID must be valid"),
   ],
+
+  adminUpdateNotificationEmail: [
+    body("notificationEmail")
+      .optional()
+      .custom((value) => {
+        if (value && value.trim()) {
+          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+          if (!emailRegex.test(value.trim())) {
+            throw new Error("Please provide a valid email address");
+          }
+        }
+        return true;
+      })
+      .withMessage("Please provide a valid email address"),
+  ],
 };
 
 /**

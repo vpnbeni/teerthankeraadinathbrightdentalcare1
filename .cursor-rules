@@ -165,6 +165,16 @@
       "Optionally show a tooltip title like 'Verified email cannot be changed.'"
     ]
   },
+  "adminNotificationEmails": {
+    "rule": "When sending transactional emails, if adminNotificationEmail is configured, always send a copy.",
+    "implementation": [
+      "All transactional email methods (booking, confirmation, cancellation, completion, reschedule) must call `sendAdminNotificationCopy()` after sending patient email.",
+      "Admin notification emails should be non-blocking - failures should not prevent patient emails.",
+      "Use the `getAdminNotificationEmail()` helper to fetch the configured email from settings.",
+      "Store admin notification email in `Settings` model under `general` category with key `admin-config`.",
+      "Admin notification emails should have clear subject lines indicating the action type and include patient details."
+    ]
+  },
   "backendGuidelines": {
     "requestFlow": "route -> middleware (auth/admin) -> controller -> service -> model",
     "auth": "Read token from cookie or Authorization header; attach `req.user`",

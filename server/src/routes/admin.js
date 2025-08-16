@@ -62,6 +62,7 @@ import {
   updateTimeSlotDefaults,
   getSettingsByCategory,
   resetSettingsToDefault,
+  updateNotificationEmail,
 } from "../controllers/settingsController.js";
 
 const router = express.Router();
@@ -282,6 +283,12 @@ router.put(
   validateAdminRequest("adminUpdateTimeSlotDefaults"),
   auditAdminAction("settings", "update"),
   updateTimeSlotDefaults
+);
+router.put(
+  "/settings/notification-email",
+  validateAdminRequest("adminUpdateNotificationEmail"),
+  auditAdminAction("settings", "update"),
+  updateNotificationEmail
 );
 router.post(
   "/settings/reset",

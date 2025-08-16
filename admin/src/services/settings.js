@@ -47,6 +47,14 @@ const settingsService = {
     return response;
   },
 
+  // Update admin notification email
+  updateNotificationEmail: async (email) => {
+    const response = await api.put("/admin/settings/notification-email", {
+      notificationEmail: email,
+    });
+    return response;
+  },
+
   // Validate email template
   validateEmailTemplate: async (templateName, templateData) => {
     try {

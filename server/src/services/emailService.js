@@ -2,6 +2,7 @@ import nodemailer from "nodemailer";
 import { emailConfig } from "../config/environment.js";
 import logger from "../utils/logger.js";
 import AdminNotificationPreferences from "../models/AdminNotificationPreferences.js";
+import Settings from "../models/Settings.js";
 
 class EmailService {
   constructor() {
@@ -31,6 +32,150 @@ class EmailService {
 
   isAvailable() {
     return !!this.transporter;
+  }
+
+  /**
+   * Get admin notification email from settings
+   */
+  async getAdminNotificationEmail() {
+    try {
+      const setting = await Settings.getSetting("general", "admin-config");
+      if (setting?.generalSettings?.has("notificationEmail")) {
+        const email = setting.generalSettings.get("notificationEmail");
+        return email?.trim() || null;
+      }
+      return null;
+    } catch (error) {
+      logger.error("Failed to get admin notification email:", error);
+      return null;
+    }
+  }
+
+  /**
+   * Send admin notification copy for transactional emails
+   */
+  async sendAdminNotificationCopy({
+    patientEmail,
+    patientName,
+    appointmentDate,
+    appointmentTime,
+    type,
+    clinicName = "Teerthanker Dental Care",
+    additionalInfo = "",
+  }) {
+    try {
+      const adminEmail = await this.getAdminNotificationEmail();
+      
+      if (!adminEmail) {
+        logger.info("Admin notification email not configured, skipping admin notification");
+        return { skipped: true, reason: "not_configured" };
+      }
+
+      const typeMap = {
+        booking: "New Appointment Booking",
+        confirmation: "Appointment Confirmed",
+        cancellation: "Appointment Cancelled",
+        completion: "Appointment Completed",
+        reschedule: "Appointment Rescheduled",
+      };
+
+      const subject = `${typeMap[type] || "Appointment Update"} - ${clinicName}`;
+
+      const html = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>${subject}</title>
+        <style>
+          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+          .container { max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px; }
+          .header { background-color: #346870; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
+          .content { padding: 20px; }
+          .notification-details { background-color: #f0f8ff; padding: 15px; border-left: 4px solid #346870; margin: 20px 0; }
+          .patient-details { background-color: #f9f9f9; padding: 15px; border-left: 4px solid #4CAF50; margin: 20px 0; }
+          .footer { text-align: center; padding: 20px; color: #666; font-size: 12px; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>${typeMap[type] || "Appointment Update"}</h1>
+            <p>Admin Notification</p>
+          </div>
+          <div class="content">
+            <h2>Dear Admin,</h2>
+            <p>This is an automated notification regarding a ${type} in the system.</p>
+            
+            <div class="patient-details">
+              <h3>Patient Information</h3>
+              <p><strong>Name:</strong> ${patientName}</p>
+              <p><strong>Email:</strong> ${patientEmail}</p>
+            </div>
+            
+            <div class="notification-details">
+              <h3>Appointment Details</h3>
+              <p><strong>Date:</strong> ${appointmentDate}</p>
+              <p><strong>Time:</strong> ${appointmentTime}</p>
+              <p><strong>Action:</strong> ${typeMap[type] || "Updated"}</p>
+              ${additionalInfo ? `<p><strong>Additional Info:</strong> ${additionalInfo}</p>` : ""}
+            </div>
+            
+            <p>Please review the appointment details and take appropriate action if needed.</p>
+          </div>
+          <div class="footer">
+            <p>This is an automated admin notification from ${clinicName} Management System.</p>
+            <p>&copy; ${new Date().getFullYear()} ${clinicName}. All rights reserved.</p>
+          </div>
+        </div>
+      </body>
+      </html>
+      `;
+
+      const text = `
+      ${typeMap[type] || "Appointment Update"} - Admin Notification
+
+      Dear Admin,
+
+      This is an automated notification regarding a ${type} in the system.
+
+      Patient Information:
+      - Name: ${patientName}
+      - Email: ${patientEmail}
+
+      Appointment Details:
+      - Date: ${appointmentDate}
+      - Time: ${appointmentTime}
+      - Action: ${typeMap[type] || "Updated"}
+      ${additionalInfo ? `- Additional Info: ${additionalInfo}` : ""}
+
+      Please review the appointment details and take appropriate action if needed.
+
+      This is an automated admin notification from ${clinicName} Management System.
+      `;
+
+      await this.sendEmail({
+        to: adminEmail,
+        subject,
+        html,
+        text,
+      });
+
+      logger.info("Admin notification sent", {
+        adminEmail,
+        type,
+        patientName,
+        appointmentDate,
+        appointmentTime,
+      });
+
+      return { sent: true, adminEmail };
+    } catch (error) {
+      logger.error("Failed to send admin notification copy:", error);
+      // Don't throw error - admin notification failure shouldn't break patient email
+      return { error: error.message };
+    }
   }
 
   async sendEmail(options) {
@@ -410,11 +555,22 @@ class EmailService {
     ${clinicName}
     `;
 
+    // Send email to patient
     await this.sendEmail({
       to: email,
       subject,
       html,
       text,
+    });
+
+    // Send admin notification if configured
+    await this.sendAdminNotificationCopy({
+      patientEmail: email,
+      patientName: name,
+      appointmentDate: formattedDate,
+      appointmentTime: timeSlot,
+      type: "booking",
+      clinicName,
     });
   }
 
@@ -492,11 +648,22 @@ class EmailService {
     ${clinicName}
     `;
 
+    // Send email to patient
     await this.sendEmail({
       to: email,
       subject,
       html,
       text,
+    });
+
+    // Send admin notification if configured
+    await this.sendAdminNotificationCopy({
+      patientEmail: email,
+      patientName: name,
+      appointmentDate: formattedDate,
+      appointmentTime: timeSlot,
+      type: "confirmation",
+      clinicName,
     });
   }
 
@@ -573,11 +740,23 @@ class EmailService {
     ${clinicName}
     `;
 
+    // Send email to patient
     await this.sendEmail({
       to: email,
       subject,
       html,
       text,
+    });
+
+    // Send admin notification if configured
+    await this.sendAdminNotificationCopy({
+      patientEmail: email,
+      patientName: name,
+      appointmentDate: formattedDate,
+      appointmentTime: timeSlot,
+      type: "cancellation",
+      clinicName,
+      additionalInfo: reason || "",
     });
   }
 
@@ -674,11 +853,22 @@ class EmailService {
     ${clinicName}
     `;
 
+    // Send email to patient
     await this.sendEmail({
       to: email,
       subject,
       html,
       text,
+    });
+
+    // Send admin notification if configured
+    await this.sendAdminNotificationCopy({
+      patientEmail: email,
+      patientName: name,
+      appointmentDate: formattedDate,
+      appointmentTime: timeSlot,
+      type: "completion",
+      clinicName,
     });
   }
 
