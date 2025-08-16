@@ -65,6 +65,9 @@ export const getAdminAppointmentAnalytics = async (req, res) => {
           confirmed: {
             $sum: { $cond: [{ $eq: ["$status", "confirmed"] }, 1, 0] },
           },
+          expired: {
+            $sum: { $cond: [{ $eq: ["$status", "expired"] }, 1, 0] },
+          },
         },
       },
       {
@@ -77,7 +80,7 @@ export const getAdminAppointmentAnalytics = async (req, res) => {
       {
         $match: {
           date: { $gte: start, $lte: end },
-          status: { $ne: "cancelled" },
+          status: { $nin: ["cancelled", "expired"] },
         },
       },
       {
@@ -1093,7 +1096,7 @@ export const getAppointmentAnalytics = async (req, res) => {
       {
         $match: {
           date: { $gte: start, $lte: end },
-          status: { $ne: "cancelled" },
+          status: { $nin: ["cancelled", "expired"] },
         },
       },
       {

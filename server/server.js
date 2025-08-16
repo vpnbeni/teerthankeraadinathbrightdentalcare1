@@ -136,6 +136,7 @@ const startServer = async () => {
 
     // Initialize background services after database connection
     const { appointmentAutoCancelService } = await import("./src/services/appointmentAutoCancelService.js");
+    const { appointmentExpiryService } = await import("./src/services/appointmentExpiryService.js");
     console.log("✅ Background services initialized");
 
     // Start server after successful database connection
@@ -145,6 +146,11 @@ const startServer = async () => {
       console.log(
         `📋 Auto-cancellation service: ${
           config.AUTO_CANCEL.ENABLED ? "enabled" : "disabled"
+        }`
+      );
+      console.log(
+        `⏰ Appointment expiry service: ${
+          config.APPOINTMENT_EXPIRY.ENABLED ? "enabled" : "disabled"
         }`
       );
     });

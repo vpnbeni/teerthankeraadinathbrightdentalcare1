@@ -38,9 +38,10 @@ export const canUserBookAppointment = (user, appointments = []) => {
   }
 
   // If appointments array is provided, check if user has already booked max appointments
+  // Exclude expired appointments from the count
   if (appointments.length > 0) {
     const confirmedAppointments = appointments.filter(
-      (apt) => apt.status === "scheduled" || apt.status === "confirmed"
+      (apt) => (apt.status === "scheduled" || apt.status === "confirmed") && apt.status !== "expired"
     ).length;
 
     if (confirmedAppointments >= user.subscription.sessionsRemaining) {
@@ -79,7 +80,7 @@ export const getSessionLimitInfo = (user, appointments = []) => {
 
   const sessionsRemaining = user.subscription.sessionsRemaining || 0;
   const confirmedAppointments = appointments.filter(
-    (apt) => apt.status === "scheduled" || apt.status === "confirmed"
+    (apt) => (apt.status === "scheduled" || apt.status === "confirmed") && apt.status !== "expired"
   ).length;
 
   // Calculate total sessions from plan or estimate

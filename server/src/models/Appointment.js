@@ -30,9 +30,10 @@ const appointmentSchema = new mongoose.Schema(
           "completed",
           "cancelled",
           "rescheduled",
+          "expired",
         ],
         message:
-          "Status must be scheduled, confirmed, completed, cancelled, or rescheduled",
+          "Status must be scheduled, confirmed, completed, cancelled, rescheduled, or expired",
       },
       default: "scheduled",
     },
@@ -171,7 +172,7 @@ appointmentSchema.statics.isTimeSlotAvailable = async function (
       $lt: new Date(date.setHours(23, 59, 59, 999)),
     },
     timeSlot,
-    status: { $nin: ["cancelled"] },
+    status: { $nin: ["cancelled", "expired"] },
   };
 
   if (excludeAppointmentId) {
@@ -231,7 +232,7 @@ appointmentSchema.statics.getAvailableTimeSlots = async function (date) {
           $gte: new Date(date.setHours(0, 0, 0, 0)),
           $lt: new Date(date.setHours(23, 59, 59, 999)),
         },
-        status: { $nin: ["cancelled"] },
+        status: { $nin: ["cancelled", "expired"] },
       }).select("timeSlot");
 
       const bookedTimeSlots = bookedAppointments.map((apt) => apt.timeSlot);
@@ -340,6 +341,22 @@ appointmentSchema.methods.cancel = function (
 
   this.cancellationDetails.reason = reason;
   this.cancellationDetails.cancelledBy = cancelledBy;
+  this.cancellationDetails.cancelledAt = new Date();
+
+  return this.save();
+};
+
+// Instance method to expire appointment
+appointmentSchema.methods.expire = function (reason = null) {
+  this.status = "expired";
+
+  // Add expiration details using cancellation structure for consistency
+  if (!this.cancellationDetails) {
+    this.cancellationDetails = {};
+  }
+
+  this.cancellationDetails.reason = reason || "Appointment expired - scheduled time has passed without confirmation";
+  this.cancellationDetails.cancelledBy = null; // System expiration
   this.cancellationDetails.cancelledAt = new Date();
 
   return this.save();

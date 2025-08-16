@@ -213,6 +213,17 @@
       "Export via `server/src/models/index.js`."
     ]
   },
+  "sessionQuotaRules": {
+    "description": "Session quota management ensures users only count valid appointments towards their plan limits",
+    "implementation": [
+      "Do not count expired scheduled appointments towards user quota.",
+      "Auto-expire appointments when appointment time + grace period passes without admin confirmation.",
+      "Only count appointments with status in ['confirmed', 'completed'] as consuming sessions.",
+      "Expired appointments (status: 'expired') should NOT count towards session limits.",
+      "Use AppointmentExpiryService for automatic expiry with configurable grace period (default: 15 minutes).",
+      "Expired appointments remain in database for audit/analytics but don't block new bookings."
+    ]
+  },
   "doNot": [
     "Do not use fetch directly; always use the configured axios instance.",
     "Do not introduce TypeScript or convert file extensions.",

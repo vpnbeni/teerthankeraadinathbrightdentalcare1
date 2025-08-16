@@ -31,6 +31,7 @@ export const APPOINTMENT_STATUS = {
   CANCELLED: "cancelled",
   NO_SHOW: "no_show",
   RESCHEDULED: "rescheduled",
+  EXPIRED: "expired",
 };
 
 // Payment Status

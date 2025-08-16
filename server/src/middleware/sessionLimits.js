@@ -20,7 +20,7 @@ export const getSessionLimitInfo = async (userId) => {
       throw new Error("User not found");
     }
 
-    // Get user's confirmed appointments
+    // Get user's confirmed appointments (exclude expired appointments from count)
     const appointments = await Appointment.find({
       userId,
       status: { $in: ["scheduled", "confirmed"] },

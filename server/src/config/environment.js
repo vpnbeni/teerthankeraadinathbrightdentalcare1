@@ -174,6 +174,15 @@ const config = {
     NOTIFY_PATIENTS: process.env.AUTO_CANCEL_NOTIFY_PATIENTS !== "false", // Default enabled
     RESTORE_SESSIONS: process.env.AUTO_CANCEL_RESTORE_SESSIONS !== "false", // Default enabled
   },
+
+  // Appointment Expiry Configuration  
+  APPOINTMENT_EXPIRY: {
+    ENABLED: process.env.APPOINTMENT_EXPIRY_ENABLED !== "false", // Default enabled
+    CHECK_INTERVAL: process.env.APPOINTMENT_EXPIRY_CHECK_INTERVAL || "*/10 * * * *", // Every 10 minutes
+    GRACE_PERIOD_MINUTES:
+      parseInt(process.env.APPOINTMENT_EXPIRY_GRACE_PERIOD_MINUTES) || 15, // 15 minute grace period by default
+    NOTIFY_PATIENTS: process.env.APPOINTMENT_EXPIRY_NOTIFY_PATIENTS !== "false", // Default enabled
+  },
 };
 
 export const emailConfig = {
