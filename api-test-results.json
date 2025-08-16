@@ -1,0 +1,74 @@
+{
+  "timestamp": "2025-08-16T10:42:04.595Z",
+  "tests": [
+    {
+      "type": "admin",
+      "endpoint": "/auth/admin/login",
+      "method": "POST",
+      "success": true,
+      "status": 401,
+      "duration": 693
+    },
+    {
+      "type": "admin",
+      "endpoint": "/auth/logout",
+      "method": "POST",
+      "success": true,
+      "status": 401,
+      "duration": 515
+    },
+    {
+      "type": "admin",
+      "endpoint": "/admin/users",
+      "method": "GET",
+      "success": true,
+      "status": 401,
+      "duration": 312
+    },
+    {
+      "type": "admin",
+      "endpoint": "/admin/appointments",
+      "method": "GET",
+      "success": true,
+      "status": 401,
+      "duration": 350
+    },
+    {
+      "type": "client",
+      "endpoint": "/auth/login",
+      "method": "POST",
+      "success": true,
+      "status": 400,
+      "duration": 313
+    },
+    {
+      "type": "client",
+      "endpoint": "/auth/register",
+      "method": "POST",
+      "success": true,
+      "status": 400,
+      "duration": 308
+    },
+    {
+      "type": "client",
+      "endpoint": "/appointments",
+      "method": "GET",
+      "success": true,
+      "status": 401,
+      "duration": 335
+    },
+    {
+      "type": "client",
+      "endpoint": "/plans",
+      "method": "GET",
+      "success": true,
+      "status": 200,
+      "duration": 557
+    }
+  ],
+  "summary": {
+    "total": 8,
+    "passed": 8,
+    "failed": 0
+  }
+}
