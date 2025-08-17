@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import authService from '../../services/auth';
 import userService from '../../services/user';
+import AuthDebug from './AuthDebug';
+import { runAllAuthTests } from '../../utils/testAuthFlow';
 
 /**
  * Debug component to test API endpoints directly
@@ -80,6 +82,9 @@ const ApiTest = () => {
     <div className="max-w-4xl mx-auto p-6">
       <h1 className="text-2xl font-bold mb-6">API Endpoints Test</h1>
       
+      {/* Authentication Debug Panel */}
+      <AuthDebug />
+      
       <div className="space-y-4">
         {tests.map(test => (
           <div key={test.name} className="border rounded-lg p-4">
@@ -115,6 +120,23 @@ const ApiTest = () => {
           <li>• If not logged in: Should get 401 errors for protected endpoints</li>
           <li>• Network tab should show HTTP requests being made</li>
         </ul>
+      </div>
+
+      {/* Authentication Flow Test */}
+      <div className="mt-4 p-4 bg-green-50 rounded-lg">
+        <h3 className="font-medium mb-2">Authentication Flow Test:</h3>
+        <p className="text-sm text-green-700 mb-2">
+          Test the complete JWT token authentication flow programmatically
+        </p>
+        <button
+          onClick={runAllAuthTests}
+          className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+        >
+          Run Auth Flow Tests
+        </button>
+        <p className="text-xs text-green-600 mt-1">
+          Check browser console for detailed test results
+        </p>
       </div>
     </div>
   );

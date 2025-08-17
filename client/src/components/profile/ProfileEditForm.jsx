@@ -5,9 +5,11 @@ import userService from "../../services/user";
 import { LoadingSpinner } from "../../shared/components";
 import { sendPhoneOTPForProfile, verifyPhoneOTPForProfile, sendEmailOTP, verifyEmailOTP } from "../../services/auth";
 import showToast from "../../shared/utils/toast";
+import { useAuth } from "../../hooks/useAuth";
 
 const ProfileEditForm = ({ profile, type, onUserUpdate }) => {
   const dispatch = useDispatch();
+  const { refreshUser } = useAuth();
   const [formData, setFormData] = useState({});
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
@@ -24,6 +26,8 @@ const ProfileEditForm = ({ profile, type, onUserUpdate }) => {
   const [otpLoading, setOtpLoading] = useState(false);
   const [resendCooldown, setResendCooldown] = useState(0);
   const [emailResendCooldown, setEmailResendCooldown] = useState(0);
+  const [phoneVerificationComplete, setPhoneVerificationComplete] = useState(false);
+  const [emailVerificationComplete, setEmailVerificationComplete] = useState(false);
 
   // Track which phone number is verified; if input differs, hide verified badge
   const [verifiedPhone, setVerifiedPhone] = useState(
@@ -35,17 +39,35 @@ const ProfileEditForm = ({ profile, type, onUserUpdate }) => {
   }, [profile]);
 
   const isPhoneVerifiedForCurrentInput = useMemo(() => {
-    return Boolean(
+    const result = Boolean(
       verifiedPhone && formData?.phone && verifiedPhone === formData.phone
     );
-  }, [verifiedPhone, formData?.phone]);
+    console.log("isPhoneVerifiedForCurrentInput:", {
+      result,
+      verifiedPhone,
+      formDataPhone: formData?.phone,
+      phoneVerified: profile?.phoneVerified,
+      phoneVerificationComplete
+    });
+    return result;
+  }, [verifiedPhone, formData?.phone, profile?.phoneVerified, phoneVerificationComplete]);
 
   useEffect(() => {
     if (profile) {
+      console.log("ProfileEditForm: Profile updated", profile);
       setCurrentUser(profile);
       // Initialize editability based on verification flags from profile
       setCanEditPhone(!Boolean(profile.phoneVerified));
       setCanEditEmail(!Boolean(profile.emailVerified));
+      setPhoneVerificationComplete(Boolean(profile.phoneVerified));
+      setEmailVerificationComplete(Boolean(profile.emailVerified));
+      
+      // Reset OTP states when profile changes (e.g., after verification)
+      setPhoneOtpStep(false);
+      setPhoneOtp("");
+      setEmailOtpStep(false);
+      setEmailOtp("");
+      
       if (type === "personal") {
         setFormData({
           name: profile.name || "",
@@ -66,6 +88,7 @@ const ProfileEditForm = ({ profile, type, onUserUpdate }) => {
             profile.medicalInfo?.previousExperiences?.join(", ") || "",
         });
       }
+      
     }
   }, [profile, type]);
 
@@ -107,18 +130,56 @@ const ProfileEditForm = ({ profile, type, onUserUpdate }) => {
       setPhoneOtp("");
       
       // Update local user state immediately
-      if (result.user) {
-        setCurrentUser(result.user);
-        setVerifiedPhone(result.user.phone || formData.phone);
+      if (result.data && result.data.user) {
+        const userData = result.data.user;
+        setCurrentUser(userData);
+        // Update verifiedPhone to the newly verified phone number
+        setVerifiedPhone(userData.phone);
+        // Update form data to match the verified phone number
+        setFormData(prev => ({
+          ...prev,
+          phone: userData.phone
+        }));
         // Update the auth store directly
-        dispatch(updateUser(result.user));
+        dispatch(updateUser(userData));
         // Update the user data in parent component
+        if (onUserUpdate) {
+          onUserUpdate(userData);
+        }
+        // Lock phone editing after successful verification/update
+        if (userData.phoneVerified) {
+          setCanEditPhone(false);
+          setPhoneVerificationComplete(true);
+        }
+        
+        // Refresh auth context to ensure all components have updated user data
+        try {
+          await refreshUser();
+        } catch (refreshError) {
+          console.warn("Failed to refresh user after phone verification:", refreshError);
+        }
+      } else if (result.user) {
+        // Fallback for direct user object in response
+        setCurrentUser(result.user);
+        setVerifiedPhone(result.user.phone);
+        setFormData(prev => ({
+          ...prev,
+          phone: result.user.phone
+        }));
+        dispatch(updateUser(result.user));
         if (onUserUpdate) {
           onUserUpdate(result.user);
         }
-        // Lock phone editing after successful verification/update
         if (result.user.phoneVerified) {
           setCanEditPhone(false);
+          setPhoneVerificationComplete(true);
+        }
+        
+        // Refresh auth context to ensure all components have updated user data
+        try {
+          await refreshUser();
+        } catch (refreshError) {
+          console.warn("Failed to refresh user after phone verification:", refreshError);
         }
       }
     } catch (error) {
@@ -201,6 +262,7 @@ const ProfileEditForm = ({ profile, type, onUserUpdate }) => {
       }
       // Lock email editing after successful verification/update
       setCanEditEmail(false);
+      setEmailVerificationComplete(true);
     } catch (error) {
       showToast.error(error.response?.data?.message || "Invalid OTP");
     } finally {
@@ -235,7 +297,15 @@ const ProfileEditForm = ({ profile, type, onUserUpdate }) => {
       // Reset verified badge unless matches previously verified number
       if (verifiedPhone && nextValue !== verifiedPhone) {
         setVerifiedPhone(null);
+        setPhoneVerificationComplete(false);
       }
+    }
+    
+    // Reset email verification state when email changes
+    if (name === "email") {
+      setEmailOtpStep(false);
+      setEmailOtp("");
+      setEmailVerificationComplete(false);
     }
   };
 
@@ -268,7 +338,7 @@ const ProfileEditForm = ({ profile, type, onUserUpdate }) => {
     }
 
     // If phone number was changed and not verified for current input, trigger OTP and block submit
-    if (type === "personal" && formData.phone && !isPhoneVerifiedForCurrentInput) {
+    if (type === "personal" && formData.phone && !isPhoneVerifiedForCurrentInput && !phoneVerificationComplete) {
       showToast.info("Please verify your new phone number via OTP");
       if (!phoneOtpStep) {
         try {
@@ -408,7 +478,7 @@ const ProfileEditForm = ({ profile, type, onUserUpdate }) => {
               )}
               
               {/* Phone OTP Section */}
-              {formData.phone && !isPhoneVerifiedForCurrentInput && (
+              {formData.phone && !isPhoneVerifiedForCurrentInput && !phoneVerificationComplete && (
                 <div className="mt-3 space-y-3">
                   {!phoneOtpStep ? (
                     <button
@@ -484,7 +554,7 @@ const ProfileEditForm = ({ profile, type, onUserUpdate }) => {
               )}
               
               {/* Email OTP Section */}
-              {formData.email && !profile?.emailVerified && (
+              {formData.email && !profile?.emailVerified && !emailVerificationComplete && (
                 <div className="mt-3 space-y-3">
                   {!emailOtpStep ? (
                     <button

@@ -1,4 +1,5 @@
-import api from "./api";
+import api, { resetAuthFailureState } from "./api";
+import { storeToken, removeToken } from "../utils/tokenManager";
 
 const authService = {
   // Register new user
@@ -10,9 +11,12 @@ const authService = {
   // Verify OTP
   verifyOTP: async (otpData) => {
     const response = await api.post("/auth/verify-phone", otpData);
-    // Store token in localStorage
-    if (response.data.token) {
-      localStorage.setItem("token", response.data.token);
+    // Store token in localStorage - handle nested response structure
+    const token = response.data?.data?.token || response.data?.token;
+    if (token) {
+      storeToken(token);
+      // Reset authentication failure state after successful verification
+      resetAuthFailureState();
     }
     return response;
   },
@@ -20,9 +24,12 @@ const authService = {
   // Login user
   login: async (credentials) => {
     const response = await api.post("/auth/login", credentials);
-    // Store token in localStorage
-    if (response.data.token) {
-      localStorage.setItem("token", response.data.token);
+    // Store token in localStorage - handle nested response structure
+    const token = response.data?.data?.token || response.data?.token;
+    if (token) {
+      storeToken(token);
+      // Reset authentication failure state after successful login
+      resetAuthFailureState();
     }
     return response;
   },
@@ -34,7 +41,7 @@ const authService = {
       return response;
     } finally {
       // Always clear localStorage token regardless of server response
-      localStorage.removeItem("token");
+      removeToken();
     }
   },
 
@@ -81,9 +88,12 @@ const authService = {
       skipErrorMessage: true, // Skip global error toast
       skipRedirect: true, // Skip global redirect on 401
     });
-    // Store token in localStorage
-    if (response.data.token) {
-      localStorage.setItem("token", response.data.token);
+    // Store token in localStorage - handle nested response structure
+    const token = response.data?.data?.token || response.data?.token;
+    if (token) {
+      storeToken(token);
+      // Reset authentication failure state after successful login
+      resetAuthFailureState();
     }
     return response;
   },
@@ -155,9 +165,12 @@ export const registerWithEmail = async (email, name, planId, otp) => {
       planId,
       otp,
     });
-    // Store token in localStorage if provided
-    if (response.data.token) {
-      localStorage.setItem("token", response.data.token);
+    // Store token in localStorage if provided - handle nested response structure
+    const token = response.data?.data?.token || response.data?.token;
+    if (token) {
+      storeToken(token);
+      // Reset authentication failure state after successful registration
+      resetAuthFailureState();
     }
     return response.data;
   } catch (error) {

@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import userService from "../services/user";
 import authService from "../services/auth";
 import { validateUserAuthContext, clearAdminTokens, clearUserToken } from "../utils/authGuard.js";
+import { setAuthState } from "../store/authSlice";
 
 /**
  * Custom hook for managing authentication state and user data
@@ -23,7 +24,7 @@ export const useAuth = () => {
 
     try {
       console.log("🔍 checkAuthStatus: Making API call to /auth/check");
-      // Check authentication status (uses HTTP-only cookie automatically)
+      // Check authentication status (uses token from localStorage via Authorization header)
       const authResponse = await authService.checkAuth();
       console.log("🔍 checkAuthStatus: Auth response received:", authResponse);
 
@@ -45,11 +46,27 @@ export const useAuth = () => {
         
         setIsAuthenticated(true);
         setUser(userData);
+        
+        // Update Redux store to sync with AuthModal
+        dispatch(setAuthState({
+          isAuthenticated: true,
+          user: userData,
+          token: null // Token is already in localStorage
+        }));
+        
         return userData;
       } else {
         console.log("🔍 checkAuthStatus: Auth failed - no success flag");
         setIsAuthenticated(false);
         setUser(null);
+        
+        // Update Redux store to sync with AuthModal
+        dispatch(setAuthState({
+          isAuthenticated: false,
+          user: null,
+          token: null
+        }));
+        
         return null;
       }
     } catch (error) {
@@ -57,6 +74,13 @@ export const useAuth = () => {
       setError(error.response?.data?.message || "Authentication check failed");
       setIsAuthenticated(false);
       setUser(null);
+      
+      // Update Redux store to sync with AuthModal
+      dispatch(setAuthState({
+        isAuthenticated: false,
+        user: null,
+        token: null
+      }));
 
       // Redirect to home page if auth fails and we're not already there
       if (window.location.hash !== "#/" && window.location.hash !== "#/home") {
@@ -71,7 +95,7 @@ export const useAuth = () => {
       console.log("🔍 checkAuthStatus: Auth check completed");
       setIsLoading(false);
     }
-  }, []);
+  }, [dispatch]);
 
   // Get full user profile with detailed information
   const getUserProfile = useCallback(async () => {
@@ -95,6 +119,14 @@ export const useAuth = () => {
         );
         setUser(userData);
         setIsAuthenticated(true);
+        
+        // Update Redux store to sync with AuthModal
+        dispatch(setAuthState({
+          isAuthenticated: true,
+          user: userData,
+          token: null // Token is already in localStorage
+        }));
+        
         return userData;
       } else {
         console.log(
@@ -111,6 +143,13 @@ export const useAuth = () => {
         console.log("📋 getUserProfile: 401 error - setting auth to false");
         setIsAuthenticated(false);
         setUser(null);
+        
+        // Update Redux store to sync with AuthModal
+        dispatch(setAuthState({
+          isAuthenticated: false,
+          user: null,
+          token: null
+        }));
       }
 
       throw error;
@@ -118,7 +157,7 @@ export const useAuth = () => {
       console.log("📋 getUserProfile: Profile fetch completed");
       setIsLoading(false);
     }
-  }, []);
+  }, [dispatch]);
 
   // Initialize auth check on mount
   useEffect(() => {
@@ -137,8 +176,51 @@ export const useAuth = () => {
       setIsAuthenticated(false);
       setUser(null);
       setError(null);
+      
+      // Update Redux store to sync with AuthModal
+      dispatch(setAuthState({
+        isAuthenticated: false,
+        user: null,
+        token: null
+      }));
     }
-  }, []);
+  }, [dispatch]);
+
+  // Handle successful login and update auth state
+  const handleSuccessfulLogin = useCallback(async (loginResponse) => {
+    console.log("🔐 handleSuccessfulLogin: Processing login response:", loginResponse);
+    
+    try {
+      // Extract user data from the nested response structure
+      const userData = loginResponse.data?.data?.user || loginResponse.data?.user;
+      const token = loginResponse.data?.data?.token || loginResponse.data?.token;
+      
+      if (userData && token) {
+        console.log("🔐 handleSuccessfulLogin: Setting authentication state");
+        setIsAuthenticated(true);
+        setUser(userData);
+        setError(null);
+        
+        // Update Redux store to sync with AuthModal
+        dispatch(setAuthState({
+          isAuthenticated: true,
+          user: userData,
+          token: token
+        }));
+        
+        // Verify the token is working by making an auth check
+        await checkAuthStatus();
+        return userData;
+      } else {
+        console.error("🔐 handleSuccessfulLogin: Missing user data or token");
+        throw new Error("Invalid login response");
+      }
+    } catch (error) {
+      console.error("🔐 handleSuccessfulLogin: Error processing login:", error);
+      setError("Failed to complete login process");
+      throw error;
+    }
+  }, [checkAuthStatus, dispatch]);
 
   // Refresh user data
   const refreshUser = useCallback(async () => {
@@ -147,7 +229,7 @@ export const useAuth = () => {
     } else {
       return await checkAuthStatus();
     }
-  }, [isAuthenticated, getUserProfile, checkAuthStatus]);
+  }, [isAuthenticated, getUserProfile, checkAuthStatus, dispatch]);
 
   return {
     // State
@@ -161,6 +243,7 @@ export const useAuth = () => {
     getUserProfile,
     refreshUser,
     logout,
+    handleSuccessfulLogin,
 
     // Computed values
     userDetails: user, // Alias for backward compatibility

@@ -51,7 +51,8 @@ function App() {
         await dispatch(checkAuthStatus());
       } catch (error) {
         // Auth check failed, user is not authenticated
-        console.log("Initial auth check failed:", error);
+        // This is expected for new users, so we don't treat it as an error
+        console.log("Initial auth check failed (expected for new users):", error);
       } finally {
         setIsInitializing(false);
       }

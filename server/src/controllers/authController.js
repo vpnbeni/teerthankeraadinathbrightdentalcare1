@@ -84,13 +84,14 @@ export const verifyPhone = async (req, res) => {
 
     const result = await authService.verifyPhone(phone, otp);
 
-    // Set token as HTTP-only cookie
+    // Set token as HTTP-only cookie for admin app
     authService.setTokenCookie(res, result.token);
 
     res.status(200).json({
       success: true,
       data: {
         user: result.user,
+        token: result.token, // Include token for client app
         message: "Phone number verified successfully",
       },
     });
@@ -121,13 +122,14 @@ export const login = async (req, res) => {
 
     const result = await authService.login(phone, password);
 
-    // Set token as HTTP-only cookie
+    // Set token as HTTP-only cookie for admin app
     authService.setTokenCookie(res, result.token);
 
     res.status(200).json({
       success: true,
       data: {
         user: result.user,
+        token: result.token, // Include token for client app
         message: "Login successful",
       },
     });
@@ -189,13 +191,14 @@ export const loginWithOTP = async (req, res) => {
 
     const result = await authService.loginWithOTP(phone || email, otp);
 
-    // Set token as HTTP-only cookie
+    // Set token as HTTP-only cookie for admin app
     authService.setTokenCookie(res, result.token);
 
     res.status(200).json({
       success: true,
       data: {
         user: result.user,
+        token: result.token, // Include token for client app
         message: "Login successful",
       },
     });
@@ -915,6 +918,7 @@ export const registerWithEmail = async (req, res) => {
           isVerified: user.isVerified,
           subscription: user.subscription,
         },
+        token: token, // Include token for client app
         message: "Registration successful. You can now proceed to payment.",
       },
     });

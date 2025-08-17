@@ -2,6 +2,7 @@
  * Authentication Guard Utilities
  * Prevents admin tokens from being used in the client application
  */
+import { removeToken } from "./tokenManager";
 
 /**
  * Check if there's a conflicting admin token in localStorage
@@ -33,7 +34,7 @@ export const clearAdminTokens = () => {
 export const clearUserToken = () => {
   if (typeof localStorage === 'undefined') return;
   
-  localStorage.removeItem('token');
+  removeToken();
   console.log('User token cleared from localStorage');
 };
 

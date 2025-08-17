@@ -1,5 +1,11 @@
 import axios from "axios";
 import toast from "react-hot-toast";
+import { getToken, removeToken } from "../utils/tokenManager";
+
+// Global authentication state to prevent multiple API calls when auth fails
+let isAuthFailed = false;
+let authFailureTime = 0;
+const AUTH_FAILURE_COOLDOWN = 5000; // 5 seconds cooldown
 
 // Create axios instance
 const api = axios.create({
@@ -51,8 +57,37 @@ const retryRequest = async (config, retryCount = 0) => {
 // Request interceptor
 api.interceptors.request.use(
   (config) => {
+    // Check if we're in an auth failure cooldown period
+    if (isAuthFailed && Date.now() - authFailureTime < AUTH_FAILURE_COOLDOWN) {
+      const remainingTime = Math.ceil((AUTH_FAILURE_COOLDOWN - (Date.now() - authFailureTime)) / 1000);
+      console.log(`Blocking API call during auth failure cooldown. ${remainingTime}s remaining.`);
+      
+      // Allow public endpoints even during auth failure cooldown
+      const isPublicEndpoint = config.url?.includes("/plans") || 
+                              config.url?.includes("/auth/check") || 
+                              config.url?.includes("/auth/login") ||
+                              config.url?.includes("/auth/register") ||
+                              config.url?.includes("/auth/send-login-otp") ||
+                              config.url?.includes("/auth/login-otp") ||
+                              config.url?.includes("/auth/verify-phone") ||
+                              config.url?.includes("/auth/verify-email-otp") ||
+                              config.url?.includes("/auth/send-email-otp") ||
+                              config.url?.includes("/auth/check-email") ||
+                              config.url?.includes("/auth/check-phone");
+      
+      console.log(`API call to ${config.url} - isPublicEndpoint: ${isPublicEndpoint}`);
+      
+      // For non-critical requests, reject immediately to prevent multiple error toasts
+      if (!isPublicEndpoint) {
+        const error = new Error(`Authentication failed. Please wait ${remainingTime} seconds before retrying.`);
+        error.isAuthBlocked = true;
+        error.remainingTime = remainingTime;
+        return Promise.reject(error);
+      }
+    }
+
     // Add auth token if available
-    const token = localStorage.getItem("token");
+    const token = getToken();
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -110,6 +145,12 @@ api.interceptors.response.use(
   async (error) => {
     const { response, config } = error;
 
+    // Handle auth blocked errors (prevented by cooldown)
+    if (error.isAuthBlocked) {
+      console.log(`API call blocked: ${error.message}`);
+      return Promise.reject(error);
+    }
+
     // Clean up pending request on error
     if (config.requestKey) {
       pendingRequests.delete(config.requestKey);
@@ -122,8 +163,18 @@ api.interceptors.response.use(
 
     // Handle authentication errors
     if (response?.status === 401) {
+      // Only set global auth failure state for non-initial auth checks
+      // This prevents blocking public endpoints like plans when a new user first loads the app
+      if (!config.url?.includes("/auth/check")) {
+        isAuthFailed = true;
+        authFailureTime = Date.now();
+        console.log("Setting auth failure state for:", config.url);
+      } else {
+        console.log("Auth check failed (initial load) - not setting global failure state");
+      }
+      
       // Clear localStorage token
-      localStorage.removeItem("token");
+      removeToken();
       
       // Don't redirect if this is an auth check request (initial load) or if skipRedirect is true
       if (!config.url?.includes("/auth/check") && !config.skipRedirect) {
@@ -249,6 +300,25 @@ export const apiRequest = async (requestConfig, options = {}) => {
 
     throw error;
   }
+};
+
+// Function to reset authentication failure state (called after successful login)
+export const resetAuthFailureState = () => {
+  isAuthFailed = false;
+  authFailureTime = 0;
+  console.log("Authentication failure state reset");
+};
+
+// Function to check if we're currently in an auth failure cooldown
+export const isInAuthFailureCooldown = () => {
+  return isAuthFailed && Date.now() - authFailureTime < AUTH_FAILURE_COOLDOWN;
+};
+
+// Function to get remaining cooldown time
+export const getAuthFailureCooldownRemaining = () => {
+  if (!isAuthFailed) return 0;
+  const remaining = AUTH_FAILURE_COOLDOWN - (Date.now() - authFailureTime);
+  return Math.max(0, Math.ceil(remaining / 1000));
 };
 
 export default api;

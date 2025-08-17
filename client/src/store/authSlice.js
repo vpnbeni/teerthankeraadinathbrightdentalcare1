@@ -109,6 +109,13 @@ const authSlice = createSlice({
     updateUser: (state, action) => {
       state.user = action.payload;
     },
+    setAuthState: (state, action) => {
+      const { isAuthenticated, user, token } = action.payload;
+      state.isAuthenticated = isAuthenticated;
+      state.user = user;
+      state.token = token;
+      state.error = null;
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -207,5 +214,6 @@ export const {
   setTempUserData,
   clearTempData,
   updateUser,
+  setAuthState,
 } = authSlice.actions;
 export default authSlice.reducer;

@@ -5,10 +5,12 @@ import { clearError } from "../../store/authSlice";
 import { LoadingSpinner } from "../../shared/components";
 import { VALIDATION_RULES, ERROR_MESSAGES } from "../../shared/constants";
 import authService from "../../services/auth";
+import { useAuth } from "../../hooks/useAuth";
 
 const LoginForm = ({ onClose, onSwitchToRegister }) => {
   const dispatch = useDispatch();
   const { isLoading, error } = useSelector((state) => state.auth);
+  const { handleSuccessfulLogin } = useAuth();
   const [signingIn, setSigningIn] = useState(false);
   const [otpSent, setOtpSent] = useState(false);
   const [otpLoading, setOtpLoading] = useState(false);
@@ -49,12 +51,13 @@ const LoginForm = ({ onClose, onSwitchToRegister }) => {
           : { email: data.email, otp: data.otp }
       );
 
-      // Manually update auth state since we're not using the thunk
-      dispatch({
-        type: "auth/login/fulfilled",
-        payload: response.data,
-      });
-      onClose();
+      // Use the new handleSuccessfulLogin function to properly set auth state
+      await handleSuccessfulLogin(response);
+      
+      console.log('🔐 Login successful, authentication state updated');
+      
+      // The AuthModal will automatically close and redirect to dashboard
+      // when it detects the authentication state change
     } catch (error) {
       // Set error message and don't redirect - stay on the form
       const errorMessage = error.response?.data?.message || "Invalid OTP. Please try again.";
