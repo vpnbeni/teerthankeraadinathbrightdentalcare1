@@ -2,7 +2,7 @@ import api from "./api";
 import availabilityService from "./availability";
 
 // Track ongoing booking requests to prevent duplicates
-const ongoingBookings = new Set();
+const ongoingBookings = new Map();
 
 const appointmentService = {
   // Get all appointments for the user
@@ -18,45 +18,52 @@ const appointmentService = {
 
     // Check if this booking is already in progress
     if (ongoingBookings.has(bookingKey)) {
-      throw new Error("Booking request already in progress for this slot");
+      // Instead of throwing an error, wait for the ongoing request to complete
+      console.log("Duplicate booking request detected, waiting for ongoing request...");
+      return await ongoingBookings.get(bookingKey);
     }
 
-    try {
-      // Mark this booking as ongoing
-      ongoingBookings.add(bookingKey);
+    // Create the booking promise and store it
+    const bookingPromise = (async () => {
+      try {
+        // Ensure date is sent as YYYY-MM-DD (local) to avoid timezone drift
+        const d =
+          typeof appointmentData.date === "string"
+            ? new Date(appointmentData.date + "T00:00:00")
+            : new Date(appointmentData.date);
+        const localDate = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(
+          2,
+          "0"
+        )}-${String(d.getDate()).padStart(2, "0")}`;
 
-      // Ensure date is sent as YYYY-MM-DD (local) to avoid timezone drift
-      const d =
-        typeof appointmentData.date === "string"
-          ? new Date(appointmentData.date + "T00:00:00")
-          : new Date(appointmentData.date);
-      const localDate = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(
-        2,
-        "0"
-      )}-${String(d.getDate()).padStart(2, "0")}`;
+        const response = await api.post(
+          "/appointments",
+          {
+            date: localDate,
+            timeSlot: appointmentData.timeSlot,
+            notes: appointmentData.notes,
+            personalDetails: appointmentData.personalDetails,
+            medicalInfo: appointmentData.medicalInfo,
+          },
+          {
+            // Prevent interceptor from showing success/error toasts.
+            // Booking component will handle toasts explicitly to avoid duplicates.
+            skipSuccessMessage: true,
+            skipErrorMessage: true,
+          }
+        );
 
-      const response = await api.post(
-        "/appointments",
-        {
-          date: localDate,
-          timeSlot: appointmentData.timeSlot,
-          notes: appointmentData.notes,
-          personalDetails: appointmentData.personalDetails,
-          medicalInfo: appointmentData.medicalInfo,
-        },
-        {
-          // Prevent interceptor from showing success/error toasts.
-          // Booking component will handle toasts explicitly to avoid duplicates.
-          skipSuccessMessage: true,
-          skipErrorMessage: true,
-        }
-      );
+        return response;
+      } finally {
+        // Always remove the booking key when done
+        ongoingBookings.delete(bookingKey);
+      }
+    })();
 
-      return response;
-    } finally {
-      // Always remove the booking key when done
-      ongoingBookings.delete(bookingKey);
-    }
+    // Store the promise so duplicate requests can wait for it
+    ongoingBookings.set(bookingKey, bookingPromise);
+
+    return bookingPromise;
   },
 
   // Alias for createAppointment to match slice usage

@@ -3,6 +3,7 @@ import { LoadingSpinner } from "../../shared/components";
 
 const BookingConfirmation = ({ data, onConfirm, onBack, isLoading }) => {
   const [notes, setNotes] = useState(data.notes || "");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const selectedDate = new Date(data.selectedDate);
 
@@ -19,8 +20,18 @@ const BookingConfirmation = ({ data, onConfirm, onBack, isLoading }) => {
     return `${formatSingleTime(start)} - ${formatSingleTime(end)}`;``
   };
 
-  const handleConfirm = () => {
-    onConfirm({ ...data, notes });
+  const handleConfirm = async () => {
+    // Prevent double submissions
+    if (isSubmitting || isLoading) {
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      await onConfirm({ ...data, notes });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -315,10 +326,10 @@ const BookingConfirmation = ({ data, onConfirm, onBack, isLoading }) => {
         <button
           type="button"
           onClick={handleConfirm}
-          disabled={isLoading}
-          className="btn-primary px-8 py-2 flex items-center"
+          disabled={isLoading || isSubmitting}
+          className="btn-primary px-8 py-2 flex items-center disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {isLoading ? (
+          {(isLoading || isSubmitting) ? (
             <>
               <LoadingSpinner size="sm" color="white" />
               <span className="ml-2">Booking...</span>
