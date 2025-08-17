@@ -3,6 +3,7 @@ import { emailConfig } from "../config/environment.js";
 import logger from "../utils/logger.js";
 import AdminNotificationPreferences from "../models/AdminNotificationPreferences.js";
 import Settings from "../models/Settings.js";
+import User from "../models/User.js";
 
 class EmailService {
   constructor() {
@@ -239,9 +240,20 @@ class EmailService {
     priority = "normal"
   ) {
     try {
-      // Get admin notification preferences
+      // Find the first admin user to get their ObjectId
+      const adminUser = await User.findOne({ role: "admin" });
+      if (!adminUser) {
+        logger.warn("No admin user found for notification preferences");
+        // Fallback: send to default email without preferences
+        return await this.sendEmailWithQueue({
+          ...emailData,
+          to: "support@teerthankeraadinathbrightdentalcare.in",
+        }, priority);
+      }
+
+      // Get admin notification preferences using the admin user's ObjectId
       const adminPrefs = await AdminNotificationPreferences.getPreferences(
-        "admin"
+        adminUser._id
       );
 
       if (!adminPrefs.shouldSendNotification(notificationType)) {
