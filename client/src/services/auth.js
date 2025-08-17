@@ -10,22 +10,32 @@ const authService = {
   // Verify OTP
   verifyOTP: async (otpData) => {
     const response = await api.post("/auth/verify-phone", otpData);
-    // Token is set as HTTP-only cookie by server, no need to store in localStorage
+    // Store token in localStorage
+    if (response.data.token) {
+      localStorage.setItem("token", response.data.token);
+    }
     return response;
   },
 
   // Login user
   login: async (credentials) => {
     const response = await api.post("/auth/login", credentials);
-    // Token is set as HTTP-only cookie by server, no need to store in localStorage
+    // Store token in localStorage
+    if (response.data.token) {
+      localStorage.setItem("token", response.data.token);
+    }
     return response;
   },
 
   // Logout user
   logout: async () => {
-    const response = await api.post("/auth/logout");
-    // Token is cleared by server via cookie, no localStorage to clear
-    return response;
+    try {
+      const response = await api.post("/auth/logout");
+      return response;
+    } finally {
+      // Always clear localStorage token regardless of server response
+      localStorage.removeItem("token");
+    }
   },
 
   // Resend OTP
@@ -36,7 +46,7 @@ const authService = {
 
   // Check if user is authenticated
   checkAuth: async () => {
-    // Token is in HTTP-only cookie, server will validate automatically
+    // Token is in localStorage, will be sent via Authorization header
     const response = await api.get("/auth/check");
     return response;
   },
@@ -71,6 +81,10 @@ const authService = {
       skipErrorMessage: true, // Skip global error toast
       skipRedirect: true, // Skip global redirect on 401
     });
+    // Store token in localStorage
+    if (response.data.token) {
+      localStorage.setItem("token", response.data.token);
+    }
     return response;
   },
 };
@@ -141,6 +155,10 @@ export const registerWithEmail = async (email, name, planId, otp) => {
       planId,
       otp,
     });
+    // Store token in localStorage if provided
+    if (response.data.token) {
+      localStorage.setItem("token", response.data.token);
+    }
     return response.data;
   } catch (error) {
     throw error;

@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import userService from "../services/user";
 import authService from "../services/auth";
+import { validateUserAuthContext, clearAdminTokens, clearUserToken } from "../utils/authGuard.js";
 
 /**
  * Custom hook for managing authentication state and user data
@@ -27,13 +28,24 @@ export const useAuth = () => {
       console.log("🔍 checkAuthStatus: Auth response received:", authResponse);
 
       if (authResponse.data && authResponse.data.success) {
+        const userData = authResponse.data.data.user;
         console.log(
           "🔍 checkAuthStatus: Auth successful, user data:",
-          authResponse.data.data.user
+          userData
         );
+        
+        // Validate that this user should be using the client app
+        if (!validateUserAuthContext(userData)) {
+          console.warn("🔍 checkAuthStatus: Admin user detected - clearing session");
+          clearUserToken();
+          setIsAuthenticated(false);
+          setUser(null);
+          return null;
+        }
+        
         setIsAuthenticated(true);
-        setUser(authResponse.data.data.user);
-        return authResponse.data.data.user;
+        setUser(userData);
+        return userData;
       } else {
         console.log("🔍 checkAuthStatus: Auth failed - no success flag");
         setIsAuthenticated(false);
@@ -116,9 +128,11 @@ export const useAuth = () => {
   // Logout function
   const logout = useCallback(async () => {
     try {
-      await authService.logout();
+      await authService.logout(); // This will also clear localStorage
     } catch (error) {
       console.error("Logout error:", error);
+      // Clear localStorage even if server logout fails
+      clearUserToken();
     } finally {
       setIsAuthenticated(false);
       setUser(null);

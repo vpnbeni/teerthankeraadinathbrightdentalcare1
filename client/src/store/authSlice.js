@@ -1,5 +1,7 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import authService from "../services/auth";
+import userService from "../services/user";
+import { validateUserAuthContext, clearAdminTokens, clearUserToken } from "../utils/authGuard.js";
 
 // Async thunks
 export const loginUser = createAsyncThunk(
@@ -59,10 +61,19 @@ export const checkAuthStatus = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const response = await authService.checkAuth();
+      
+      // Validate that the authenticated user should be using the client app
+      if (response.data?.data?.user && !validateUserAuthContext(response.data.data.user)) {
+        console.warn("Auth slice: Admin user detected - clearing session");
+        clearAdminTokens();
+        clearUserToken();
+        throw new Error("Admin users cannot access client application");
+      }
+      
       return response.data;
     } catch (error) {
       return rejectWithValue(
-        error.response?.data?.message || "Authentication check failed"
+        error.response?.data?.message || error.message || "Authentication check failed"
       );
     }
   }
@@ -161,6 +172,8 @@ const authSlice = createSlice({
       })
       // Logout
       .addCase(logoutUser.fulfilled, (state) => {
+        // Clear localStorage token
+        clearUserToken();
         state.user = null;
         state.token = null;
         state.isAuthenticated = false;
@@ -179,6 +192,8 @@ const authSlice = createSlice({
       })
       .addCase(checkAuthStatus.rejected, (state, action) => {
         console.log("Auth check failed:", action.payload);
+        // Clear localStorage token on auth check failure
+        clearUserToken();
         state.isAuthenticated = false;
         state.user = null;
         state.error = null;

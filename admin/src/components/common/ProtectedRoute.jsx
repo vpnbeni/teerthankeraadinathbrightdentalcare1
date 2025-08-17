@@ -2,6 +2,7 @@ import React from "react";
 import { Navigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { LoadingSpinner } from "../../shared/components";
+import { validateAdminAuthContext, clearUserTokens } from "../../utils/authGuard.js";
 
 const ProtectedRoute = ({ children, requiredRole = null }) => {
   const { isAuthenticated, loading, user } = useSelector((state) => state.auth);
@@ -24,6 +25,14 @@ const ProtectedRoute = ({ children, requiredRole = null }) => {
 
   if (!isAuthenticated) {
     console.log("ProtectedRoute - Not authenticated, redirecting to login");
+    return <Navigate to="/login" replace />;
+  }
+
+  // Validate that this user should be using the admin app
+  if (user && !validateAdminAuthContext(user)) {
+    console.warn("ProtectedRoute: Non-admin user detected - clearing session");
+    clearUserTokens();
+    localStorage.removeItem("adminToken");
     return <Navigate to="/login" replace />;
   }
 

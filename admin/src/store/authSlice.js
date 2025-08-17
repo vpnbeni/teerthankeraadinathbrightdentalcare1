@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import authService from "../services/auth";
+import { validateAdminAuthContext, clearUserTokens } from "../utils/authGuard.js";
 
 // Initial state
 const initialState = {
@@ -51,6 +52,14 @@ export const checkAuthStatus = createAsyncThunk(
       const userData = response.data?.data || response.data?.user;
       console.log("Auth slice: extracted user data:", userData);
 
+      // Validate that this user should be using the admin app
+      if (userData && !validateAdminAuthContext(userData)) {
+        console.warn("Auth slice: Non-admin user detected - clearing session");
+        clearUserTokens();
+        localStorage.removeItem("adminToken");
+        throw new Error("Non-admin users cannot access admin application");
+      }
+
       return { user: userData, isAuthenticated: true };
     } catch (error) {
       console.error("Auth slice: checkAuthStatus error:", error);
@@ -80,6 +89,9 @@ const authSlice = createSlice({
   initialState,
   reducers: {
     logout: (state) => {
+      // Clear both admin and user tokens
+      localStorage.removeItem("adminToken");
+      clearUserTokens();
       state.user = null;
       state.isAuthenticated = false;
       state.error = null;
@@ -129,12 +141,18 @@ const authSlice = createSlice({
       })
       .addCase(logoutAdmin.fulfilled, (state) => {
         state.loading = false;
+        // Clear both admin and user tokens
+        localStorage.removeItem("adminToken");
+        clearUserTokens();
         state.user = null;
         state.isAuthenticated = false;
         state.error = null;
       })
       .addCase(logoutAdmin.rejected, (state) => {
         state.loading = false;
+        // Clear both admin and user tokens even on failure
+        localStorage.removeItem("adminToken");
+        clearUserTokens();
         state.user = null;
         state.isAuthenticated = false;
         state.error = null;

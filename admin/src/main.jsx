@@ -6,7 +6,11 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "react-hot-toast";
 import App from "./App.jsx";
 import { store } from "./store/store.js";
+import { initializeAdminAuthGuard } from "./utils/authGuard.js";
 import "./index.css";
+
+// Initialize admin authentication guard to prevent user token conflicts
+initializeAdminAuthGuard();
 
 // Create a client
 const queryClient = new QueryClient({
