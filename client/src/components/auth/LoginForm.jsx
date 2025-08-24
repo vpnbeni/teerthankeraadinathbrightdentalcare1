@@ -5,12 +5,12 @@ import { clearError } from "../../store/authSlice";
 import { LoadingSpinner } from "../../shared/components";
 import { VALIDATION_RULES, ERROR_MESSAGES } from "../../shared/constants";
 import authService from "../../services/auth";
-import { useAuth } from "../../hooks/useAuth";
+import { useLoginAuth } from "../../hooks/useLoginAuth";
 
 const LoginForm = ({ onClose, onSwitchToRegister }) => {
   const dispatch = useDispatch();
   const { isLoading, error } = useSelector((state) => state.auth);
-  const { handleSuccessfulLogin } = useAuth();
+  const { handleSuccessfulLogin } = useLoginAuth();
   const [signingIn, setSigningIn] = useState(false);
   const [otpSent, setOtpSent] = useState(false);
   const [otpLoading, setOtpLoading] = useState(false);
@@ -108,10 +108,6 @@ const LoginForm = ({ onClose, onSwitchToRegister }) => {
 
   return (
     <div className="w-full max-w-md mx-auto">
-      <div className="text-center mb-6">
-        <h2 className="text-2xl font-bold text-gray-800">Welcome Back</h2>
-        <p className="text-gray-600 mt-2">Sign in to your account</p>
-      </div>
 
       <div className="bg-gray-100 rounded-lg p-1 mb-6 flex">
         <button
@@ -303,12 +299,12 @@ const LoginForm = ({ onClose, onSwitchToRegister }) => {
       <div className="mt-6 text-center">
         <p className="text-gray-600">
           Don't have an account?{" "}
-          <button
-            onClick={onSwitchToRegister}
-            className="text-[#346870] hover:text-[#2a5359] font-medium"
+          <a
+            href="/"
+            className="text-[#346870] hover:text-[#2a5359] font-medium transition-colors"
           >
-            Sign Up
-          </button>
+            Choose a Plan & Sign Up
+          </a>
         </p>
       </div>
     </div>

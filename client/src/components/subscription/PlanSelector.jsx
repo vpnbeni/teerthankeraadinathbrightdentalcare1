@@ -110,7 +110,7 @@ const PlanSelector = ({ onPlanSelect, selectedPlan }) => {
           className="mb-4"
         >
           Choose Your Dental Care Plan
-        </ResponsiveText>
+        </ResponsiveText>   
         <ResponsiveText
           size={{ mobile: "base", tablet: "lg", desktop: "xl" }}
           color="gray-600"
@@ -249,36 +249,7 @@ const PlanSelector = ({ onPlanSelect, selectedPlan }) => {
         </div>
       </div>
 
-      {/* Call to Action */}
-      <div className="text-center mt-12">
-        <div className="bg-white rounded-xl shadow-lg p-6 max-w-2xl mx-auto border border-gray-100">
-          <div className="flex items-center justify-center mb-4">
-            <svg
-              className="w-6 h-6 text-[#346870] mr-2"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-              />
-            </svg>
-            <h4 className="text-lg font-semibold text-gray-800">
-              Ready to get started?
-            </h4>
-          </div>
-          <p className="text-gray-600 mb-4">
-            Select a plan above to begin your journey to better dental health.
-            All plans include our comprehensive care guarantee.
-          </p>
-          <div className="text-sm text-gray-500">
-            Questions? Contact us for personalized plan recommendations.
-          </div>
-        </div>
-      </div>
+      
     </div>
   );
 };

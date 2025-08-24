@@ -2,6 +2,7 @@ import React from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import LandingPage from "./pages/LandingPage";
+import LoginPage from "./pages/LoginPage";
 import Dashboard from "./pages/Dashboard";
 import Profile from "./pages/Profile";
 import Appointments from "./pages/Appointments";
@@ -88,6 +89,10 @@ function App() {
                   <LandingPage />
                 )
               }
+            />
+            <Route
+              path="/login"
+              element={<LoginPage />}
             />
 
             {/* Protected Routes */}

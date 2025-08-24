@@ -35,7 +35,7 @@ const LandingPage = () => {
   };
 
   const handleLoginClick = () => {
-    setLoginModalOpen(true);
+    navigate('/login');
   };
 
   const handleLoginSuccess = () => {
@@ -48,15 +48,7 @@ const LandingPage = () => {
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="text-center text-white mb-12 relative">
-          {/* Login Button - Top Right */}
-          <div className="absolute top-0 right-0">
-            <button
-              onClick={handleLoginClick}
-              className="bg-white text-[#346870] px-6 py-2 rounded-lg font-medium hover:bg-gray-100 transition-colors shadow-lg"
-            >
-              Login
-            </button>
-          </div>
+          
           
           <h1 className="text-4xl md:text-6xl font-bold mb-4">
             Teerthanker Aadinath Bright Dental Care
@@ -67,97 +59,24 @@ const LandingPage = () => {
         </div>
 
         {/* Main Content */}
-        <div className="bg-white rounded-lg shadow-xl p-8 max-w-7xl mx-auto">
+        <div className="bg-white rounded-lg shadow-xl p-8 max-w-7xl mx-auto relative">
+          {/* Login Button - Top Right */}
+          <div className="absolute top-10 right-10">
+            <button
+              onClick={handleLoginClick}
+              className="text-white bg-[#346870] px-6 py-2 rounded-lg font-medium hover:bg-opacity-80 transition-colors shadow-lg"
+            >
+              Login
+            </button>
+          </div>
           <PlanSelector
             onPlanSelect={handlePlanSelect}
             selectedPlan={selectedPlan}
           />
 
-          <div className="mt-12 text-center border-t pt-8">
-            <p className="text-gray-600 mb-4 text-lg">
-              Select a plan above to get started with your dental care journey
-            </p>
-          </div>
+         
 
-          {/* Features Section */}
-          <div className="mt-12 border-t pt-8">
-            <h3 className="text-2xl font-bold text-gray-800 text-center mb-8">
-              Why Choose Us?
-            </h3>
-            <div className="grid md:grid-cols-3 gap-8">
-              <div className="text-center">
-                <div className="w-16 h-16 bg-[#346870] bg-opacity-10 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <svg
-                    className="w-8 h-8 text-[#346870]"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                    />
-                  </svg>
-                </div>
-                <h4 className="text-lg font-semibold text-gray-800 mb-2">
-                  Expert Care
-                </h4>
-                <p className="text-gray-600">
-                  Experienced dental professionals providing comprehensive care
-                </p>
-              </div>
-
-              <div className="text-center">
-                <div className="w-16 h-16 bg-[#346870] bg-opacity-10 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <svg
-                    className="w-8 h-8 text-[#346870]"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                    />
-                  </svg>
-                </div>
-                <h4 className="text-lg font-semibold text-gray-800 mb-2">
-                  Convenient Booking
-                </h4>
-                <p className="text-gray-600">
-                  Easy online appointment scheduling with flexible time slots
-                </p>
-              </div>
-
-              <div className="text-center">
-                <div className="w-16 h-16 bg-[#346870] bg-opacity-10 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <svg
-                    className="w-8 h-8 text-[#346870]"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-                    />
-                  </svg>
-                </div>
-                <h4 className="text-lg font-semibold text-gray-800 mb-2">
-                  Digital Records
-                </h4>
-                <p className="text-gray-600">
-                  Secure digital health records accessible anytime, anywhere
-                </p>
-              </div>
-            </div>
-          </div>
+          
         </div>
       </div>
 
