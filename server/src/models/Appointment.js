@@ -245,10 +245,14 @@ appointmentSchema.statics.isTimeSlotAvailable = async function (
   timeSlot,
   excludeAppointmentId = null
 ) {
+  const targetDate = new Date(date);
+  targetDate.setHours(0, 0, 0, 0);
+
+  // Check regular appointments
   const query = {
     date: {
-      $gte: new Date(date.setHours(0, 0, 0, 0)),
-      $lt: new Date(date.setHours(23, 59, 59, 999)),
+      $gte: new Date(targetDate.setHours(0, 0, 0, 0)),
+      $lt: new Date(targetDate.setHours(23, 59, 59, 999)),
     },
     timeSlot,
     status: { $nin: ["cancelled", "expired"] },
@@ -259,7 +263,26 @@ appointmentSchema.statics.isTimeSlotAvailable = async function (
   }
 
   const existingAppointment = await this.findOne(query);
-  return !existingAppointment;
+  if (existingAppointment) {
+    return false;
+  }
+
+  // Check follow-up appointments
+  const followUpQuery = {
+    "followUps.date": {
+      $gte: new Date(targetDate.setHours(0, 0, 0, 0)),
+      $lt: new Date(targetDate.setHours(23, 59, 59, 999)),
+    },
+    "followUps.timeSlot": timeSlot,
+    "followUps.status": { $nin: ["cancelled"] },
+  };
+
+  if (excludeAppointmentId) {
+    followUpQuery._id = { $ne: excludeAppointmentId };
+  }
+
+  const existingFollowUp = await this.findOne(followUpQuery);
+  return !existingFollowUp;
 };
 
 // Static method to get available time slots for a date
@@ -314,9 +337,36 @@ appointmentSchema.statics.getAvailableTimeSlots = async function (date) {
         status: { $nin: ["cancelled", "expired"] },
       }).select("timeSlot");
 
+      // Also check for follow-ups scheduled for this date
+      const followUpAppointments = await this.find({
+        "followUps.date": {
+          $gte: new Date(date.setHours(0, 0, 0, 0)),
+          $lt: new Date(date.setHours(23, 59, 59, 999)),
+        },
+        "followUps.status": { $nin: ["cancelled"] },
+      }).select("followUps");
+
       const bookedTimeSlots = bookedAppointments.map((apt) => apt.timeSlot);
 
-      return allTimeSlots.filter((slot) => !bookedTimeSlots.includes(slot));
+      // Extract follow-up time slots for this date
+      const followUpTimeSlots = [];
+      const targetTime = date.getTime();
+      followUpAppointments.forEach(appointment => {
+        appointment.followUps.forEach(followUp => {
+          const followUpDate = new Date(followUp.date);
+          followUpDate.setHours(0, 0, 0, 0);
+          
+          if (followUpDate.getTime() === targetTime && 
+              !["cancelled"].includes(followUp.status)) {
+            followUpTimeSlots.push(followUp.timeSlot);
+          }
+        });
+      });
+
+      // Combine both regular appointments and follow-up slots
+      const allBookedTimeSlots = [...bookedTimeSlots, ...followUpTimeSlots];
+
+      return allTimeSlots.filter((slot) => !allBookedTimeSlots.includes(slot));
     } catch (fallbackError) {
       console.error(
         "Fallback availability calculation also failed:",

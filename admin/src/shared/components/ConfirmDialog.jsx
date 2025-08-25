@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 
 const ConfirmDialog = ({
   isOpen,
@@ -11,12 +11,29 @@ const ConfirmDialog = ({
   onCancel,
   type = "default",
   icon,
+  showReasonInput = false,
+  reasonLabel = "Reason",
+  reasonPlaceholder = "Enter reason...",
+  loading = false,
+  confirmButtonClass,
 }) => {
+  const [reason, setReason] = useState("");
   // Support both onClose and onCancel for backward compatibility
   const handleCancel = onCancel || onClose;
   if (!isOpen) return null;
 
+  const handleConfirm = () => {
+    if (showReasonInput) {
+      onConfirm(reason);
+    } else {
+      onConfirm();
+    }
+  };
+
   const getButtonStyles = () => {
+    if (confirmButtonClass) {
+      return confirmButtonClass;
+    }
     switch (type) {
       case "danger":
         return "bg-red-600 hover:bg-red-700 text-white";
@@ -129,21 +146,37 @@ const ConfirmDialog = ({
                 <div className="mt-2">
                   <p className="text-sm text-gray-500">{message}</p>
                 </div>
+                {showReasonInput && (
+                  <div className="mt-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      {reasonLabel}
+                    </label>
+                    <textarea
+                      value={reason}
+                      onChange={(e) => setReason(e.target.value)}
+                      placeholder={reasonPlaceholder}
+                      rows={3}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                    />
+                  </div>
+                )}
               </div>
             </div>
           </div>
           <div className="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
             <button
               type="button"
-              className={`inline-flex w-full justify-center rounded-md px-3 py-2 text-sm font-semibold shadow-sm sm:ml-3 sm:w-auto ${getButtonStyles()}`}
-              onClick={onConfirm}
+              className={`inline-flex w-full justify-center rounded-md px-3 py-2 text-sm font-semibold shadow-sm sm:ml-3 sm:w-auto ${getButtonStyles()} ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+              onClick={handleConfirm}
+              disabled={loading}
             >
-              {confirmText}
+              {loading ? 'Loading...' : confirmText}
             </button>
             <button
               type="button"
-              className="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto"
+              className={`mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
               onClick={handleCancel}
+              disabled={loading}
             >
               {cancelText}
             </button>

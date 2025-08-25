@@ -58,18 +58,73 @@ class AvailabilityService {
 				};
 			}
 
-			// 3. Get booked appointments for this date only
-			const bookedAppointments = await Appointment.find({
-				date: {
-					$gte: new Date(targetDate.setHours(0, 0, 0, 0)),
-					$lt: new Date(targetDate.setHours(23, 59, 59, 999)),
-				},
-				status: { $nin: ["cancelled"] },
-			}).select("timeSlot");
+					// 3. Get booked appointments for this date only (including follow-ups)
+		const dateStart = new Date(targetDate);
+		dateStart.setHours(0, 0, 0, 0);
+		const dateEnd = new Date(targetDate);
+		dateEnd.setHours(23, 59, 59, 999);
+		
+		console.log(`🕐 DEBUG: Searching for appointments between ${dateStart.toISOString()} and ${dateEnd.toISOString()}`);
+		
+		const bookedAppointments = await Appointment.find({
+			date: {
+				$gte: dateStart,
+				$lt: dateEnd,
+			},
+			status: { $nin: ["cancelled"] },
+		}).select("timeSlot");
 
+					// 4. Get follow-ups scheduled for this date
+		console.log(`🔍 DEBUG: Searching for follow-ups between ${dateStart.toISOString()} and ${dateEnd.toISOString()}`);
+		
+		const followUpAppointments = await Appointment.find({
+			"followUps": {
+				$elemMatch: {
+					"date": {
+						$gte: dateStart,
+						$lt: dateEnd,
+					},
+					"status": { $in: ["scheduled", "confirmed", "completed"] }
+				}
+			}
+		}).select("followUps");
+		
+		console.log(`📊 DEBUG: Found ${followUpAppointments.length} appointments with potential follow-ups`);
+
+			// Extract time slots from regular appointments
 			const bookedTimeSlots = bookedAppointments.map((apt) => apt.timeSlot);
 
-			// 4. Return template data for frontend processing
+					// Extract time slots from follow-ups scheduled for this date
+		const followUpTimeSlots = [];
+		followUpAppointments.forEach((appointment, appointmentIndex) => {
+			console.log(`📋 Processing appointment ${appointmentIndex + 1}/${followUpAppointments.length}: ${appointment._id}`);
+			appointment.followUps.forEach((followUp, followUpIndex) => {
+				const followUpDate = new Date(followUp.date);
+				followUpDate.setHours(0, 0, 0, 0);
+				const targetDateCopy = new Date(targetDate);
+				targetDateCopy.setHours(0, 0, 0, 0);
+				
+				console.log(`  📅 Follow-up ${followUpIndex + 1}: ${followUp.timeSlot}, date: ${followUpDate.toISOString()}, target: ${targetDateCopy.toISOString()}, status: ${followUp.status}`);
+				
+				// Only include follow-ups for the target date that are active (scheduled, confirmed, or completed)
+				if (followUpDate.getTime() === targetDateCopy.getTime() && 
+					["scheduled", "confirmed", "completed"].includes(followUp.status)) {
+					followUpTimeSlots.push(followUp.timeSlot);
+					console.log(`  ✅ ADDED: ${followUp.timeSlot} on ${followUpDate.toDateString()}, status: ${followUp.status}`);
+				} else {
+					console.log(`  ❌ SKIPPED: Date match: ${followUpDate.getTime() === targetDateCopy.getTime()}, Status OK: ${["scheduled", "confirmed", "completed"].includes(followUp.status)}`);
+				}
+			});
+		});
+
+			// Combine both regular appointments and follow-up slots
+			const allBookedTimeSlots = [...bookedTimeSlots, ...followUpTimeSlots];
+			console.log(`📅 Date: ${targetDate.toDateString()}`);
+			console.log(`🏥 Regular appointments: ${bookedTimeSlots.length} - ${JSON.stringify(bookedTimeSlots)}`);
+			console.log(`🔄 Follow-ups: ${followUpTimeSlots.length} - ${JSON.stringify(followUpTimeSlots)}`);
+			console.log(`📋 Total booked slots: ${allBookedTimeSlots.length} - ${JSON.stringify(allBookedTimeSlots)}`);
+
+			// 5. Return template data for frontend processing
 			return {
 				available: true,
 				reason: null,
@@ -83,7 +138,7 @@ class AvailabilityService {
 					slotDuration: template.slotDuration,
 					breakTimes: template.breakTimes,
 				},
-				bookedSlots: bookedTimeSlots,
+				bookedSlots: allBookedTimeSlots,
 			};
 		} catch (error) {
 			console.error("Error getting availability template for date:", error);
@@ -174,6 +229,19 @@ class AvailabilityService {
 				status: { $nin: ["cancelled"] },
 			}).select("date timeSlot").lean();
 
+			// Get follow-up appointments in the date range
+			const followUpAppointments = await Appointment.find({
+				"followUps": {
+					$elemMatch: {
+						"date": {
+							$gte: start,
+							$lt: new Date(end.getTime() + 24 * 60 * 60 * 1000),
+						},
+						"status": { $in: ["scheduled", "confirmed", "completed"] }
+					}
+				}
+			}).select("followUps").lean();
+
 			// Group booked appointments by date
 			const bookedSlotsByDate = {};
 			bookedAppointments.forEach(apt => {
@@ -182,6 +250,20 @@ class AvailabilityService {
 					bookedSlotsByDate[dateKey] = [];
 				}
 				bookedSlotsByDate[dateKey].push(apt.timeSlot);
+			});
+
+			// Add follow-up appointments to booked slots
+			followUpAppointments.forEach(appointment => {
+				appointment.followUps.forEach(followUp => {
+					if (["scheduled", "confirmed", "completed"].includes(followUp.status)) {
+						const followUpDate = new Date(followUp.date);
+						const dateKey = followUpDate.toISOString().split("T")[0];
+						if (!bookedSlotsByDate[dateKey]) {
+							bookedSlotsByDate[dateKey] = [];
+						}
+						bookedSlotsByDate[dateKey].push(followUp.timeSlot);
+					}
+				});
 			});
 
 			return {
@@ -269,21 +351,78 @@ class AvailabilityService {
 			// Generate time slots from template (legacy server-side)
 			const allSlots = template.generateTimeSlots();
 
-			// Booked slots for the date
+			// Booked slots for the date (including follow-ups)
+			const dateStart = new Date(targetDate);
+			dateStart.setHours(0, 0, 0, 0);
+			const dateEnd = new Date(targetDate);
+			dateEnd.setHours(23, 59, 59, 999);
+			
+			console.log(`🕐 [getAvailabilityForDate] DEBUG: Searching for appointments between ${dateStart.toISOString()} and ${dateEnd.toISOString()}`);
+			
 			const bookedAppointments = await Appointment.find({
 				date: {
-					$gte: new Date(targetDate.setHours(0, 0, 0, 0)),
-					$lt: new Date(targetDate.setHours(23, 59, 59, 999)),
+					$gte: dateStart,
+					$lt: dateEnd,
 				},
 				status: { $nin: ["cancelled"] },
 			}).select("timeSlot");
+
+			// Get follow-ups scheduled for this date
+			console.log(`🔍 [getAvailabilityForDate] DEBUG: Searching for follow-ups between ${dateStart.toISOString()} and ${dateEnd.toISOString()}`);
+			
+			const followUpAppointments = await Appointment.find({
+				"followUps": {
+					$elemMatch: {
+						"date": {
+							$gte: dateStart,
+							$lt: dateEnd,
+						},
+						"status": { $in: ["scheduled", "confirmed", "completed"] }
+					}
+				}
+			}).select("followUps");
+			
+			console.log(`📊 [getAvailabilityForDate] DEBUG: Found ${followUpAppointments.length} appointments with potential follow-ups`);
+
 			const bookedTimeSlots = bookedAppointments.map((apt) => apt.timeSlot);
+
+			// Extract follow-up time slots for this date
+			const followUpTimeSlots = [];
+			followUpAppointments.forEach((appointment, appointmentIndex) => {
+				console.log(`📋 [getAvailabilityForDate] Processing appointment ${appointmentIndex + 1}/${followUpAppointments.length}: ${appointment._id}`);
+				appointment.followUps.forEach((followUp, followUpIndex) => {
+					const followUpDate = new Date(followUp.date);
+					followUpDate.setHours(0, 0, 0, 0);
+					const targetDateCopy = new Date(targetDate);
+					targetDateCopy.setHours(0, 0, 0, 0);
+					
+					console.log(`  📅 [getAvailabilityForDate] Follow-up ${followUpIndex + 1}: ${followUp.timeSlot}, date: ${followUpDate.toISOString()}, target: ${targetDateCopy.toISOString()}, status: ${followUp.status}`);
+					
+					// Only include follow-ups for the target date that are active (scheduled, confirmed, or completed)
+					const dateMatches = followUpDate.getTime() === targetDateCopy.getTime();
+					const statusOk = ["scheduled", "confirmed", "completed"].includes(followUp.status);
+					
+					if (dateMatches && statusOk) {
+						followUpTimeSlots.push(followUp.timeSlot);
+						console.log(`  ✅ [getAvailabilityForDate] ADDED: ${followUp.timeSlot} on ${followUpDate.toDateString()}, status: ${followUp.status}`);
+					} else {
+						console.log(`  ❌ [getAvailabilityForDate] SKIPPED: Date match: ${dateMatches}, Status OK: ${statusOk}`);
+					}
+				});
+			});
+
+			// Combine both regular appointments and follow-up slots
+			const allBookedTimeSlots = [...bookedTimeSlots, ...followUpTimeSlots];
+			console.log(`📅 [getAvailabilityForDate] Date: ${targetDate.toDateString()}`);
+			console.log(`🏥 [getAvailabilityForDate] Regular appointments: ${bookedTimeSlots.length}`);
+			console.log(`🔄 [getAvailabilityForDate] Follow-ups: ${followUpTimeSlots.length}`);
+			console.log(`📋 [getAvailabilityForDate] Total booked: ${allBookedTimeSlots.length}`);
 
 			// Mark availability
 			const slotsWithAvailability = allSlots.map((slot) => ({
 				...slot,
-				isAvailable: !bookedTimeSlots.includes(slot.timeSlot),
-				isBooked: bookedTimeSlots.includes(slot.timeSlot),
+				isAvailable: !allBookedTimeSlots.includes(slot.timeSlot),
+				isBooked: allBookedTimeSlots.includes(slot.timeSlot),
 			}));
 
 			let finalSlots = slotsWithAvailability;
@@ -409,7 +548,7 @@ class AvailabilityService {
 				};
 			}
 
-			// Check if slot is already booked
+			// Check if slot is already booked by regular appointments
 			const query = {
 				date: {
 					$gte: new Date(targetDate.setHours(0, 0, 0, 0)),
@@ -428,7 +567,35 @@ class AvailabilityService {
 			if (existingAppointment) {
 				return {
 					available: false,
-					reason: "Time slot is already booked",
+					reason: "Time slot is already booked by an appointment",
+					type: "booked",
+				};
+			}
+
+			// Check if slot is already booked by follow-ups
+			const followUpQuery = {
+				"followUps": {
+					$elemMatch: {
+						"date": {
+							$gte: new Date(targetDate.setHours(0, 0, 0, 0)),
+							$lt: new Date(targetDate.setHours(23, 59, 59, 999)),
+						},
+						"timeSlot": timeSlot,
+						"status": { $in: ["scheduled", "confirmed", "completed"] }
+					}
+				}
+			};
+
+			if (excludeAppointmentId) {
+				followUpQuery._id = { $ne: excludeAppointmentId };
+			}
+
+			const existingFollowUp = await Appointment.findOne(followUpQuery);
+
+			if (existingFollowUp) {
+				return {
+					available: false,
+					reason: "Time slot is already booked by a follow-up appointment",
 					type: "booked",
 				};
 			}

@@ -752,7 +752,11 @@ const AppointmentDetails = ({
               )}
 
               {/* Follow-up List */}
-              <FollowUpList followUps={followUps} />
+              <FollowUpList 
+                followUps={followUps} 
+                appointmentId={currentAppointment._id} 
+                onUpdate={onAppointmentUpdated}
+              />
             </div>
           )}
         </div>

@@ -567,10 +567,10 @@ export const getAvailableTimeSlots = async (req, res) => {
       });
     }
 
-    // Use new availability service
+    // Use new availability service - always get all slots to properly show availability status
     const availability = await availabilityService.getAvailabilityForDate(
       appointmentDate,
-      { onlyAvailable: onlyAvailable === "true" }
+      { onlyAvailable: false } // Always get all slots to show proper availability status
     );
 
     // Handle cases where date is not available (holiday, no template, etc.)
@@ -593,7 +593,10 @@ export const getAvailableTimeSlots = async (req, res) => {
     }
 
     // Transform slots to maintain backward compatibility
-    const availableSlots = availability.slots.map((slot) => slot.timeSlot);
+    // Only include available slots in the availableSlots array
+    const availableSlots = availability.slots
+      .filter((slot) => slot.isAvailable)
+      .map((slot) => slot.timeSlot);
 
     // Set cache-control headers with optimized caching
     res.set({
@@ -605,7 +608,7 @@ export const getAvailableTimeSlots = async (req, res) => {
       success: true,
       data: {
         date: appointmentDate,
-        availableSlots, // Backward compatible format
+        availableSlots, // Backward compatible format - only available slots
         totalSlots: availability.totalSlots,
         availableCount: availability.availableSlots,
         // Enhanced metadata from new system
@@ -1536,6 +1539,31 @@ export const updateFollowUpStatus = async (req, res) => {
 
     // Get the updated follow-up
     const updatedFollowUp = appointment.followUps.id(followupId);
+
+    // Send email notification (non-blocking)
+    if (appointment.userId.email) {
+      try {
+        if (status === "completed") {
+          await emailService.sendFollowUpCompletionEmail(
+            appointment.userId.email,
+            appointment.userId.name,
+            updatedFollowUp.date,
+            updatedFollowUp.timeSlot
+          );
+        } else if (status === "cancelled") {
+          await emailService.sendFollowUpCancellationEmail(
+            appointment.userId.email,
+            appointment.userId.name,
+            updatedFollowUp.date,
+            updatedFollowUp.timeSlot,
+            cancellationReason
+          );
+        }
+      } catch (error) {
+        console.error(`Failed to send follow-up ${status} email:`, error);
+        // Don't fail the operation if email fails
+      }
+    }
 
     res.status(200).json({
       success: true,

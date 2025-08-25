@@ -173,6 +173,23 @@ export const fetchRecentAppointments = createAsyncThunk(
   }
 );
 
+export const updateFollowUpStatus = createAsyncThunk(
+  "appointments/updateFollowUpStatus",
+  async ({ appointmentId, followUpId, status, additionalData }, { rejectWithValue }) => {
+    try {
+      const response = await appointmentService.updateFollowUpStatus(
+        appointmentId,
+        followUpId,
+        status,
+        additionalData
+      );
+      return { appointmentId, followUpId, status, data: response.data };
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
 // Initial state
 const initialState = {
   appointments: [],
@@ -495,6 +512,49 @@ const appointmentSlice = createSlice({
           [];
       })
       .addCase(fetchRecentAppointments.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+      // Update follow-up status
+      .addCase(updateFollowUpStatus.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(updateFollowUpStatus.fulfilled, (state, action) => {
+        state.loading = false;
+        const { appointmentId, followUpId, status } = action.payload;
+        
+        // Update the follow-up in the appointments array
+        const appointmentIndex = state.appointments.findIndex(
+          (apt) => apt._id === appointmentId
+        );
+        if (appointmentIndex !== -1) {
+          const followUpIndex = state.appointments[appointmentIndex].followUps?.findIndex(
+            (fu) => fu._id === followUpId
+          );
+          if (followUpIndex !== -1) {
+            state.appointments[appointmentIndex].followUps[followUpIndex].status = status;
+            if (status === "completed") {
+              state.appointments[appointmentIndex].followUps[followUpIndex].completedAt = new Date().toISOString();
+            }
+          }
+        }
+
+        // Update the selected appointment if it matches
+        if (state.selectedAppointment && state.selectedAppointment._id === appointmentId) {
+          const followUpIndex = state.selectedAppointment.followUps?.findIndex(
+            (fu) => fu._id === followUpId
+          );
+          if (followUpIndex !== -1) {
+            state.selectedAppointment.followUps[followUpIndex].status = status;
+            if (status === "completed") {
+              state.selectedAppointment.followUps[followUpIndex].completedAt = new Date().toISOString();
+            }
+          }
+        }
+      })
+      .addCase(updateFollowUpStatus.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       });

@@ -1,7 +1,61 @@
-import React from "react";
+import React, { useState } from "react";
+import { useDispatch } from "react-redux";
 import { formatDate } from "../../shared/utils/formatters";
+import { updateFollowUpStatus } from "../../store/appointmentSlice";
+import { toast } from "react-hot-toast";
+import ConfirmDialog from "../../shared/components/ConfirmDialog";
 
-const FollowUpList = ({ followUps = [] }) => {
+const FollowUpList = ({ followUps = [], appointmentId, onUpdate }) => {
+  const dispatch = useDispatch();
+  const [showCompleteConfirm, setShowCompleteConfirm] = useState(null);
+  const [showCancelConfirm, setShowCancelConfirm] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  const handleCompleteFollowUp = async (followUpId) => {
+    setLoading(true);
+    try {
+      await dispatch(updateFollowUpStatus({
+        appointmentId,
+        followUpId,
+        status: "completed"
+      })).unwrap();
+      toast.success("Follow-up completed successfully");
+      setShowCompleteConfirm(null);
+      
+      // Notify parent component to refresh data
+      if (onUpdate) {
+        onUpdate();
+      }
+    } catch (error) {
+      toast.error(error || "Failed to complete follow-up");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCancelFollowUp = async (followUpId, cancellationReason) => {
+    setLoading(true);
+    try {
+      await dispatch(updateFollowUpStatus({
+        appointmentId,
+        followUpId,
+        status: "cancelled",
+        additionalData: { cancellationReason }
+      })).unwrap();
+      toast.success("Follow-up cancelled successfully");
+      setShowCancelConfirm(null);
+      
+      // Notify parent component to refresh data
+      if (onUpdate) {
+        onUpdate();
+      }
+    } catch (error) {
+      toast.error(error || "Failed to cancel follow-up");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const getStatusColor = (status) => {
     switch (status) {
       case "confirmed":
@@ -221,10 +275,12 @@ const FollowUpList = ({ followUps = [] }) => {
             {/* Action buttons for future implementation */}
             <div className="flex-shrink-0">
               <div className="flex flex-col gap-1">
-                {followUp.status === "scheduled" && (
+                {["scheduled", "confirmed"].includes(followUp.status) && (
                   <button
                     type="button"
-                    className="inline-flex items-center px-2 py-1 text-xs font-medium text-emerald-700 bg-emerald-100 border border-emerald-200 rounded hover:bg-emerald-200 transition-colors duration-200"
+                    onClick={() => setShowCompleteConfirm(followUp._id)}
+                    disabled={loading}
+                    className="inline-flex items-center px-2 py-1 text-xs font-medium text-emerald-700 bg-emerald-100 border border-emerald-200 rounded hover:bg-emerald-200 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                     title="Mark as completed"
                   >
                     <svg
@@ -244,7 +300,9 @@ const FollowUpList = ({ followUps = [] }) => {
                 {["scheduled", "confirmed"].includes(followUp.status) && (
                   <button
                     type="button"
-                    className="inline-flex items-center px-2 py-1 text-xs font-medium text-red-700 bg-red-100 border border-red-200 rounded hover:bg-red-200 transition-colors duration-200"
+                    onClick={() => setShowCancelConfirm(followUp._id)}
+                    disabled={loading}
+                    className="inline-flex items-center px-2 py-1 text-xs font-medium text-red-700 bg-red-100 border border-red-200 rounded hover:bg-red-200 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                     title="Cancel follow-up"
                   >
                     <svg
@@ -266,6 +324,37 @@ const FollowUpList = ({ followUps = [] }) => {
           </div>
         </div>
       ))}
+
+      {/* Completion Confirmation Dialog */}
+      {showCompleteConfirm && (
+        <ConfirmDialog
+          isOpen={!!showCompleteConfirm}
+          onClose={() => setShowCompleteConfirm(null)}
+          onConfirm={() => handleCompleteFollowUp(showCompleteConfirm)}
+          title="Complete Follow-up"
+          message="Are you sure you want to mark this follow-up as completed? This action cannot be undone."
+          confirmText="Complete"
+          confirmButtonClass="bg-emerald-600 hover:bg-emerald-700 text-white"
+          loading={loading}
+        />
+      )}
+
+      {/* Cancellation Confirmation Dialog */}
+      {showCancelConfirm && (
+        <ConfirmDialog
+          isOpen={!!showCancelConfirm}
+          onClose={() => setShowCancelConfirm(null)}
+          onConfirm={(reason) => handleCancelFollowUp(showCancelConfirm, reason)}
+          title="Cancel Follow-up"
+          message="Are you sure you want to cancel this follow-up appointment?"
+          confirmText="Cancel Follow-up"
+          confirmButtonClass="bg-red-600 hover:bg-red-700 text-white"
+          showReasonInput={true}
+          reasonLabel="Cancellation Reason"
+          reasonPlaceholder="Please provide a reason for cancellation..."
+          loading={loading}
+        />
+      )}
     </div>
   );
 };

@@ -1742,6 +1742,254 @@ ${clinicName} System
       text,
     });
   }
+
+  async sendFollowUpCompletionEmail(
+    email,
+    name,
+    date,
+    timeSlot,
+    clinicName = "Teerthanker Dental Care"
+  ) {
+    const subject = `Follow-up Appointment Completed - ${clinicName}`;
+    const formattedDate = new Date(date).toLocaleDateString("en-IN", {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+
+    const html = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Follow-up Completed</title>
+      <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; background-color: #f7fafc; }
+        .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; }
+        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; text-align: center; }
+        .header h1 { color: #ffffff; margin: 0; font-size: 28px; font-weight: 600; }
+        .content { padding: 40px 30px; }
+        .completion-details { background-color: #f0fdf4; padding: 20px; border-left: 4px solid #10b981; margin: 25px 0; border-radius: 6px; }
+        .completion-details h3 { color: #065f46; margin: 0 0 15px 0; font-size: 18px; }
+        .footer { background-color: #f8fafc; padding: 25px 30px; text-align: center; border-top: 1px solid #e2e8f0; }
+        .footer p { color: #64748b; margin: 0; font-size: 14px; }
+        .cta-section { background-color: #eff6ff; padding: 20px; border-radius: 8px; margin: 25px 0; text-align: center; }
+        .icon { font-size: 24px; margin-right: 8px; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1><span class="icon">✅</span>Follow-up Completed!</h1>
+        </div>
+        
+        <div class="content">
+          <p>Dear <strong>${name}</strong>,</p>
+          
+          <p>Thank you for attending your follow-up appointment at <strong>${clinicName}</strong>! Your follow-up consultation has been successfully completed.</p>
+          
+          <div class="completion-details">
+            <h3><span class="icon">📅</span>Completed Follow-up Details</h3>
+            <p><strong>Date:</strong> ${formattedDate}</p>
+            <p><strong>Time:</strong> ${timeSlot}</p>
+            <p><strong>Type:</strong> Follow-up Consultation</p>
+            <p><strong>Status:</strong> <span style="color: #10b981; font-weight: 600;">Completed</span></p>
+          </div>
+          
+          <div class="cta-section">
+            <h3 style="color: #1e40af; margin: 0 0 15px 0;">What's Next?</h3>
+            <ul style="text-align: left; color: #374151; margin: 0; padding-left: 20px;">
+              <li><strong>Follow post-treatment care instructions</strong> as discussed during your visit</li>
+              <li><strong>Continue your prescribed treatment regimen</strong> if applicable</li>
+              <li><strong>Schedule your next appointment</strong> if recommended by your dentist</li>
+              <li><strong>Contact us</strong> if you have any questions or concerns</li>
+            </ul>
+          </div>
+          
+          <p>We're pleased that we could continue monitoring your oral health progress. Your well-being is our priority, and we appreciate your commitment to maintaining excellent dental health.</p>
+          
+          <p>If you have any questions about today's consultation or need to schedule any additional appointments, please don't hesitate to contact us.</p>
+          
+          <p>Warm regards,<br><strong>${clinicName}</strong></p>
+        </div>
+        
+        <div class="footer">
+          <p>© 2024 ${clinicName}. All rights reserved.</p>
+        </div>
+      </div>
+    </body>
+    </html>
+    `;
+
+    const text = `
+    Dear ${name},
+
+    Thank you for attending your follow-up appointment at ${clinicName}! Your follow-up consultation has been successfully completed.
+
+    Completed Follow-up Details:
+    - Date: ${formattedDate}
+    - Time: ${timeSlot}
+    - Type: Follow-up Consultation
+    - Status: Completed
+
+    What's Next:
+    - Follow post-treatment care instructions as discussed during your visit
+    - Continue your prescribed treatment regimen if applicable
+    - Schedule your next appointment if recommended by your dentist
+    - Contact us if you have any questions or concerns
+
+    We're pleased that we could continue monitoring your oral health progress. Your well-being is our priority, and we appreciate your commitment to maintaining excellent dental health.
+
+    If you have any questions about today's consultation or need to schedule any additional appointments, please don't hesitate to contact us.
+
+    Warm regards,
+    ${clinicName}
+    `;
+
+    // Send email to patient
+    await this.sendEmail({
+      to: email,
+      subject,
+      html,
+      text,
+    });
+
+    // Send admin notification if configured
+    await this.sendAdminNotificationCopy({
+      patientEmail: email,
+      patientName: name,
+      appointmentDate: formattedDate,
+      appointmentTime: timeSlot,
+      type: "follow-up completion",
+      clinicName,
+    });
+  }
+
+  async sendFollowUpCancellationEmail(
+    email,
+    name,
+    date,
+    timeSlot,
+    reason = "Not specified",
+    clinicName = "Teerthanker Dental Care"
+  ) {
+    const subject = `Follow-up Appointment Cancelled - ${clinicName}`;
+    const formattedDate = new Date(date).toLocaleDateString("en-IN", {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+
+    const html = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Follow-up Cancelled</title>
+      <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; background-color: #f7fafc; }
+        .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; }
+        .header { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); padding: 30px; text-align: center; }
+        .header h1 { color: #ffffff; margin: 0; font-size: 28px; font-weight: 600; }
+        .content { padding: 40px 30px; }
+        .cancellation-details { background-color: #fef2f2; padding: 20px; border-left: 4px solid #ef4444; margin: 25px 0; border-radius: 6px; }
+        .cancellation-details h3 { color: #991b1b; margin: 0 0 15px 0; font-size: 18px; }
+        .footer { background-color: #f8fafc; padding: 25px 30px; text-align: center; border-top: 1px solid #e2e8f0; }
+        .footer p { color: #64748b; margin: 0; font-size: 14px; }
+        .cta-section { background-color: #eff6ff; padding: 20px; border-radius: 8px; margin: 25px 0; text-align: center; }
+        .icon { font-size: 24px; margin-right: 8px; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1><span class="icon">❌</span>Follow-up Cancelled</h1>
+        </div>
+        
+        <div class="content">
+          <p>Dear <strong>${name}</strong>,</p>
+          
+          <p>We regret to inform you that your follow-up appointment at <strong>${clinicName}</strong> has been cancelled.</p>
+          
+          <div class="cancellation-details">
+            <h3><span class="icon">📅</span>Cancelled Follow-up Details</h3>
+            <p><strong>Date:</strong> ${formattedDate}</p>
+            <p><strong>Time:</strong> ${timeSlot}</p>
+            <p><strong>Type:</strong> Follow-up Consultation</p>
+            <p><strong>Status:</strong> <span style="color: #ef4444; font-weight: 600;">Cancelled</span></p>
+            <p><strong>Reason:</strong> ${reason}</p>
+          </div>
+          
+          <div class="cta-section">
+            <h3 style="color: #1e40af; margin: 0 0 15px 0;">Need to Reschedule?</h3>
+            <p style="color: #374151; margin: 0;">Please contact us to schedule a new follow-up appointment at your convenience. We're here to continue supporting your dental health journey.</p>
+          </div>
+          
+          <p>We apologize for any inconvenience this may cause. Your oral health remains our priority, and we're committed to providing you with the best possible care.</p>
+          
+          <p>If you have any questions or concerns, or if you'd like to schedule a new follow-up appointment, please don't hesitate to contact us.</p>
+          
+          <p>Thank you for your understanding.</p>
+          
+          <p>Best regards,<br><strong>${clinicName}</strong></p>
+        </div>
+        
+        <div class="footer">
+          <p>© 2024 ${clinicName}. All rights reserved.</p>
+        </div>
+      </div>
+    </body>
+    </html>
+    `;
+
+    const text = `
+    Dear ${name},
+
+    We regret to inform you that your follow-up appointment at ${clinicName} has been cancelled.
+
+    Cancelled Follow-up Details:
+    - Date: ${formattedDate}
+    - Time: ${timeSlot}
+    - Type: Follow-up Consultation
+    - Status: Cancelled
+    - Reason: ${reason}
+
+    Need to Reschedule?
+    Please contact us to schedule a new follow-up appointment at your convenience. We're here to continue supporting your dental health journey.
+
+    We apologize for any inconvenience this may cause. Your oral health remains our priority, and we're committed to providing you with the best possible care.
+
+    If you have any questions or concerns, or if you'd like to schedule a new follow-up appointment, please don't hesitate to contact us.
+
+    Thank you for your understanding.
+
+    Best regards,
+    ${clinicName}
+    `;
+
+    // Send email to patient
+    await this.sendEmail({
+      to: email,
+      subject,
+      html,
+      text,
+    });
+
+    // Send admin notification if configured
+    await this.sendAdminNotificationCopy({
+      patientEmail: email,
+      patientName: name,
+      appointmentDate: formattedDate,
+      appointmentTime: timeSlot,
+      type: "follow-up cancellation",
+      reason,
+      clinicName,
+    });
+  }
 }
 
 export const emailService = new EmailService();
