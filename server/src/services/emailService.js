@@ -1534,6 +1534,214 @@ class EmailService {
       text,
     });
   }
+
+  async sendFollowUpNotificationEmail(
+    email,
+    name,
+    date,
+    timeSlot,
+    notes,
+    clinicName = "Teerthanker Dental Care"
+  ) {
+    const subject = `Follow-up Appointment Scheduled - ${clinicName}`;
+    const formattedDate = new Date(date).toLocaleDateString("en-IN", {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+
+    const html = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>${subject}</title>
+      <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px; }
+        .header { background-color: #10b981; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
+        .content { padding: 20px; }
+        .followup-details { background-color: #f0fdf4; padding: 15px; border-left: 4px solid #10b981; margin: 20px 0; border-radius: 4px; }
+        .highlight { background-color: #dcfce7; padding: 10px; border-radius: 4px; margin: 15px 0; }
+        .footer { text-align: center; padding: 20px; color: #666; font-size: 12px; }
+        .icon { width: 20px; height: 20px; display: inline-block; margin-right: 8px; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1>✅ Follow-up Appointment Scheduled!</h1>
+        </div>
+        <div class="content">
+          <h2>Dear ${name},</h2>
+          <p>A follow-up appointment has been scheduled for you at <strong>${clinicName}</strong>. This is to ensure your continued care and monitor your progress.</p>
+          
+          <div class="followup-details">
+            <h3>📅 Follow-up Appointment Details</h3>
+            <p><strong>Date:</strong> ${formattedDate}</p>
+            <p><strong>Time:</strong> ${timeSlot}</p>
+            <p><strong>Type:</strong> Follow-up Consultation</p>
+            <p><strong>Status:</strong> Scheduled</p>
+            ${notes ? `<p><strong>Notes:</strong> ${notes}</p>` : ''}
+          </div>
+
+          <div class="highlight">
+            <h3>🔄 Important Information</h3>
+            <ul>
+              <li><strong>No session deduction:</strong> This follow-up appointment does not count against your session limit</li>
+              <li><strong>Continuation of care:</strong> This is a continuation of your previous treatment</li>
+              <li><strong>Please arrive:</strong> 10-15 minutes early for check-in</li>
+            </ul>
+          </div>
+
+          <p>If you need to reschedule or have any questions, please contact us as soon as possible.</p>
+          
+          <p>We look forward to seeing you and ensuring your treatment progresses smoothly.</p>
+          
+          <p>Best regards,<br>
+          <strong>${clinicName} Team</strong></p>
+        </div>
+        <div class="footer">
+          <p>This is an automated notification. Please do not reply to this email.</p>
+          <p>&copy; ${new Date().getFullYear()} ${clinicName}. All rights reserved.</p>
+        </div>
+      </div>
+    </body>
+    </html>`;
+
+    const text = `
+Follow-up Appointment Scheduled - ${clinicName}
+
+Dear ${name},
+
+A follow-up appointment has been scheduled for you at ${clinicName}. This is to ensure your continued care and monitor your progress.
+
+Follow-up Appointment Details:
+Date: ${formattedDate}
+Time: ${timeSlot}
+Type: Follow-up Consultation
+Status: Scheduled
+${notes ? `Notes: ${notes}` : ''}
+
+Important Information:
+- No session deduction: This follow-up appointment does not count against your session limit
+- Continuation of care: This is a continuation of your previous treatment
+- Please arrive: 10-15 minutes early for check-in
+
+If you need to reschedule or have any questions, please contact us as soon as possible.
+
+We look forward to seeing you and ensuring your treatment progresses smoothly.
+
+Best regards,
+${clinicName} Team
+
+This is an automated notification. Please do not reply to this email.
+`;
+
+    return this.sendEmail({
+      to: email,
+      subject,
+      html,
+      text,
+    });
+  }
+
+  async sendAdminFollowUpNotificationEmail(
+    patientName,
+    date,
+    timeSlot,
+    appointmentId,
+    notes,
+    clinicName = "Teerthanker Dental Care"
+  ) {
+    const subject = `Follow-up Scheduled - ${patientName}`;
+    const formattedDate = new Date(date).toLocaleDateString("en-IN", {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+
+    const html = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>${subject}</title>
+      <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px; }
+        .header { background-color: #3b82f6; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
+        .content { padding: 20px; }
+        .followup-details { background-color: #eff6ff; padding: 15px; border-left: 4px solid #3b82f6; margin: 20px 0; border-radius: 4px; }
+        .footer { text-align: center; padding: 20px; color: #666; font-size: 12px; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1>📋 Follow-up Appointment Scheduled</h1>
+        </div>
+        <div class="content">
+          <h2>Hello Team,</h2>
+          <p>A follow-up appointment has been scheduled for patient <strong>${patientName}</strong>.</p>
+          
+          <div class="followup-details">
+            <h3>Follow-up Details</h3>
+            <p><strong>Patient:</strong> ${patientName}</p>
+            <p><strong>Date:</strong> ${formattedDate}</p>
+            <p><strong>Time:</strong> ${timeSlot}</p>
+            <p><strong>Original Appointment ID:</strong> ${appointmentId}</p>
+            <p><strong>Type:</strong> Follow-up Consultation</p>
+            ${notes ? `<p><strong>Notes:</strong> ${notes}</p>` : ''}
+          </div>
+
+          <p>The patient has been automatically notified via email.</p>
+          
+          <p>Best regards,<br>
+          <strong>${clinicName} System</strong></p>
+        </div>
+        <div class="footer">
+          <p>This is an automated notification from the appointment management system.</p>
+        </div>
+      </div>
+    </body>
+    </html>`;
+
+    const text = `
+Follow-up Appointment Scheduled
+
+Hello Team,
+
+A follow-up appointment has been scheduled for patient ${patientName}.
+
+Follow-up Details:
+Patient: ${patientName}
+Date: ${formattedDate}
+Time: ${timeSlot}
+Original Appointment ID: ${appointmentId}
+Type: Follow-up Consultation
+${notes ? `Notes: ${notes}` : ''}
+
+The patient has been automatically notified via email.
+
+Best regards,
+${clinicName} System
+`;
+
+    // Send to admin email
+    const adminEmail = process.env.ADMIN_EMAIL || 'admin@teerthankerdentalcare.com';
+    
+    return this.sendEmail({
+      to: adminEmail,
+      subject,
+      html,
+      text,
+    });
+  }
 }
 
 export const emailService = new EmailService();

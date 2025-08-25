@@ -44,6 +44,27 @@ const appointmentSchema = new mongoose.Schema(
       maxlength: [1000, "Notes cannot exceed 1000 characters"],
     },
 
+    // Comments System for Admin
+    comments: [
+      {
+        content: {
+          type: String,
+          required: [true, "Comment content is required"],
+          trim: true,
+          maxlength: [500, "Comment cannot exceed 500 characters"],
+        },
+        addedBy: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "User",
+          required: [true, "Comment author is required"],
+        },
+        addedAt: {
+          type: Date,
+          default: Date.now,
+        },
+      },
+    ],
+
     // Rescheduling History
     rescheduleHistory: [
       {
@@ -71,6 +92,64 @@ const appointmentSchema = new mongoose.Schema(
           type: mongoose.Schema.Types.ObjectId,
           ref: "User",
           required: [true, "Rescheduled by user ID is required"],
+        },
+      },
+    ],
+
+    // Follow-up Appointments
+    followUps: [
+      {
+        date: {
+          type: Date,
+          required: [true, "Follow-up date is required"],
+        },
+        timeSlot: {
+          type: String,
+          required: [true, "Follow-up time slot is required"],
+          match: [
+            /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]-([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/,
+            "Time slot must be in format HH:MM-HH:MM",
+          ],
+        },
+        status: {
+          type: String,
+          enum: {
+            values: [
+              "scheduled",
+              "confirmed", 
+              "completed",
+              "cancelled",
+              "rescheduled",
+            ],
+            message:
+              "Follow-up status must be scheduled, confirmed, completed, cancelled, or rescheduled",
+          },
+          default: "scheduled",
+        },
+        notes: {
+          type: String,
+          trim: true,
+          maxlength: [500, "Follow-up notes cannot exceed 500 characters"],
+        },
+        scheduledBy: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "User",
+          required: [true, "Scheduled by user ID is required"],
+        },
+        scheduledAt: {
+          type: Date,
+          default: Date.now,
+        },
+        completedAt: {
+          type: Date,
+        },
+        cancelledAt: {
+          type: Date,
+        },
+        cancellationReason: {
+          type: String,
+          trim: true,
+          maxlength: [500, "Cancellation reason cannot exceed 500 characters"],
         },
       },
     ],
@@ -260,6 +339,7 @@ appointmentSchema.statics.getUserAppointments = function (
 
   return this.find(query)
     .populate("userId", "name phone email")
+    .populate("followUps.scheduledBy", "name")
     .sort({ date: -1 });
 };
 
@@ -360,6 +440,49 @@ appointmentSchema.methods.expire = function (reason = null) {
   this.cancellationDetails.cancelledAt = new Date();
 
   return this.save();
+};
+
+// Instance method to add follow-up
+appointmentSchema.methods.addFollowUp = function (followUpData, scheduledBy) {
+  const followUp = {
+    ...followUpData,
+    scheduledBy,
+    scheduledAt: new Date(),
+    status: "scheduled",
+  };
+  
+  this.followUps.push(followUp);
+  return this.save();
+};
+
+// Instance method to update follow-up status
+appointmentSchema.methods.updateFollowUpStatus = function (followUpId, status, additionalData = {}) {
+  const followUp = this.followUps.id(followUpId);
+  if (!followUp) {
+    throw new Error("Follow-up not found");
+  }
+  
+  followUp.status = status;
+  
+  if (status === "completed") {
+    followUp.completedAt = new Date();
+  } else if (status === "cancelled") {
+    followUp.cancelledAt = new Date();
+    if (additionalData.cancellationReason) {
+      followUp.cancellationReason = additionalData.cancellationReason;
+    }
+  }
+  
+  return this.save();
+};
+
+// Instance method to get upcoming follow-ups
+appointmentSchema.methods.getUpcomingFollowUps = function () {
+  const now = new Date();
+  return this.followUps.filter(followUp => 
+    followUp.date >= now && 
+    ["scheduled", "confirmed"].includes(followUp.status)
+  );
 };
 
 // Pre-save middleware to validate appointment date

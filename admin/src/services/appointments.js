@@ -69,6 +69,21 @@ const appointmentService = {
     }
   },
 
+  // Admin update appointment (notes and comments)
+  adminUpdateAppointment: async (appointmentId, updateData) => {
+    try {
+      const response = await api.put(
+        `/appointments/admin/${appointmentId}/update`,
+        updateData
+      );
+      return response;
+    } catch (error) {
+      throw new Error(
+        error.response?.data?.message || "Failed to update appointment"
+      );
+    }
+  },
+
   // Reschedule appointment
   rescheduleAppointment: async (appointmentId, rescheduleData) => {
     try {
@@ -181,6 +196,48 @@ const appointmentService = {
     } catch (error) {
       throw new Error(
         error.response?.data?.message || "Failed to sync holidays"
+      );
+    }
+  },
+
+  // Follow-up management
+  addFollowUp: async (appointmentId, followUpData) => {
+    try {
+      const response = await api.post(
+        `/appointments/${appointmentId}/followup`,
+        followUpData
+      );
+      return response;
+    } catch (error) {
+      throw new Error(
+        error.response?.data?.message || "Failed to add follow-up"
+      );
+    }
+  },
+
+  // Update follow-up status
+  updateFollowUpStatus: async (appointmentId, followUpId, status, additionalData = {}) => {
+    try {
+      const response = await api.put(
+        `/appointments/${appointmentId}/followup/${followUpId}`,
+        { status, ...additionalData }
+      );
+      return response;
+    } catch (error) {
+      throw new Error(
+        error.response?.data?.message || "Failed to update follow-up status"
+      );
+    }
+  },
+
+  // Get follow-ups for an appointment
+  getFollowUps: async (appointmentId) => {
+    try {
+      const response = await api.get(`/appointments/${appointmentId}/followups`);
+      return response;
+    } catch (error) {
+      throw new Error(
+        error.response?.data?.message || "Failed to fetch follow-ups"
       );
     }
   },

@@ -18,6 +18,10 @@ import {
   getAppointmentDetails,
   updateAppointment,
   confirmAppointment,
+  adminUpdateAppointment,
+  addFollowUp,
+  updateFollowUpStatus,
+  getFollowUps,
 } from "../controllers/appointmentController.js";
 
 const router = express.Router();
@@ -34,9 +38,15 @@ router.put(
 );
 router.put("/admin/:appointmentId/confirm", adminOnly, confirmAppointment);
 router.put("/admin/:appointmentId/complete", adminOnly, completeAppointment);
+router.put("/admin/:appointmentId/update", adminOnly, adminUpdateAppointment);
 router.post("/admin/:appointmentId/cancel", adminOnly, adminCancelAppointment);
 router.post("/admin/bulk-cancel", adminOnly, bulkCancelAppointments);
 router.post("/admin/bulk-update", adminOnly, bulkUpdateAppointments);
+
+// Follow-up routes (admin only)
+router.post("/:id/followup", adminOnly, addFollowUp);
+router.put("/:id/followup/:followupId", adminOnly, updateFollowUpStatus);
+router.get("/:id/followups", getFollowUps);
 
 // User routes
 router.get("/", getUserAppointments);

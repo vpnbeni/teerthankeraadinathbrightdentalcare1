@@ -66,6 +66,49 @@ class AuthService {
     // Check if user already exists
     const existingUser = await User.findOne({ phone });
     if (existingUser) {
+      // If user exists with suspended subscription, allow them to continue payment
+      if (existingUser.subscription?.status === "suspended") {
+        // Update user details and return for payment completion
+        existingUser.name = name;
+        existingUser.email = email || existingUser.email;
+        existingUser.address = address || existingUser.address;
+        existingUser.gender = gender || existingUser.gender;
+        
+        // Update subscription plan if different
+        if (planId && planId !== existingUser.subscription.planId.toString()) {
+          const Plan = (await import("../models/Plan.js")).default;
+          const plan = await Plan.findById(planId);
+          if (!plan || !plan.isActive) {
+            throw new Error("Please provide a valid plan ID");
+          }
+          
+          const startDate = new Date();
+          const endDate = plan.calculateEndDate(startDate);
+          const totalSessions = Number(plan.sessions) || 0;
+          
+          existingUser.subscription.planId = planId;
+          existingUser.subscription.startDate = startDate;
+          existingUser.subscription.endDate = endDate;
+          existingUser.subscription.totalSessions = totalSessions;
+          existingUser.subscription.sessionsRemaining = totalSessions;
+        }
+        
+        await existingUser.save();
+        
+        // Send OTP for phone verification
+        await otpService.sendOTPToContact(phone);
+        
+        return {
+          user: {
+            id: existingUser._id,
+            name: existingUser.name,
+            phone: existingUser.phone,
+            email: existingUser.email,
+            isVerified: existingUser.isVerified,
+          },
+          message: "Please verify your phone number to complete payment.",
+        };
+      }
       throw new Error("User with this phone number already exists");
     }
 
@@ -73,6 +116,49 @@ class AuthService {
     if (email) {
       const existingEmail = await User.findOne({ email });
       if (existingEmail) {
+        // If user exists with suspended subscription, allow them to continue payment
+        if (existingEmail.subscription?.status === "suspended") {
+          // Update user details and return for payment completion
+          existingEmail.name = name;
+          existingEmail.phone = phone;
+          existingEmail.address = address || existingEmail.address;
+          existingEmail.gender = gender || existingEmail.gender;
+          
+          // Update subscription plan if different
+          if (planId && planId !== existingEmail.subscription.planId.toString()) {
+            const Plan = (await import("../models/Plan.js")).default;
+            const plan = await Plan.findById(planId);
+            if (!plan || !plan.isActive) {
+              throw new Error("Please provide a valid plan ID");
+            }
+            
+            const startDate = new Date();
+            const endDate = plan.calculateEndDate(startDate);
+            const totalSessions = Number(plan.sessions) || 0;
+            
+            existingEmail.subscription.planId = planId;
+            existingEmail.subscription.startDate = startDate;
+            existingEmail.subscription.endDate = endDate;
+            existingEmail.subscription.totalSessions = totalSessions;
+            existingEmail.subscription.sessionsRemaining = totalSessions;
+          }
+          
+          await existingEmail.save();
+          
+          // Send OTP for phone verification
+          await otpService.sendOTPToContact(phone);
+          
+          return {
+            user: {
+              id: existingEmail._id,
+              name: existingEmail.name,
+              phone: existingEmail.phone,
+              email: existingEmail.email,
+              isVerified: existingEmail.isVerified,
+            },
+            message: "Please verify your phone number to complete payment.",
+          };
+        }
         throw new Error("User with this email already exists");
       }
     }

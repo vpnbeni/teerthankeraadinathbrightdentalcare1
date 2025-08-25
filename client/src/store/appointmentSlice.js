@@ -121,13 +121,89 @@ const appointmentSlice = createSlice({
           [];
         state.appointments = appointments;
 
-        // Separate upcoming and past appointments
+        // Separate upcoming and past appointments, including follow-ups
         const now = new Date();
-        state.upcomingAppointments = appointments.filter(
-          (apt) => new Date(apt.date) >= now && apt.status !== "cancelled"
+        // Get current date in local timezone for fair comparison
+        const today = new Date();
+        today.setHours(0, 0, 0, 0); // Set to start of today
+        
+        const allUpcomingAppointments = [];
+        const allPastAppointments = [];
+
+        console.log("Current date/time for comparison:", now);
+        console.log("Today (start of day):", today);
+        console.log("Processing appointments:", appointments.length);
+
+        appointments.forEach((apt) => {
+          console.log(`Processing appointment ${apt._id}:`, {
+            date: apt.date,
+            status: apt.status,
+            followUpsCount: apt.followUps?.length || 0
+          });
+
+          // Add main appointment
+          const aptDate = new Date(apt.date);
+          aptDate.setHours(0, 0, 0, 0); // Set to start of appointment day for fair comparison
+          if (aptDate >= today && apt.status !== "cancelled") {
+            console.log(`Main appointment ${apt._id} added to upcoming`);
+            allUpcomingAppointments.push(apt);
+          } else {
+            console.log(`Main appointment ${apt._id} added to past`);
+            allPastAppointments.push(apt);
+          }
+
+          // Add follow-ups as separate appointments
+          if (apt.followUps && apt.followUps.length > 0) {
+            apt.followUps.forEach((followUp, index) => {
+              const followUpDate = new Date(followUp.date);
+              followUpDate.setHours(0, 0, 0, 0); // Set to start of follow-up day for fair comparison
+              console.log(`Processing follow-up ${index + 1}:`, {
+                date: followUp.date,
+                dateObject: followUpDate,
+                today: today,
+                status: followUp.status,
+                isUpcoming: followUpDate >= today && followUp.status !== "cancelled"
+              });
+
+              const followUpAppointment = {
+                ...followUp,
+                _id: `${apt._id}_followup_${index}`,
+                parentAppointmentId: apt._id,
+                userId: apt.userId,
+                isFollowUp: true,
+                followUpNumber: index + 1,
+                parentAppointment: {
+                  _id: apt._id,
+                  date: apt.date,
+                  timeSlot: apt.timeSlot,
+                  sessionNumber: apt.sessionNumber
+                },
+                // Use followUp date instead of main appointment date
+                date: followUp.date,
+                timeSlot: followUp.timeSlot,
+                status: followUp.status || 'scheduled',
+                notes: followUp.notes,
+                createdAt: followUp.scheduledAt || followUp.createdAt,
+                updatedAt: followUp.scheduledAt || followUp.createdAt
+              };
+
+              if (followUpDate >= today && followUp.status !== "cancelled") {
+                console.log(`Follow-up ${index + 1} added to upcoming appointments`);
+                allUpcomingAppointments.push(followUpAppointment);
+              } else {
+                console.log(`Follow-up ${index + 1} added to past appointments`);
+                allPastAppointments.push(followUpAppointment);
+              }
+            });
+          }
+        });
+
+        // Sort by date
+        state.upcomingAppointments = allUpcomingAppointments.sort(
+          (a, b) => new Date(a.date) - new Date(b.date)
         );
-        state.pastAppointments = appointments.filter(
-          (apt) => new Date(apt.date) < now || apt.status === "cancelled"
+        state.pastAppointments = allPastAppointments.sort(
+          (a, b) => new Date(b.date) - new Date(a.date)
         );
 
         console.log("Upcoming appointments:", state.upcomingAppointments);

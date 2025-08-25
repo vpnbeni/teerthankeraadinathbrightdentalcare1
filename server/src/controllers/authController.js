@@ -665,12 +665,19 @@ export const checkEmailAvailability = async (req, res) => {
 
     // Check if email already exists
     const existingUser = await User.findOne({ email });
-    const available = !existingUser;
+    let available = !existingUser;
+    let message = available ? "Email is available" : "Email is already registered";
+    
+    // If user exists but has suspended subscription, allow them to continue
+    if (existingUser && existingUser.subscription?.status === "suspended") {
+      available = true;
+      message = "Email found with pending payment. You can complete your subscription.";
+    }
 
     res.status(200).json({
       success: true,
       available,
-      message: available ? "Email is available" : "Email is already registered",
+      message,
     });
   } catch (error) {
     console.error("Email availability check error:", error);
@@ -706,14 +713,21 @@ export const checkPhoneAvailability = async (req, res) => {
 
     // Check if phone already exists
     const existingUser = await User.findOne({ phone });
-    const available = !existingUser;
+    let available = !existingUser;
+    let message = available
+      ? "Phone number is available"
+      : "Phone number is already registered";
+    
+    // If user exists but has suspended subscription, allow them to continue
+    if (existingUser && existingUser.subscription?.status === "suspended") {
+      available = true;
+      message = "Phone found with pending payment. You can complete your subscription.";
+    }
 
     res.status(200).json({
       success: true,
       available,
-      message: available
-        ? "Phone number is available"
-        : "Phone number is already registered",
+      message,
     });
   } catch (error) {
     console.error("Phone availability check error:", error);
@@ -750,10 +764,14 @@ export const sendEmailOTP = async (req, res) => {
     // Check if email is available
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      return res.status(400).json({
-        success: false,
-        message: "Email is already registered",
-      });
+      // If user exists but has suspended subscription, allow OTP sending for payment completion
+      if (existingUser.subscription?.status !== "suspended") {
+        return res.status(400).json({
+          success: false,
+          message: "Email is already registered",
+        });
+      }
+      // For suspended subscriptions, continue to send OTP for payment completion
     }
 
     // Send OTP via email
@@ -762,7 +780,9 @@ export const sendEmailOTP = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      message: "OTP sent successfully to your email",
+      message: existingUser?.subscription?.status === "suspended" 
+        ? "OTP sent successfully. You can now complete your subscription."
+        : "OTP sent successfully to your email",
     });
   } catch (error) {
     console.error("Send email OTP error:", error);
@@ -867,6 +887,56 @@ export const registerWithEmail = async (req, res) => {
     // Check if email is available
     const existingUser = await User.findOne({ email });
     if (existingUser) {
+      // If user exists with suspended subscription, allow them to continue payment
+      if (existingUser.subscription?.status === "suspended") {
+        // Validate plan ID first
+        const Plan = (await import("../models/Plan.js")).default;
+        const plan = await Plan.findById(planId);
+        if (!plan || !plan.isActive) {
+          return res.status(400).json({
+            success: false,
+            message: "Please provide a valid plan ID",
+          });
+        }
+        
+        // Update user details
+        existingUser.name = name;
+        
+        // Update subscription plan if different
+        if (planId && planId !== existingUser.subscription.planId.toString()) {
+          const startDate = new Date();
+          const endDate = plan.calculateEndDate(startDate);
+          const totalSessions = Number(plan.sessions) || 0;
+          
+          existingUser.subscription.planId = planId;
+          existingUser.subscription.startDate = startDate;
+          existingUser.subscription.endDate = endDate;
+          existingUser.subscription.totalSessions = totalSessions;
+          existingUser.subscription.sessionsRemaining = totalSessions;
+        }
+        
+        await existingUser.save();
+        
+        // Generate token and set cookie
+        const token = authService.generateToken(existingUser._id);
+        authService.setTokenCookie(res, token);
+
+        return res.status(200).json({
+          success: true,
+          data: {
+            user: {
+              id: existingUser._id,
+              name: existingUser.name,
+              email: existingUser.email,
+              isVerified: existingUser.isVerified,
+              subscription: existingUser.subscription,
+            },
+            token: token,
+            message: "Please complete your payment to activate subscription.",
+          },
+        });
+      }
+      
       return res.status(400).json({
         success: false,
         message: "Email is already registered",

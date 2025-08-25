@@ -48,6 +48,21 @@ export const updateAppointment = createAsyncThunk(
   }
 );
 
+export const adminUpdateAppointment = createAsyncThunk(
+  "appointments/adminUpdateAppointment",
+  async ({ appointmentId, updateData }, { rejectWithValue }) => {
+    try {
+      const response = await appointmentService.adminUpdateAppointment(
+        appointmentId,
+        updateData
+      );
+      return response;
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
 export const confirmAppointment = createAsyncThunk(
   "appointments/confirmAppointment",
   async (appointmentId, { rejectWithValue }) => {
@@ -315,6 +330,31 @@ const appointmentSlice = createSlice({
         }
       })
       .addCase(updateAppointment.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+      // Admin update appointment
+      .addCase(adminUpdateAppointment.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(adminUpdateAppointment.fulfilled, (state, action) => {
+        state.loading = false;
+        const updatedAppointment = action.payload.data?.appointment;
+        if (updatedAppointment) {
+          const index = state.appointments.findIndex(
+            (apt) => apt._id === updatedAppointment._id
+          );
+          if (index > -1) {
+            state.appointments[index] = updatedAppointment;
+          }
+          if (state.selectedAppointment?._id === updatedAppointment._id) {
+            state.selectedAppointment = updatedAppointment;
+          }
+        }
+      })
+      .addCase(adminUpdateAppointment.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })

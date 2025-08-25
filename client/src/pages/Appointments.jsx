@@ -58,15 +58,38 @@ const Appointments = () => {
       case "upcoming":
         return appointments.filter((apt) => {
           const aptDate = new Date(apt.date);
+          
+          // Check if this is a completed appointment with follow-ups
+          const hasUpcomingFollowUps = apt.followUps && apt.followUps.length > 0 && 
+            apt.followUps.some(followUp => {
+              const followUpDate = new Date(followUp.date);
+              return followUpDate >= now && followUp.status !== "cancelled";
+            });
+          
           return (
-            aptDate >= now &&
-            (apt.status === "scheduled" || apt.status === "confirmed")
+            // Regular upcoming appointments
+            (aptDate >= now && (apt.status === "scheduled" || apt.status === "confirmed")) ||
+            // Completed appointments with upcoming follow-ups
+            (apt.status === "completed" && hasUpcomingFollowUps)
           );
         });
       case "past":
         return appointments.filter((apt) => {
           const aptDate = new Date(apt.date);
-          return aptDate < now || apt.status === "completed";
+          
+          // Check if this is a completed appointment with follow-ups
+          const hasUpcomingFollowUps = apt.followUps && apt.followUps.length > 0 && 
+            apt.followUps.some(followUp => {
+              const followUpDate = new Date(followUp.date);
+              return followUpDate >= now && followUp.status !== "cancelled";
+            });
+          
+          return (
+            // Past appointments (date-wise or completed status)
+            (aptDate < now || apt.status === "completed") &&
+            // But exclude completed appointments with upcoming follow-ups (they go to upcoming)
+            !(apt.status === "completed" && hasUpcomingFollowUps)
+          );
         });
       case "cancelled":
         return appointments.filter((apt) => apt.status === "cancelled");

@@ -213,10 +213,9 @@ export const getAppointmentDetails = async (req, res) => {
   try {
     const { appointmentId } = req.params;
 
-    const appointment = await Appointment.findById(appointmentId).populate(
-      "userId",
-      "name phone email"
-    );
+    const appointment = await Appointment.findById(appointmentId)
+      .populate("userId", "name phone email")
+      .populate("followUps.scheduledBy", "name");
 
     if (!appointment) {
       return res.status(404).json({
@@ -666,6 +665,7 @@ export const getAllAppointments = async (req, res) => {
 
     const appointments = await Appointment.find(query)
       .populate("userId", "name phone email")
+      .populate("followUps.scheduledBy", "name")
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(parseInt(limit));
@@ -1127,6 +1127,62 @@ export const bulkCancelAppointments = async (req, res) => {
  * @route   POST /api/appointments/admin/bulk-update
  * @access  Private (Admin)
  */
+/**
+ * @desc    Admin update appointment (notes and comments)
+ * @route   PUT /api/appointments/admin/:appointmentId/update
+ * @access  Private (Admin)
+ */
+export const adminUpdateAppointment = async (req, res) => {
+  try {
+    const { appointmentId } = req.params;
+    const { notes, comment } = req.body;
+
+    const appointment = await Appointment.findById(appointmentId).populate(
+      "userId",
+      "name phone email"
+    );
+
+    if (!appointment) {
+      return res.status(404).json({
+        success: false,
+        message: "Appointment not found",
+      });
+    }
+
+    // Update notes if provided
+    if (notes !== undefined) {
+      appointment.notes = notes;
+    }
+
+    // Add comment if provided
+    if (comment && comment.trim()) {
+      appointment.comments.push({
+        content: comment.trim(),
+        addedBy: req.user._id,
+        addedAt: new Date(),
+      });
+    }
+
+    await appointment.save();
+
+    const updatedAppointment = await Appointment.findById(appointmentId)
+      .populate("userId", "name phone email")
+      .populate("comments.addedBy", "name email");
+
+    res.status(200).json({
+      success: true,
+      data: { appointment: updatedAppointment },
+      message: "Appointment updated successfully",
+    });
+  } catch (error) {
+    console.error("Admin update appointment error:", error);
+    res.status(400).json({
+      success: false,
+      message: error.message || "Failed to update appointment",
+    });
+  }
+};
+
 export const bulkUpdateAppointments = async (req, res) => {
   try {
     const { appointmentIds, action, reason } = req.body;
@@ -1335,6 +1391,193 @@ export const getAppointmentStatistics = async (req, res) => {
     });
   } catch (error) {
     console.error("Get appointment statistics error:", error);
+    res.status(400).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+/**
+ * @desc    Add follow-up appointment
+ * @route   POST /api/appointments/:id/followup
+ * @access  Private (Admin)
+ */
+export const addFollowUp = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { date, timeSlot, notes } = req.body;
+
+    // Validate required fields
+    if (!date || !timeSlot) {
+      return res.status(400).json({
+        success: false,
+        message: "Date and time slot are required",
+      });
+    }
+
+    // Find the appointment
+    const appointment = await Appointment.findById(id).populate("userId", "name email phone");
+    if (!appointment) {
+      return res.status(404).json({
+        success: false,
+        message: "Appointment not found",
+      });
+    }
+
+    // Only allow follow-ups for completed appointments
+    if (appointment.status !== "completed") {
+      return res.status(400).json({
+        success: false,
+        message: "Follow-ups can only be scheduled for completed appointments",
+      });
+    }
+
+    // Check if the selected time slot is available
+    const appointmentDate = new Date(date);
+    const slotAvailability = await availabilityService.isTimeSlotAvailable(
+      appointmentDate,
+      timeSlot
+    );
+
+    if (!slotAvailability.available) {
+      return res.status(400).json({
+        success: false,
+        message: slotAvailability.reason || "Selected time slot is not available",
+      });
+    }
+
+    // Add the follow-up
+    const followUpData = {
+      date: new Date(date),
+      timeSlot,
+      notes: notes?.trim() || undefined,
+    };
+
+    await appointment.addFollowUp(followUpData, req.user._id);
+
+    // Get the newly added follow-up
+    const newFollowUp = appointment.followUps[appointment.followUps.length - 1];
+
+    // Send email notifications
+    try {
+      if (appointment.userId.email) {
+        await emailService.sendFollowUpNotificationEmail(
+          appointment.userId.email,
+          appointment.userId.name,
+          date,
+          timeSlot,
+          notes || "Follow-up appointment scheduled"
+        );
+      }
+
+      // Send admin notification
+      await emailService.sendAdminFollowUpNotificationEmail(
+        appointment.userId.name,
+        date,
+        timeSlot,
+        appointment._id,
+        notes || "No additional notes"
+      );
+    } catch (emailError) {
+      console.error("Failed to send follow-up notification emails:", emailError);
+      // Don't fail the request if email fails
+    }
+
+    res.status(201).json({
+      success: true,
+      data: newFollowUp,
+      message: "Follow-up appointment scheduled successfully",
+    });
+  } catch (error) {
+    console.error("Add follow-up error:", error);
+    res.status(400).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+/**
+ * @desc    Update follow-up status
+ * @route   PUT /api/appointments/:id/followup/:followupId
+ * @access  Private (Admin)
+ */
+export const updateFollowUpStatus = async (req, res) => {
+  try {
+    const { id, followupId } = req.params;
+    const { status, cancellationReason } = req.body;
+
+    // Validate status
+    const validStatuses = ["scheduled", "confirmed", "completed", "cancelled"];
+    if (!validStatuses.includes(status)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid status. Must be one of: " + validStatuses.join(", "),
+      });
+    }
+
+    // Find the appointment
+    const appointment = await Appointment.findById(id).populate("userId", "name email phone");
+    if (!appointment) {
+      return res.status(404).json({
+        success: false,
+        message: "Appointment not found",
+      });
+    }
+
+    // Update follow-up status
+    const additionalData = {};
+    if (status === "cancelled" && cancellationReason) {
+      additionalData.cancellationReason = cancellationReason;
+    }
+
+    await appointment.updateFollowUpStatus(followupId, status, additionalData);
+
+    // Get the updated follow-up
+    const updatedFollowUp = appointment.followUps.id(followupId);
+
+    res.status(200).json({
+      success: true,
+      data: updatedFollowUp,
+      message: `Follow-up ${status} successfully`,
+    });
+  } catch (error) {
+    console.error("Update follow-up status error:", error);
+    res.status(400).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+/**
+ * @desc    Get follow-ups for an appointment
+ * @route   GET /api/appointments/:id/followups
+ * @access  Private
+ */
+export const getFollowUps = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Find the appointment
+    const appointment = await Appointment.findById(id)
+      .populate("followUps.scheduledBy", "name")
+      .select("followUps");
+
+    if (!appointment) {
+      return res.status(404).json({
+        success: false,
+        message: "Appointment not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: appointment.followUps,
+    });
+  } catch (error) {
+    console.error("Get follow-ups error:", error);
     res.status(400).json({
       success: false,
       message: error.message,

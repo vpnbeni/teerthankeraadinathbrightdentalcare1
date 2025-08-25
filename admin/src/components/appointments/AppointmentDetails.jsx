@@ -6,9 +6,12 @@ import {
   completeAppointment,
   rescheduleAppointment,
   cancelAppointment,
+  adminUpdateAppointment,
 } from "../../store/appointmentSlice";
 import RescheduleModal from "./RescheduleModal";
 import CancellationModal from "./CancellationModal";
+import FollowUpBooking from "./FollowUpBooking";
+import FollowUpList from "./FollowUpList";
 import LoadingSpinner from "../../shared/components/LoadingSpinner";
 import ConfirmDialog from "../../shared/components/ConfirmDialog";
 import { formatDate, formatPhoneNumber } from "../../shared/utils/formatters";
@@ -32,13 +35,18 @@ const AppointmentDetails = ({
     initialAppointment;
 
   const [notes, setNotes] = useState(currentAppointment?.notes || "");
+  const [newComment, setNewComment] = useState("");
+  const [followUps, setFollowUps] = useState(currentAppointment?.followUps || []);
 
-  // Update notes when appointment changes
+  // Update notes and follow-ups when appointment changes
   useEffect(() => {
     if (currentAppointment?.notes !== notes) {
       setNotes(currentAppointment?.notes || "");
     }
-  }, [currentAppointment?.notes]);
+    if (currentAppointment?.followUps !== followUps) {
+      setFollowUps(currentAppointment?.followUps || []);
+    }
+  }, [currentAppointment?.notes, currentAppointment?.followUps]);
 
   if (!currentAppointment) return null;
 
@@ -96,7 +104,7 @@ const AppointmentDetails = ({
     setLoading(true);
     try {
       await dispatch(
-        updateAppointment({
+        adminUpdateAppointment({
           appointmentId: currentAppointment._id,
           updateData: { notes },
         })
@@ -109,6 +117,34 @@ const AppointmentDetails = ({
       }
     } catch (error) {
       toast.error(error || "Failed to update notes");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAddComment = async () => {
+    if (!newComment.trim()) {
+      toast.error("Please enter a comment");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await dispatch(
+        adminUpdateAppointment({
+          appointmentId: currentAppointment._id,
+          updateData: { comment: newComment.trim() },
+        })
+      ).unwrap();
+      toast.success("Comment added successfully");
+      setNewComment("");
+
+      // Notify parent component about the update
+      if (onAppointmentUpdated) {
+        onAppointmentUpdated();
+      }
+    } catch (error) {
+      toast.error(error || "Failed to add comment");
     } finally {
       setLoading(false);
     }
@@ -162,10 +198,20 @@ const AppointmentDetails = ({
     }
   };
 
+  const handleFollowUpAdded = (newFollowUp) => {
+    setFollowUps(prev => [...prev, newFollowUp]);
+    
+    // Notify parent component about the update
+    if (onAppointmentUpdated) {
+      onAppointmentUpdated();
+    }
+  };
+
   const tabs = [
     { id: "details", label: "Details" },
-    { id: "history", label: "History" },
-    { id: "patient", label: "Patient Info" },
+    { id: "comments", label: "Comments" },
+    { id: "notes", label: "Notes" },
+    { id: "followups", label: "Follow-ups" },
   ];
 
   const canReschedule = ["scheduled", "confirmed"].includes(
@@ -178,7 +224,7 @@ const AppointmentDetails = ({
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
-      <div className="bg-white rounded-3xl max-w-5xl w-full max-h-[95vh] overflow-hidden shadow-2xl animate-scale-in sm:rounded-3xl rounded-2xl">
+      <div className="bg-white rounded-3xl max-w-5xl w-full max-h-[95vh] overflow-hidden shadow-2xl animate-scale-in">
         {/* Enhanced Header */}
         <div className="relative bg-gradient-to-r from-primary-50 to-primary-100/50 p-6 sm:p-8 border-b border-primary-200/50">
           <div className="flex items-start justify-between">
@@ -485,39 +531,167 @@ const AppointmentDetails = ({
                 </div>
               </div>
 
-              {/* Enhanced Notes Section */}
-              <div className="bg-gradient-to-br from-purple-50 to-purple-100/50 rounded-2xl p-6 border border-purple-200/50">
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="p-2 bg-purple-600 rounded-xl">
+
+            </div>
+          )}
+
+          {activeTab === "comments" && (
+            <div className="space-y-6">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-blue-600 rounded-xl">
+                  <svg
+                    className="w-5 h-5 text-white"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M18 13V5a2 2 0 00-2-2H4a2 2 0 00-2 2v8a2 2 0 002 2h3l3 3 3-3h3a2 2 0 002-2zM5 7a1 1 0 011-1h8a1 1 0 110 2H6a1 1 0 01-1-1zm1 3a1 1 0 100 2h3a1 1 0 100-2H6z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900">
+                  Comments
+                </h3>
+              </div>
+
+              {/* Add New Comment */}
+              <div className="bg-gradient-to-br from-blue-50 to-blue-100/50 rounded-2xl p-6 border border-blue-200/50">
+                <h4 className="text-lg font-semibold text-gray-900 mb-4">Add New Comment</h4>
+                <div className="space-y-4">
+                  <textarea
+                    value={newComment}
+                    onChange={(e) => setNewComment(e.target.value)}
+                    placeholder="Add a comment about this appointment..."
+                    rows={3}
+                    className="w-full px-4 py-3 border border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none bg-white/70 placeholder-gray-500 text-gray-900"
+                    maxLength={500}
+                  />
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-600">
+                      {newComment.length}/500 characters
+                    </span>
+                    <button
+                      onClick={handleAddComment}
+                      className="inline-flex items-center px-5 py-2.5 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+                      disabled={loading || !newComment.trim()}
+                    >
+                      <svg
+                        className="w-4 h-4 mr-2"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                      Add Comment
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Comments List */}
+              {currentAppointment.comments && currentAppointment.comments.length > 0 ? (
+                <div className="space-y-4">
+                  {currentAppointment.comments.map((comment, index) => (
+                    <div
+                      key={index}
+                      className="bg-white border border-gray-200 rounded-2xl p-6 hover:shadow-md transition-shadow duration-200"
+                    >
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-3 mb-3">
+                            <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
+                              <span className="text-white text-sm font-bold">
+                                {comment.addedBy?.name?.charAt(0)?.toUpperCase() || "A"}
+                              </span>
+                            </div>
+                            <div>
+                              <p className="font-semibold text-gray-900">
+                                {comment.addedBy?.name || "Admin"}
+                              </p>
+                              <p className="text-sm text-gray-500">
+                                {formatDate(comment.addedAt)}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="bg-gray-50 rounded-xl p-4">
+                            <p className="text-gray-900 leading-relaxed">
+                              {comment.content}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-12">
+                  <div className="mx-auto w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
                     <svg
-                      className="w-5 h-5 text-white"
+                      className="w-8 h-8 text-gray-400"
                       fill="currentColor"
                       viewBox="0 0 20 20"
                     >
                       <path
                         fillRule="evenodd"
-                        d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z"
+                        d="M18 13V5a2 2 0 00-2-2H4a2 2 0 00-2 2v8a2 2 0 002 2h3l3 3 3-3h3a2 2 0 002-2zM5 7a1 1 0 011-1h8a1 1 0 110 2H6a1 1 0 01-1-1zm1 3a1 1 0 100 2h3a1 1 0 100-2H6z"
                         clipRule="evenodd"
                       />
                     </svg>
                   </div>
-                  <h3 className="text-xl font-bold text-gray-900">
-                    Notes & Comments
-                  </h3>
+                  <h4 className="text-lg font-semibold text-gray-900 mb-2">
+                    No Comments Yet
+                  </h4>
+                  <p className="text-gray-600">
+                    Add the first comment about this appointment.
+                  </p>
                 </div>
+              )}
+            </div>
+          )}
+
+          {activeTab === "notes" && (
+            <div className="space-y-6">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-purple-600 rounded-xl">
+                  <svg
+                    className="w-5 h-5 text-white"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900">
+                  Appointment Notes
+                </h3>
+              </div>
+
+              {/* Notes Section */}
+              <div className="bg-gradient-to-br from-purple-50 to-purple-100/50 rounded-2xl p-6 border border-purple-200/50">
+                <h4 className="text-lg font-semibold text-gray-900 mb-4">Clinical Notes</h4>
                 <div className="space-y-4">
                   <textarea
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
                     placeholder="Add notes about this appointment, treatment details, patient concerns, or any other relevant information..."
-                    rows={5}
+                    rows={8}
                     className="w-full px-4 py-3 border border-purple-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none bg-white/70 placeholder-gray-500 text-gray-900"
+                    maxLength={1000}
                   />
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-gray-600">
-                      {notes.length > 0
-                        ? `${notes.length} characters`
-                        : "No notes added yet"}
+                      {notes.length}/1000 characters
+                      {notes.length > 0 ? ` • Last updated: ${formatDate(currentAppointment.updatedAt)}` : ""}
                     </span>
                     <button
                       onClick={handleNotesUpdate}
@@ -535,276 +709,50 @@ const AppointmentDetails = ({
                           clipRule="evenodd"
                         />
                       </svg>
-                      {notes === currentAppointment.notes
-                        ? "Notes Saved"
-                        : "Update Notes"}
+                      {notes === currentAppointment.notes ? "Notes Saved" : "Update Notes"}
                     </button>
                   </div>
                 </div>
               </div>
-            </div>
-          )}
 
-          {activeTab === "history" && (
-            <div className="space-y-6">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-amber-600 rounded-xl">
-                  <svg
-                    className="w-5 h-5 text-white"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                </div>
-                <h3 className="text-2xl font-bold text-gray-900">
-                  Appointment History
-                </h3>
-              </div>
-              {currentAppointment.rescheduleHistory?.length > 0 ? (
-                <div className="space-y-4">
-                  {currentAppointment.rescheduleHistory.map(
-                    (history, index) => (
-                      <div
-                        key={index}
-                        className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-2xl p-6 hover:shadow-md transition-shadow duration-200"
-                      >
-                        <div className="flex justify-between items-start">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-3">
-                              <div className="w-3 h-3 bg-amber-500 rounded-full"></div>
-                              <p className="font-bold text-gray-900 text-lg">
-                                Rescheduled
-                              </p>
-                            </div>
-                            <div className="space-y-2">
-                              <div className="bg-white/70 rounded-xl p-3">
-                                <p className="text-sm font-semibold text-gray-600 uppercase tracking-wide mb-1">
-                                  Original Date & Time
-                                </p>
-                                <p className="text-gray-900 font-medium">
-                                  {formatDate(history.originalDate)} at{" "}
-                                  {history.originalTimeSlot}
-                                </p>
-                              </div>
-                              <div className="bg-white/70 rounded-xl p-3">
-                                <p className="text-sm font-semibold text-gray-600 uppercase tracking-wide mb-1">
-                                  Reason
-                                </p>
-                                <p className="text-gray-900 font-medium">
-                                  {history.reason || "No reason provided"}
-                                </p>
-                              </div>
-                            </div>
-                          </div>
-                          <div className="ml-4 text-right">
-                            <div className="bg-amber-100 rounded-xl p-3">
-                              <p className="text-xs font-semibold text-amber-700 uppercase tracking-wide mb-1">
-                                Rescheduled On
-                              </p>
-                              <p className="text-sm font-bold text-amber-800">
-                                {formatDate(history.rescheduleDate)}
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    )
-                  )}
-                </div>
-              ) : (
-                <div className="text-center py-12">
-                  <div className="mx-auto w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-                    <svg
-                      className="w-8 h-8 text-gray-400"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
+              {/* Notes History */}
+              {currentAppointment.notes && (
+                <div className="bg-white border border-gray-200 rounded-2xl p-6">
+                  <h4 className="text-lg font-semibold text-gray-900 mb-4">Current Notes</h4>
+                  <div className="bg-gray-50 rounded-xl p-4">
+                    <p className="text-gray-900 leading-relaxed whitespace-pre-wrap">
+                      {currentAppointment.notes || "No notes have been added yet."}
+                    </p>
                   </div>
-                  <h4 className="text-lg font-semibold text-gray-900 mb-2">
-                    No Reschedule History
-                  </h4>
-                  <p className="text-gray-600">
-                    This appointment has never been rescheduled.
-                  </p>
                 </div>
               )}
             </div>
           )}
 
-          {activeTab === "patient" && (
-            <div className="space-y-6">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-indigo-600 rounded-xl">
-                  <svg
-                    className="w-5 h-5 text-white"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                </div>
-                <h3 className="text-2xl font-bold text-gray-900">
-                  Patient Details
-                </h3>
-              </div>
-              {currentAppointment.userId ? (
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  <div className="bg-gradient-to-br from-indigo-50 to-indigo-100/50 rounded-2xl p-6 border border-indigo-200/50">
-                    <h4 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                      <svg
-                        className="w-5 h-5 text-indigo-600"
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-6-3a2 2 0 11-4 0 2 2 0 014 0zm-2 4a5 5 0 00-4.546 2.916A5.986 5.986 0 0010 16a5.986 5.986 0 004.546-2.084A5 5 0 0010 11z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                      Personal Information
-                    </h4>
-                    <div className="space-y-4">
-                      <div className="bg-white/70 rounded-xl p-4">
-                        <label className="text-sm font-semibold text-gray-600 uppercase tracking-wide">
-                          Full Name
-                        </label>
-                        <p className="text-lg font-bold text-gray-900 mt-1">
-                          {currentAppointment.userId.name}
-                        </p>
-                      </div>
-                      <div className="bg-white/70 rounded-xl p-4">
-                        <label className="text-sm font-semibold text-gray-600 uppercase tracking-wide">
-                          Phone Number
-                        </label>
-                        <p className="text-lg font-bold text-gray-900 mt-1">
-                          {formatPhoneNumber(currentAppointment.userId.phone)}
-                        </p>
-                      </div>
-                      {currentAppointment.userId.email && (
-                        <div className="bg-white/70 rounded-xl p-4">
-                          <label className="text-sm font-semibold text-gray-600 uppercase tracking-wide">
-                            Email Address
-                          </label>
-                          <p className="text-lg font-bold text-gray-900 mt-1 break-all">
-                            {currentAppointment.userId.email}
-                          </p>
-                        </div>
-                      )}
-                    </div>
+          {activeTab === "followups" && (
+            <div className="space-y-4">
+              {/* Follow-up Booking Form */}
+              <FollowUpBooking 
+                appointment={currentAppointment}
+                onFollowUpAdded={handleFollowUpAdded}
+              />
+              
+              {/* Divider */}
+              {followUps.length > 0 && (
+                <div className="relative py-2">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-gray-300"></div>
                   </div>
-
-                  {currentAppointment.userId.subscription && (
-                    <div className="bg-gradient-to-br from-green-50 to-green-100/50 rounded-2xl p-6 border border-green-200/50">
-                      <h4 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                        <svg
-                          className="w-5 h-5 text-green-600"
-                          fill="currentColor"
-                          viewBox="0 0 20 20"
-                        >
-                          <path
-                            fillRule="evenodd"
-                            d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V4a2 2 0 00-2-2H6zm1 2a1 1 0 000 2h6a1 1 0 100-2H7zm6 7a1 1 0 011 1v3a1 1 0 11-2 0v-3a1 1 0 011-1zm-3 3a1 1 0 100 2h.01a1 1 0 100-2H10zm-4 1a1 1 0 011-1h.01a1 1 0 110 2H7a1 1 0 01-1-1zm1-4a1 1 0 100 2h.01a1 1 0 100-2H7zm2 0a1 1 0 100 2h.01a1 1 0 100-2H9zm2 0a1 1 0 100 2h.01a1 1 0 100-2H11z"
-                            clipRule="evenodd"
-                          />
-                        </svg>
-                        Subscription Details
-                      </h4>
-                      <div className="space-y-4">
-                        <div className="bg-white/70 rounded-xl p-4">
-                          <label className="text-sm font-semibold text-gray-600 uppercase tracking-wide">
-                            Status
-                          </label>
-                          <p className="text-lg font-bold text-gray-900 mt-1 capitalize">
-                            {currentAppointment.userId.subscription.status}
-                          </p>
-                        </div>
-                        <div className="bg-white/70 rounded-xl p-4">
-                          <label className="text-sm font-semibold text-gray-600 uppercase tracking-wide">
-                            Sessions Progress
-                          </label>
-                          <div className="mt-2">
-                            <div className="flex items-center justify-between mb-2">
-                              <span className="text-lg font-bold text-gray-900">
-                                {
-                                  currentAppointment.userId.subscription
-                                    .sessionsRemaining
-                                }{" "}
-                                /{" "}
-                                {
-                                  currentAppointment.userId.subscription
-                                    .totalSessions
-                                }
-                              </span>
-                              <span className="text-sm font-medium text-gray-600">
-                                {Math.round(
-                                  (currentAppointment.userId.subscription
-                                    .sessionsRemaining /
-                                    currentAppointment.userId.subscription
-                                      .totalSessions) *
-                                    100
-                                )}
-                                % remaining
-                              </span>
-                            </div>
-                            <div className="w-full bg-gray-200 rounded-full h-3">
-                              <div
-                                className="bg-green-600 h-3 rounded-full transition-all duration-300"
-                                style={{
-                                  width: `${
-                                    (currentAppointment.userId.subscription
-                                      .sessionsRemaining /
-                                      currentAppointment.userId.subscription
-                                        .totalSessions) *
-                                    100
-                                  }%`,
-                                }}
-                              ></div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <div className="text-center py-12">
-                  <div className="mx-auto w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-                    <svg
-                      className="w-8 h-8 text-gray-400"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
+                  <div className="relative flex justify-center">
+                    <span className="px-2 bg-white text-xs text-gray-500 font-medium">
+                      Existing Follow-ups
+                    </span>
                   </div>
-                  <h4 className="text-lg font-semibold text-gray-900 mb-2">
-                    Patient Information Unavailable
-                  </h4>
-                  <p className="text-gray-600">
-                    Unable to load patient details for this appointment.
-                  </p>
                 </div>
               )}
+
+              {/* Follow-up List */}
+              <FollowUpList followUps={followUps} />
             </div>
           )}
         </div>
