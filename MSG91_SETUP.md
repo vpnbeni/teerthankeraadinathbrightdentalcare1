@@ -22,6 +22,9 @@ Update the following variables in `server/.env`:
 # MSG91 Configuration
 MSG91_AUTH_KEY=your-actual-auth-key-here
 MSG91_TEMPLATE_ID=your-template-id-here
+MSG91_SIGNUP_TEMPLATE_ID=68d793ac2eaa4904d84ec094
+MSG91_LOGIN_TEMPLATE_ID=68d79385b2eae3049a0a8c13
+MSG91_SENDER_ID=TABDCL
 ```
 
 ### 3. Test the Integration

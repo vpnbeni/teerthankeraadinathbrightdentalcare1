@@ -523,7 +523,7 @@ export const testOTP = async (req, res) => {
       });
     }
 
-    const result = await otpService.sendOTPToContact(phone);
+    const result = await otpService.sendOTPToContact(phone, "verification");
 
     res.status(200).json({
       success: true,
@@ -1031,7 +1031,7 @@ export const sendPhoneOTPForProfile = async (req, res) => {
 
     // Send OTP via phone
     const { otpService } = await import("../services/otpService.js");
-    await otpService.sendOTPToContact(phone);
+    await otpService.sendOTPToContact(phone, "verification");
 
     res.status(200).json({
       success: true,

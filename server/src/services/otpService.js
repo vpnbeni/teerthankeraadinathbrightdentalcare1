@@ -18,7 +18,10 @@ class OTPService {
     } else {
       this.baseURL = "https://api.msg91.com/api";
       this.authKey = config.MSG91.AUTH_KEY;
-      this.templateId = config.MSG91.TEMPLATE_ID;
+      this.templateId = config.MSG91.TEMPLATE_ID; // Legacy fallback
+      this.signupTemplateId = config.MSG91.SIGNUP_TEMPLATE_ID;
+      this.loginTemplateId = config.MSG91.LOGIN_TEMPLATE_ID;
+      this.senderId = config.MSG91.SENDER_ID;
     }
 
     // In-memory OTP storage (in production, use Redis)
@@ -178,8 +181,10 @@ class OTPService {
 
   /**
    * Send OTP via SMS (MSG91)
+   * @param {string} phone - Phone number to send OTP to
+   * @param {string} context - Context for OTP (signup, login, or verification)
    */
-  async sendMsg91OTP(phone) {
+  async sendMsg91OTP(phone, context = "verification") {
     try {
       const otp = this.generateOTP();
 
@@ -216,19 +221,32 @@ class OTPService {
         };
       }
 
+      // Determine template ID based on context
+      let templateId;
+      switch (context) {
+        case "signup":
+          templateId = this.signupTemplateId;
+          break;
+        case "login":
+          templateId = this.loginTemplateId;
+          break;
+        default:
+          templateId = this.templateId || this.signupTemplateId; // fallback to signup template
+      }
+
       // Send OTP via MSG91 SMS API
       const smsData = {
         authkey: this.authKey,
         mobiles: formattedPhone,
-        sender: "DENTAL",
+        sender: this.senderId,
         route: "4", // Transactional route
         country: "91",
       };
 
       // Use template if available, otherwise use direct message
-      if (this.templateId) {
+      if (templateId) {
         // Using template-based SMS
-        smsData.template_id = this.templateId;
+        smsData.template_id = templateId;
         smsData.var1 = otp; // OTP variable for template
       } else {
         // Using direct message
@@ -324,8 +342,10 @@ class OTPService {
 
   /**
    * Send OTP to phone or email (unified method)
+   * @param {string} contact - Phone number or email address
+   * @param {string} context - Context for OTP (signup, login, or verification)
    */
-  async sendOTPToContact(contact) {
+  async sendOTPToContact(contact, context = "verification") {
     // Check if contact is email or phone
     const isEmail = contact.includes('@');
     
@@ -335,7 +355,7 @@ class OTPService {
       if (this.smsProvider === 'twilio') {
         return await this.sendTwilioOTP(contact);
       } else {
-        return await this.sendMsg91OTP(contact);
+        return await this.sendMsg91OTP(contact, context);
       }
     }
   }

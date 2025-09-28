@@ -96,7 +96,7 @@ class AuthService {
         await existingUser.save();
         
         // Send OTP for phone verification
-        await otpService.sendOTPToContact(phone);
+        await otpService.sendOTPToContact(phone, "signup");
         
         return {
           user: {
@@ -146,7 +146,7 @@ class AuthService {
           await existingEmail.save();
           
           // Send OTP for phone verification
-          await otpService.sendOTPToContact(phone);
+          await otpService.sendOTPToContact(phone, "signup");
           
           return {
             user: {
@@ -194,7 +194,7 @@ class AuthService {
     });
 
     // Send OTP for phone verification
-    await otpService.sendOTPToContact(phone);
+    await otpService.sendOTPToContact(phone, "signup");
 
     return {
       user: {
@@ -359,7 +359,7 @@ class AuthService {
     }
 
     // Send OTP
-    await otpService.sendOTPToContact(contact);
+    await otpService.sendOTPToContact(contact, "login");
 
     return {
       message: "OTP sent successfully",

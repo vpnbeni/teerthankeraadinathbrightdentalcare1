@@ -117,8 +117,9 @@ async function testSMSSending() {
     const smsData = {
       authkey: MSG91_AUTH_KEY,
       mobiles: testPhone,
-      message: testMessage,
-      sender: "DENTAL",
+      template_id: "68d793ac2eaa4904d84ec094", // Test with signup template
+      var1: "123456", // Test OTP
+      sender: "TABDCL",
       route: "4", // Transactional route
       country: "91",
     };

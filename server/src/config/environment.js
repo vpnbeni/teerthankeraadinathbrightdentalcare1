@@ -106,7 +106,10 @@ const config = {
 
   MSG91: {
     AUTH_KEY: process.env.MSG91_AUTH_KEY,
-    TEMPLATE_ID: process.env.MSG91_TEMPLATE_ID,
+    TEMPLATE_ID: process.env.MSG91_TEMPLATE_ID, // Legacy fallback
+    SIGNUP_TEMPLATE_ID: process.env.MSG91_SIGNUP_TEMPLATE_ID || "68d793ac2eaa4904d84ec094",
+    LOGIN_TEMPLATE_ID: process.env.MSG91_LOGIN_TEMPLATE_ID || "68d79385b2eae3049a0a8c13",
+    SENDER_ID: process.env.MSG91_SENDER_ID || "TABDCL",
   },
 
   TWILIO: {
