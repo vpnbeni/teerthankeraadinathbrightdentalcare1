@@ -234,6 +234,11 @@ class OTPService {
           templateId = this.templateId || this.signupTemplateId; // fallback to signup template
       }
 
+      // Log template configuration for debugging
+      console.log(`📱 Sending OTP with context: ${context}`);
+      console.log(`📋 Using template ID: ${templateId}`);
+      console.log(`📤 Using sender ID: ${this.senderId}`);
+
       // Send OTP via MSG91 SMS API
       const smsData = {
         authkey: this.authKey,
@@ -278,8 +283,20 @@ class OTPService {
           throw new Error("Invalid MSG91 authentication key");
         } else if (response.data.includes("Invalid mobile")) {
           throw new Error("Invalid mobile number");
+        } else if (response.data.includes("Invalid template")) {
+          throw new Error("Invalid MSG91 template ID - please verify template is approved");
+        } else if (response.data.includes("Invalid sender")) {
+          throw new Error("Invalid MSG91 sender ID - please verify sender ID is approved");
+        } else if (response.data.includes("DLT")) {
+          throw new Error("DLT registration issue - template or sender ID not registered");
         } else {
-          throw new Error(`MSG91 Error: ${response.data}`);
+          // Try to decode hexadecimal error codes
+          const errorCode = response.data;
+          if (/^[0-9a-fA-F]+$/.test(errorCode) && errorCode.length > 10) {
+            throw new Error(`MSG91 Error Code: ${errorCode} - This may indicate template/sender ID issues or DLT registration problems. Please verify your MSG91 template and sender ID configuration.`);
+          } else {
+            throw new Error(`MSG91 Error: ${response.data}`);
+          }
         }
       } else if (
         typeof response.data === "object" &&
@@ -334,9 +351,13 @@ class OTPService {
         };
       }
 
-      throw new Error(
-        error.response?.data || error.message || "Failed to send OTP"
-      );
+      // In production, provide more helpful error messages
+      const errorMessage = error.message || "Failed to send OTP";
+      if (errorMessage.includes("MSG91 Error Code:")) {
+        throw new Error(`${errorMessage}\n\nTroubleshooting steps:\n1. Verify MSG91 template IDs are approved in your account\n2. Check if sender ID 'TABDCL' is registered and active\n3. Ensure DLT registration is complete for Indian SMS\n4. Contact MSG91 support with the error code`);
+      }
+
+      throw new Error(errorMessage);
     }
   }
 
