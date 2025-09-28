@@ -238,6 +238,7 @@ class OTPService {
       console.log(`📱 Sending OTP with context: ${context}`);
       console.log(`📋 Using template ID: ${templateId}`);
       console.log(`📤 Using sender ID: ${this.senderId}`);
+      console.log(`🔧 Mode: ${templateId ? 'Template-based (DLT compliant)' : 'Direct message (not DLT compliant)'}`);
 
       // Send OTP via MSG91 SMS API
       const smsData = {
@@ -248,26 +249,60 @@ class OTPService {
         country: "91",
       };
 
-      // Use template if available, otherwise use direct message
+      // Use template-based SMS (DLT compliant)
       if (templateId) {
-        // Using template-based SMS
+        // Using template-based SMS with proper DLT compliance
         smsData.template_id = templateId;
-        smsData.var1 = otp; // OTP variable for template
+        smsData.otp = otp; // For v5 API use 'otp' parameter
+        // For v5 API, adjust mobile format
+        smsData.mobile = `91${formattedPhone}`;
+        delete smsData.mobiles; // v5 uses 'mobile' not 'mobiles'
+        delete smsData.route; // Not needed for v5 OTP API
+        delete smsData.country; // Not needed for v5 OTP API
       } else {
-        // Using direct message
+        // Fallback to direct message (not DLT compliant)
         smsData.message = `Your OTP for Teerthanker Dental Care is ${otp}. Valid for 5 minutes. Do not share with anyone.`;
       }
 
-      const response = await axios.post(
-        `${this.baseURL}/sendhttp.php`,
-        new URLSearchParams(smsData),
-        {
-          headers: {
-            "Content-Type": "application/x-www-form-urlencoded",
-          },
-          timeout: 10000, // 10 second timeout
-        }
-      );
+      // 🔍 LOG EXACT PAYLOAD BEING SENT        
+      console.log("\n🔍 EXACT MSG91 API PAYLOAD:");
+      console.log("═══════════════════════════════");
+      console.log("📤 URL:", templateId ? `${this.baseURL}/v5/otp` : `${this.baseURL}/sendhttp.php`);
+      const logHeaders = templateId ? 
+        { "Content-Type": "application/json" } :
+        { "Content-Type": "application/x-www-form-urlencoded" };
+      console.log("📋 Headers:", logHeaders);
+      console.log("📦 Raw SMS Data Object:");
+      Object.entries(smsData).forEach(([key, value]) => {
+        console.log(`   ${key}: "${value}"`);
+      });
+      if (templateId) {
+        console.log("📦 JSON Payload:");
+        console.log(`   ${JSON.stringify(smsData, null, 2)}`);
+      } else {
+        console.log("📦 URLSearchParams String:");
+        const urlParams = new URLSearchParams(smsData);
+        console.log(`   ${urlParams.toString()}`);
+      }
+      console.log("═══════════════════════════════\n");
+
+      // Use v5 OTP API for template-based SMS (better DLT compliance)
+      const apiEndpoint = templateId ? 
+        `${this.baseURL}/v5/otp` : 
+        `${this.baseURL}/sendhttp.php`;
+      
+      const requestData = templateId ? 
+        smsData : // For v5 API, send as JSON
+        new URLSearchParams(smsData); // For legacy API, send as form data
+        
+      const headers = templateId ? 
+        { "Content-Type": "application/json" } :
+        { "Content-Type": "application/x-www-form-urlencoded" };
+
+      const response = await axios.post(apiEndpoint, requestData, {
+        headers,
+        timeout: 10000, // 10 second timeout
+      });
 
       console.log("MSG91 Response:", response.data);
 
