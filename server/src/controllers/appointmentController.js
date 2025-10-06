@@ -1,7 +1,9 @@
 import mongoose from "mongoose";
 import { Appointment, User } from "../models/index.js";
 import emailService from "../services/emailService.js";
+import smsService from "../services/smsService.js";
 import AvailabilityService from "../services/availabilityService.js";
+import { config } from "../config/environment.js";
 
 const availabilityService = new AvailabilityService();
 
@@ -138,6 +140,37 @@ export const createAppointment = async (req, res) => {
         "Admin notification email failed (non-blocking):",
         error.message
       );
+    }
+
+    // Send SMS notifications (non-blocking)
+    // Send SMS to user
+    if (populatedAppointment.userId.phone) {
+      smsService
+        .sendAppointmentBookingToUser(
+          populatedAppointment.userId.name,
+          populatedAppointment.userId.phone,
+          populatedAppointment.date,
+          populatedAppointment.timeSlot
+        )
+        .catch((error) => {
+          console.error("SMS to user failed (non-blocking):", error.message);
+        });
+    }
+
+    // Send SMS to admin
+    if (config.ADMIN_PHONE) {
+      smsService
+        .sendAppointmentBookingToAdmin(
+          config.ADMIN_PHONE,
+          populatedAppointment.userId.name,
+          populatedAppointment.userId.phone,
+          populatedAppointment.date,
+          populatedAppointment.timeSlot,
+          notes
+        )
+        .catch((error) => {
+          console.error("SMS to admin failed (non-blocking):", error.message);
+        });
     }
 
     console.log("🎉 SUCCESS: Appointment created successfully");
@@ -1485,6 +1518,21 @@ export const addFollowUp = async (req, res) => {
     } catch (emailError) {
       console.error("Failed to send follow-up notification emails:", emailError);
       // Don't fail the request if email fails
+    }
+
+    // Send SMS notification to user (non-blocking)
+    if (appointment.userId.phone) {
+      smsService
+        .sendFollowUpNotificationToUser(
+          appointment.userId.name,
+          appointment.userId.phone,
+          date,
+          timeSlot,
+          notes
+        )
+        .catch((error) => {
+          console.error("SMS follow-up notification failed (non-blocking):", error.message);
+        });
     }
 
     res.status(201).json({

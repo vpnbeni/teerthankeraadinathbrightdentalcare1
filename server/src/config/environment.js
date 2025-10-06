@@ -109,6 +109,8 @@ const config = {
     TEMPLATE_ID: process.env.MSG91_TEMPLATE_ID, // Legacy fallback
     SIGNUP_TEMPLATE_ID: process.env.MSG91_SIGNUP_TEMPLATE_ID || "68d8d20108c74d5c0f4167b2",
     LOGIN_TEMPLATE_ID: process.env.MSG91_LOGIN_TEMPLATE_ID || "68d8d1d89d4ce1639a6d1173",
+    APPOINTMENT_BOOKING_TEMPLATE_ID: process.env.MSG91_APPOINTMENT_BOOKING_TEMPLATE_ID,
+    FOLLOWUP_TEMPLATE_ID: process.env.MSG91_FOLLOWUP_TEMPLATE_ID,
     SENDER_ID: process.env.MSG91_SENDER_ID || "TABDCL",
   },
 
@@ -119,6 +121,9 @@ const config = {
   },
 
   SMS_PROVIDER: process.env.SMS_PROVIDER || "msg91",
+
+  // Admin Configuration
+  ADMIN_PHONE: process.env.ADMIN_PHONE || "+917351114255",
 
   CLOUDINARY: {
     CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME,

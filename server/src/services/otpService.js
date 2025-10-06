@@ -305,6 +305,9 @@ class OTPService {
       });
 
       console.log("MSG91 Response:", response.data);
+      console.log("MSG91 Response Type:", typeof response.data);
+      console.log("MSG91 Response Headers:", response.headers);
+      console.log("MSG91 Status Code:", response.status);
 
       // Handle different response formats from MSG91
       if (typeof response.data === "string") {
@@ -362,8 +365,27 @@ class OTPService {
           message: "OTP sent successfully",
           requestId: response.data.msg,
         };
+      } else if (
+        typeof response.data === "object" &&
+        response.data.type === "success"
+      ) {
+        // Handle v5 API success response format
+        return {
+          success: true,
+          message: "OTP sent successfully",
+          requestId: response.data.request_id,
+        };
+      } else if (
+        typeof response.data === "object" &&
+        response.data.type === "error"
+      ) {
+        // Handle v5 API error response format
+        throw new Error(`MSG91 v5 API Error: ${response.data.message || 'Unknown error'}`);
       } else {
-        throw new Error("Unexpected response format from MSG91");
+        console.error("Unexpected MSG91 response format:");
+        console.error("Response data:", JSON.stringify(response.data, null, 2));
+        console.error("Response type:", typeof response.data);
+        throw new Error(`Unexpected response format from MSG91. Response: ${JSON.stringify(response.data)}`);
       }
     } catch (error) {
       console.error("OTP sending error:", error.message);
