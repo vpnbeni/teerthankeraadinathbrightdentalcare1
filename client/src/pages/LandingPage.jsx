@@ -44,39 +44,95 @@ const LandingPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#346870] to-[#BDCFD1]">
-      <div className="container mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="text-center text-white mb-12 relative">
+    <div className="min-h-screen bg-gradient-to-br from-[#346870] via-[#2a5359] to-[#BDCFD1] relative overflow-hidden">
+      {/* Background decorative elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-20 left-10 w-32 h-32 bg-white/10 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute top-40 right-20 w-24 h-24 bg-white/5 rounded-full blur-2xl animate-pulse" style={{ animationDelay: '1s' }}></div>
+        <div className="absolute bottom-20 left-1/4 w-40 h-40 bg-white/8 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }}></div>
+        <div className="absolute bottom-40 right-1/3 w-20 h-20 bg-white/10 rounded-full blur-xl animate-pulse" style={{ animationDelay: '0.5s' }}></div>
+      </div>
+      
+      <div className="container mx-auto px-4 py-8 relative">
+        {/* Enhanced Header */}
+        <div className="text-center text-white mb-16 relative">
+          {/* Floating elements */}
+          <div className="absolute -top-10 left-1/2 transform -translate-x-1/2 w-20 h-20 bg-white/10 rounded-full blur-xl animate-bounce" style={{ animationDuration: '3s' }}></div>
           
-          
-          <h1 className="text-4xl md:text-6xl font-bold mb-4">
-            Teerthanker Aadinath Bright Dental Care
-          </h1>
-          <p className="text-xl md:text-2xl mb-8">
-            Your trusted partner for comprehensive dental care
-          </p>
+          <div className="relative">
+            {/* Badge */}
+            <div className="inline-block mb-6">
+              <span className="bg-white/20 backdrop-blur-sm text-white px-6 py-3 rounded-full text-sm font-semibold border border-white/30 shadow-lg">
+                🦷 Premium Dental Care Since 2020
+              </span>
+            </div>
+            
+            <h1 className="text-5xl md:text-7xl font-black mb-6 leading-tight">
+              <span className="bg-gradient-to-r from-white via-blue-100 to-white bg-clip-text text-transparent drop-shadow-2xl">
+                Teerthanker Aadinath
+              </span>
+              <br />
+              <span className="bg-gradient-to-r from-white to-blue-100 bg-clip-text text-transparent">
+                Bright Dental Care
+              </span>
+            </h1>
+            
+            <p className="text-2xl md:text-3xl mb-8 font-light text-white/90 max-w-4xl mx-auto leading-relaxed">
+              Your trusted partner for comprehensive dental care with 
+              <span className="font-semibold text-yellow-200"> cutting-edge technology</span> and 
+              <span className="font-semibold text-yellow-200"> personalized treatment</span>
+            </p>
+            
+            {/* Trust indicators */}
+            <div className="flex items-center justify-center space-x-8 text-white/80 text-sm">
+              <div className="flex items-center">
+                <svg className="w-5 h-5 mr-2 text-green-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                1000+ Happy Patients
+              </div>
+              <div className="flex items-center">
+                <svg className="w-5 h-5 mr-2 text-green-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Expert Dentists
+              </div>
+              <div className="flex items-center">
+                <svg className="w-5 h-5 mr-2 text-green-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Modern Equipment
+              </div>
+            </div>
+          </div>
         </div>
 
-        {/* Main Content */}
-        <div className="bg-white rounded-lg shadow-xl p-8 max-w-7xl mx-auto relative">
-          {/* Login Button - Top Right */}
-          <div className="absolute top-10 right-10">
+        {/* Enhanced Main Content */}
+        <div className="bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl p-8 max-w-7xl mx-auto relative border border-white/20">
+          {/* Enhanced Login Button */}
+          <div className="absolute top-8 right-8 z-10">
             <button
               onClick={handleLoginClick}
-              className="text-white bg-[#346870] px-6 py-2 rounded-lg font-medium hover:bg-opacity-80 transition-colors shadow-lg"
+              className="group relative bg-gradient-to-r from-[#346870] to-[#2a5359] text-white px-8 py-3 rounded-2xl font-semibold hover:from-[#2a5359] hover:to-[#1e3d42] transition-all duration-300 shadow-xl hover:shadow-2xl transform hover:scale-105"
             >
-              Login
+              <span className="flex items-center">
+                <svg className="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+                </svg>
+                Login
+              </span>
+              <div className="absolute inset-0 bg-white/20 rounded-2xl blur-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
             </button>
           </div>
+          
+          {/* Decorative elements */}
+          <div className="absolute top-4 left-4 w-8 h-8 bg-[#346870]/10 rounded-full"></div>
+          <div className="absolute bottom-4 right-4 w-12 h-12 bg-[#BDCFD1]/20 rounded-full"></div>
+          
           <PlanSelector
             onPlanSelect={handlePlanSelect}
             selectedPlan={selectedPlan}
           />
-
-         
-
-          
         </div>
       </div>
 

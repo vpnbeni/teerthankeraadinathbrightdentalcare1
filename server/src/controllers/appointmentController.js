@@ -157,11 +157,12 @@ export const createAppointment = async (req, res) => {
         });
     }
 
-    // Send SMS to admin
-    if (config.ADMIN_PHONE) {
+    // Send SMS to admin(s)
+    const adminPhones = [config.ADMIN_PHONE, config.ADMIN_PHONE_TWO].filter(Boolean);
+    if (adminPhones.length > 0) {
       smsService
-        .sendAppointmentBookingToAdmin(
-          config.ADMIN_PHONE,
+        .sendAppointmentBookingToAdmins(
+          adminPhones,
           populatedAppointment.userId.name,
           populatedAppointment.userId.phone,
           populatedAppointment.date,
@@ -169,7 +170,7 @@ export const createAppointment = async (req, res) => {
           notes
         )
         .catch((error) => {
-          console.error("SMS to admin failed (non-blocking):", error.message);
+          console.error("SMS to admins failed (non-blocking):", error.message);
         });
     }
 
@@ -883,6 +884,23 @@ export const confirmAppointment = async (req, res) => {
         .catch((error) => {
           console.error(
             "Confirmation email sending failed (non-blocking):",
+            error.message
+          );
+        });
+    }
+
+    // Send appointment confirmation SMS to patient (non-blocking)
+    if (updatedAppointment.userId.phone) {
+      smsService
+        .sendAppointmentConfirmationToUser(
+          updatedAppointment.userId.name,
+          updatedAppointment.userId.phone,
+          updatedAppointment.date,
+          updatedAppointment.timeSlot
+        )
+        .catch((error) => {
+          console.error(
+            "Confirmation SMS sending failed (non-blocking):",
             error.message
           );
         });

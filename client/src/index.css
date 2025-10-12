@@ -30,15 +30,25 @@
   }
 
   .plan-card {
-    @apply bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer transform hover:-translate-y-1;
+    @apply bg-white rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-500 cursor-pointer transform hover:-translate-y-2 hover:scale-105;
+    background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
+    border: 1px solid rgba(52, 104, 112, 0.1);
   }
 
   .plan-card-popular {
-    @apply border-2 border-[#346870] scale-105;
+    @apply border-2 border-[#346870] scale-105 shadow-2xl;
+    background: linear-gradient(145deg, #ffffff 0%, #f0f9ff 100%);
+    box-shadow: 0 25px 50px -12px rgba(52, 104, 112, 0.25);
   }
 
   .plan-card-selected {
-    @apply ring-4 ring-[#346870] ring-opacity-50 border-2 border-[#346870];
+    @apply ring-4 ring-[#346870] ring-opacity-30 border-2 border-[#346870] scale-105;
+    background: linear-gradient(145deg, #ffffff 0%, #f0f9ff 100%);
+    box-shadow: 0 25px 50px -12px rgba(52, 104, 112, 0.4);
+  }
+
+  .plan-card:hover {
+    box-shadow: 0 25px 50px -12px rgba(52, 104, 112, 0.3);
   }
 
   .gradient-bg {
@@ -63,6 +73,63 @@
   .animate-fade-in-up {
     animation: fade-in-up 0.6s ease-out forwards;
     opacity: 0;
+  }
+
+  /* Enhanced animations */
+  @keyframes float {
+    0%, 100% {
+      transform: translateY(0px);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+
+  @keyframes glow {
+    0%, 100% {
+      box-shadow: 0 0 20px rgba(52, 104, 112, 0.3);
+    }
+    50% {
+      box-shadow: 0 0 30px rgba(52, 104, 112, 0.6);
+    }
+  }
+
+  @keyframes shimmer {
+    0% {
+      background-position: -200% 0;
+    }
+    100% {
+      background-position: 200% 0;
+    }
+  }
+
+  @keyframes scale-in {
+    0% {
+      transform: scale(0.8);
+      opacity: 0;
+    }
+    100% {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+
+  .animate-float {
+    animation: float 3s ease-in-out infinite;
+  }
+
+  .animate-glow {
+    animation: glow 2s ease-in-out infinite;
+  }
+
+  .animate-shimmer {
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+    background-size: 200% 100%;
+    animation: shimmer 2s infinite;
+  }
+
+  .animate-scale-in {
+    animation: scale-in 0.5s ease-out forwards;
   }
 
   /* Modal animations */

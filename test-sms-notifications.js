@@ -35,18 +35,21 @@ async function testSMSConfiguration() {
   const config = {
     SMS_PROVIDER: process.env.SMS_PROVIDER || 'msg91',
     ADMIN_PHONE: process.env.ADMIN_PHONE || 'Not configured',
+    ADMIN_PHONE_TWO: process.env.ADMIN_PHONE_TWO || 'Not configured',
     MSG91_AUTH_KEY: process.env.MSG91_AUTH_KEY ? '✓ Configured' : '✗ Missing',
     MSG91_SENDER_ID: process.env.MSG91_SENDER_ID || 'TABDCL',
   };
   
   console.log('SMS Provider:', config.SMS_PROVIDER);
-  console.log('Admin Phone:', config.ADMIN_PHONE);
+  console.log('Admin Phone 1:', config.ADMIN_PHONE);
+  console.log('Admin Phone 2:', config.ADMIN_PHONE_TWO);
   console.log('MSG91 Auth Key:', config.MSG91_AUTH_KEY);
   console.log('Sender ID:', config.MSG91_SENDER_ID);
   
-  if (!process.env.ADMIN_PHONE) {
-    console.log('⚠️  Warning: ADMIN_PHONE not configured in .env');
+  if (!process.env.ADMIN_PHONE && !process.env.ADMIN_PHONE_TWO) {
+    console.log('⚠️  Warning: No admin phones configured in .env');
     console.log('   Add: ADMIN_PHONE=+917351114255');
+    console.log('   Add: ADMIN_PHONE_TWO=+919899826025');
   }
   
   console.log('\n');
@@ -96,7 +99,8 @@ async function testAppointmentBookingSMS() {
       console.log('   Time Slot:', response.data.data.appointment.timeSlot);
       console.log('\n📱 Expected SMS Notifications:');
       console.log('   1. SMS to user with appointment confirmation');
-      console.log('   2. SMS to admin with booking details');
+      console.log('   2. SMS to admin 1 with booking details');
+      console.log('   3. SMS to admin 2 with booking details');
       console.log('\n✓ Check server console for SMS logs');
     } else {
       console.log('❌ Failed to create appointment');

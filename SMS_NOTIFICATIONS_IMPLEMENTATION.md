@@ -62,8 +62,9 @@ A dedicated service that handles all SMS operations with support for:
 Add these to your `server/.env` file:
 
 ```env
-# Admin Configuration
+# Admin Configuration (both admins will receive notifications)
 ADMIN_PHONE=+917351114255
+ADMIN_PHONE_TWO=+919899826025
 
 # SMS Provider (msg91 or twilio)
 SMS_PROVIDER=msg91

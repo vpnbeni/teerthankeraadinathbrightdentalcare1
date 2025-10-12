@@ -50,8 +50,9 @@ A comprehensive test script to verify:
 Add to your `server/.env` file:
 
 ```env
-# Admin phone number (REQUIRED for admin notifications)
+# Admin phone numbers (REQUIRED for admin notifications)
 ADMIN_PHONE=+917351114255
+ADMIN_PHONE_TWO=+919899826025
 
 # Optional: MSG91 template IDs for DLT compliance
 MSG91_APPOINTMENT_BOOKING_TEMPLATE_ID=your-template-id

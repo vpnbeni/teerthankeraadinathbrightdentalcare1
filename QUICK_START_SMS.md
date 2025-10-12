@@ -9,8 +9,9 @@ This guide will help you quickly set up SMS notifications for appointment bookin
 Add these to your `server/.env` file:
 
 ```env
-# Required: Admin phone to receive booking notifications
+# Required: Admin phones to receive booking notifications
 ADMIN_PHONE=+917351114255
+ADMIN_PHONE_TWO=+919899826025
 
 # Optional: MSG91 template IDs for DLT compliance (India)
 MSG91_APPOINTMENT_BOOKING_TEMPLATE_ID=your-template-id
@@ -38,7 +39,7 @@ Book an appointment through your app and check the server console. You should se
 1. **When a patient books an appointment:**
 
    - ✅ Patient receives SMS confirmation
-   - ✅ Admin receives SMS notification with patient details
+   - ✅ Both admins receive SMS notification with patient details
 
 2. **When admin schedules a follow-up:**
    - ✅ Patient receives SMS with follow-up details
