@@ -41,6 +41,10 @@ const userSchema = new mongoose.Schema(
       pastTreatments: [String],
       previousExperiences: [String],
     },
+    profilePhoto: {
+      type: String,
+      trim: true,
+    },
     documents: [
       {
         type: {

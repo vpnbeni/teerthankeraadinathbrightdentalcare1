@@ -50,12 +50,14 @@ const DashboardLayout = ({ children }) => {
           onClick={() => setSidebarOpen(false)}
         />
         <div className="fixed inset-y-0 left-0 flex w-64 flex-col bg-white">
-          <div className="flex h-16 items-center justify-between px-4 border-b bg-gradient-to-t from-[#346870]/5 to-white">
-            <img 
-              src="https://res.cloudinary.com/dvqvxu0b1/image/upload/v1753662373/2_uuolcb.webp"
-              alt="Teerthanker Aadinath Bright Dental Care"
-              className="h-12 w-auto object-contain"
-            />
+          <div className="flex h-24 items-center justify-between px-4 border-b bg-gradient-to-t from-[#346870]/5 to-white">
+            <div className="">
+              <img
+                src="https://res.cloudinary.com/dvqvxu0b1/image/upload/v1753662373/2_uuolcb.webp"
+                alt="Teerthanker Aadinath Bright Dental Care"
+                className="h-16 my-[-20px] w-auto object-contain"
+              />
+            </div>
             <button
               onClick={() => setSidebarOpen(false)}
               className="text-gray-400 hover:text-gray-600"
@@ -86,10 +88,18 @@ const DashboardLayout = ({ children }) => {
           <div className="border-t p-4">
             <div className="flex items-center mb-4">
               <div className="flex-shrink-0">
-                <div className="h-8 w-8 bg-[#346870] rounded-full flex items-center justify-center">
-                  <span className="text-white text-sm font-medium">
-                    {user?.name?.charAt(0)?.toUpperCase() || "U"}
-                  </span>
+                <div className="h-8 w-8 bg-[#346870] rounded-full flex items-center justify-center overflow-hidden">
+                  {user?.profilePhoto ? (
+                    <img
+                      src={user.profilePhoto}
+                      alt={user.name}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <span className="text-white text-sm font-medium">
+                      {user?.name?.charAt(0)?.toUpperCase() || "U"}
+                    </span>
+                  )}
                 </div>
               </div>
               <div className="ml-3">
@@ -113,12 +123,14 @@ const DashboardLayout = ({ children }) => {
       {/* Desktop sidebar */}
       <div className="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-64 lg:flex-col">
         <div className="flex flex-col flex-grow bg-white border-r">
-          <div className="flex h-20 justify-center items-center px-4 border-b bg-white">
-            <img 
-              src="https://res.cloudinary.com/dvqvxu0b1/image/upload/v1753662373/2_uuolcb.webp"
-              alt="Teerthanker Aadinath Bright Dental Care"
-              className="h-32 w-auto object-cover object-center"
-            />
+          <div className="flex h-28 justify-center items-center px-4 border-b bg-white">
+            <div className="">
+              <img
+                src="https://res.cloudinary.com/dvqvxu0b1/image/upload/v1753662373/2_uuolcb.webp"
+                alt="Teerthanker Aadinath Bright Dental Care"
+                className="h-56 mt-6 w-auto object-cover object-center"
+              />
+            </div>
           </div>
           <nav className="flex-1 px-4 py-4 space-y-2">
             {navigation.map((item) => {
@@ -142,10 +154,18 @@ const DashboardLayout = ({ children }) => {
           <div className="border-t p-4">
             <div className="flex items-center mb-4">
               <div className="flex-shrink-0">
-                <div className="h-8 w-8 bg-[#346870] rounded-full flex items-center justify-center">
-                  <span className="text-white text-sm font-medium">
-                    {user?.name?.charAt(0)?.toUpperCase() || "U"}
-                  </span>
+                <div className="h-8 w-8 bg-[#346870] rounded-full flex items-center justify-center overflow-hidden">
+                  {user?.profilePhoto ? (
+                    <img
+                      src={user.profilePhoto}
+                      alt={user.name}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <span className="text-white text-sm font-medium">
+                      {user?.name?.charAt(0)?.toUpperCase() || "U"}
+                    </span>
+                  )}
                 </div>
               </div>
               <div className="ml-3">
@@ -177,7 +197,7 @@ const DashboardLayout = ({ children }) => {
             >
               <Bars3Icon className="h-6 w-6" />
             </button>
-            <img 
+            <img
               src="https://res.cloudinary.com/dvqvxu0b1/image/upload/v1753662373/2_uuolcb.webp"
               alt="Teerthanker Aadinath Bright Dental Care"
               className="h-10 w-auto object-contain lg:hidden"
@@ -200,17 +220,33 @@ const DashboardLayout = ({ children }) => {
                       : "Subscription inactive"}
                   </p>
                 </div>
-                <div className="h-10 w-10 bg-[#346870] rounded-full flex items-center justify-center">
-                  <UserIcon className="h-6 w-6 text-white" />
+                <div className="h-10 w-10 bg-[#346870] rounded-full flex items-center justify-center overflow-hidden">
+                  {user?.profilePhoto ? (
+                    <img
+                      src={user.profilePhoto}
+                      alt={user.name}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <UserIcon className="h-6 w-6 text-white" />
+                  )}
                 </div>
               </div>
 
               {/* Mobile user avatar */}
               <div className="lg:hidden">
-                <div className="h-8 w-8 bg-[#346870] rounded-full flex items-center justify-center">
-                  <span className="text-white text-sm font-medium">
-                    {user?.name?.charAt(0)?.toUpperCase() || "U"}
-                  </span>
+                <div className="h-8 w-8 bg-[#346870] rounded-full flex items-center justify-center overflow-hidden">
+                  {user?.profilePhoto ? (
+                    <img
+                      src={user.profilePhoto}
+                      alt={user.name}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <span className="text-white text-sm font-medium">
+                      {user?.name?.charAt(0)?.toUpperCase() || "U"}
+                    </span>
+                  )}
                 </div>
               </div>
             </div>

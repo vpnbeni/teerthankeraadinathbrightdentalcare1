@@ -15,6 +15,7 @@ import analyticsRoutes from "./src/routes/analytics.js";
 import availabilityRoutes from "./src/routes/availability.js";
 import autoCancelRoutes from "./src/routes/autoCancelRoutes.js";
 import sessionLimitsRoutes from "./src/routes/sessionLimits.js";
+import filesRoutes from "./src/routes/files.js";
 import { corsOptions } from "./src/middleware/security.js";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -67,6 +68,7 @@ app.use("/api/analytics", analyticsRoutes);
 app.use("/api/availability", availabilityRoutes);
 app.use("/api/admin/auto-cancel", autoCancelRoutes);
 app.use("/api/session-limits", sessionLimitsRoutes);
+app.use("/api/files", filesRoutes);
 
 // Handle 404 - Route not found
 app.use((req, res) => {
@@ -109,6 +111,9 @@ app.use((req, res) => {
         "POST /api/users/documents - Upload a document",
         "DELETE /api/users/documents/:id - Delete a document",
         "GET /api/users/subscription - Get subscription details",
+      ],
+      files: [
+        "POST /api/files/upload-profile-picture - Upload profile picture",
       ],
       "session-limits": [
         "GET /api/session-limits - Get user's session limit information",

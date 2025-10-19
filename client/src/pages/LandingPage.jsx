@@ -109,19 +109,20 @@ const LandingPage = () => {
 
         {/* Enhanced Main Content */}
         <div className="bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl p-8 max-w-7xl mx-auto relative border border-white/20">
-          {/* Enhanced Login Button */}
-          <div className="absolute top-8 right-8 z-10">
+          {/* Enhanced Login Button - Mobile Responsive */}
+          <div className="absolute top-4 right-4 sm:top-6 sm:right-6 md:top-8 md:right-8 z-10">
             <button
               onClick={handleLoginClick}
-              className="group relative bg-gradient-to-r from-[#346870] to-[#2a5359] text-white px-8 py-3 rounded-2xl font-semibold hover:from-[#2a5359] hover:to-[#1e3d42] transition-all duration-300 shadow-xl hover:shadow-2xl transform hover:scale-105"
+              className="group relative bg-gradient-to-r from-[#346870] to-[#2a5359] text-white px-3 py-2 sm:px-4 sm:py-2 md:px-6 md:py-3 rounded-xl sm:rounded-2xl text-sm sm:text-base font-semibold hover:from-[#2a5359] hover:to-[#1e3d42] transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
             >
               <span className="flex items-center">
-                <svg className="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
                 </svg>
-                Login
+                <span className="hidden xs:inline">Login</span>
+                <span className="xs:hidden">Login</span>
               </span>
-              <div className="absolute inset-0 bg-white/20 rounded-2xl blur-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              <div className="absolute inset-0 bg-white/20 rounded-xl sm:rounded-2xl blur-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
             </button>
           </div>
           

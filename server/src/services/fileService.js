@@ -281,24 +281,27 @@ class FileService {
         ],
       });
 
-      // Update user profile (if you have a profilePicture field)
+      // Update user profile
       const user = await User.findById(userId);
-      if (user) {
-        // Delete old profile picture if exists
-        if (user.profilePicture) {
-          const oldPublicId = this.extractPublicIdFromUrl(user.profilePicture);
-          if (oldPublicId) {
-            await this.deleteFromCloudinary(oldPublicId);
-          }
-        }
-
-        user.profilePicture = uploadResult.secure_url;
-        await user.save();
+      if (!user) {
+        throw new Error("User not found");
       }
+
+      // Delete old profile picture if exists
+      if (user.profilePhoto) {
+        const oldPublicId = this.extractPublicIdFromUrl(user.profilePhoto);
+        if (oldPublicId) {
+          await this.deleteFromCloudinary(oldPublicId);
+        }
+      }
+
+      user.profilePhoto = uploadResult.secure_url;
+      await user.save();
 
       return {
         url: uploadResult.secure_url,
         publicId: uploadResult.public_id,
+        user: user.toObject(), // Return updated user object
       };
     } catch (error) {
       console.error("Upload profile picture error:", error);

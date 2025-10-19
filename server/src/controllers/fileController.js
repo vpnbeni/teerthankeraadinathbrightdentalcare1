@@ -81,7 +81,11 @@ export const uploadProfilePicture = async (req, res) => {
 
     res.status(201).json({
       success: true,
-      data: result,
+      data: {
+        url: result.url,
+        publicId: result.publicId,
+        user: result.user,
+      },
       message: "Profile picture uploaded successfully",
     });
   } catch (error) {

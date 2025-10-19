@@ -94,6 +94,20 @@ const userService = {
     const response = await api.put("/users/subscription", subscriptionData);
     return response;
   },
+
+  // Upload profile photo
+  uploadProfilePhoto: async (photoFile, options = {}) => {
+    const formData = new FormData();
+    formData.append("photo", photoFile);
+
+    const response = await api.post("/files/upload-profile-picture", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+      skipErrorMessage: options.skipErrorMessage,
+    });
+    return response;
+  },
 };
 
 export default userService;

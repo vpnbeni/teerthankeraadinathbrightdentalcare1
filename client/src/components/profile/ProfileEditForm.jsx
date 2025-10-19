@@ -7,6 +7,164 @@ import { sendPhoneOTPForProfile, verifyPhoneOTPForProfile, sendEmailOTP, verifyE
 import showToast from "../../shared/utils/toast";
 import { useAuth } from "../../hooks/useAuth";
 
+// Profile Photo Upload Component
+const ProfilePhotoUpload = ({ currentPhoto, onPhotoUpdate }) => {
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState(currentPhoto || null);
+  const [uploading, setUploading] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
+
+  useEffect(() => {
+    setPreviewUrl(currentPhoto || null);
+  }, [currentPhoto]);
+
+  const handleFileSelect = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // Validate file type
+    const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
+    if (!allowedTypes.includes(file.type)) {
+      showToast.error("Please select a valid image file (JPEG, PNG, or WebP)");
+      return;
+    }
+
+    // Validate file size (5MB max)
+    const maxSize = 5 * 1024 * 1024;
+    if (file.size > maxSize) {
+      showToast.error("Image size must be less than 5MB");
+      return;
+    }
+
+    setSelectedFile(file);
+    
+    // Create preview URL
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setPreviewUrl(reader.result);
+      setShowPreview(true);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleUpload = async () => {
+    if (!selectedFile) return;
+
+    setUploading(true);
+    try {
+      const response = await userService.uploadProfilePhoto(selectedFile);
+      if (response.data.success && response.data.data.user) {
+        showToast.success("Profile photo updated successfully!");
+        onPhotoUpdate(response.data.data.user);
+        setSelectedFile(null);
+        setShowPreview(false);
+      }
+    } catch (error) {
+      console.error("Upload error:", error);
+      showToast.error(error.response?.data?.message || "Failed to upload profile photo");
+      // Revert preview
+      setPreviewUrl(currentPhoto || null);
+      setSelectedFile(null);
+      setShowPreview(false);
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleCancel = () => {
+    setSelectedFile(null);
+    setPreviewUrl(currentPhoto || null);
+    setShowPreview(false);
+  };
+
+  return (
+    <div className="bg-gradient-to-r from-[#346870]/5 to-blue-50 rounded-lg p-6 border border-[#346870]/20">
+      <h4 className="text-md font-semibold text-gray-800 mb-4">Profile Photo</h4>
+      <div className="flex flex-col md:flex-row items-center gap-6">
+        {/* Photo Preview */}
+        <div className="relative">
+          <div className="h-32 w-32 rounded-full overflow-hidden bg-[#346870] flex items-center justify-center border-4 border-white shadow-lg">
+            {previewUrl ? (
+              <img
+                src={previewUrl}
+                alt="Profile"
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              <span className="text-white text-4xl font-medium">
+                {currentPhoto ? "?" : "?"}
+              </span>
+            )}
+          </div>
+          {uploading && (
+            <div className="absolute inset-0 bg-black bg-opacity-50 rounded-full flex items-center justify-center">
+              <LoadingSpinner size="sm" />
+            </div>
+          )}
+        </div>
+
+        {/* Upload Controls */}
+        <div className="flex-1 space-y-3">
+          <p className="text-sm text-gray-600">
+            Upload a profile photo to personalize your account. Recommended size: 300x300px
+          </p>
+          <div className="flex flex-wrap gap-3">
+            <label className="btn-secondary cursor-pointer inline-flex items-center">
+              <input
+                type="file"
+                accept="image/jpeg,image/jpg,image/png,image/webp"
+                onChange={handleFileSelect}
+                className="hidden"
+                disabled={uploading}
+              />
+              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              Choose Photo
+            </label>
+
+            {showPreview && selectedFile && (
+              <>
+                <button
+                  type="button"
+                  onClick={handleUpload}
+                  disabled={uploading}
+                  className="btn-primary inline-flex items-center"
+                >
+                  {uploading ? (
+                    <>
+                      <LoadingSpinner size="sm" />
+                      <span className="ml-2">Uploading...</span>
+                    </>
+                  ) : (
+                    <>
+                      <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      Upload Photo
+                    </>
+                  )}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleCancel}
+                  disabled={uploading}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                  Cancel
+                </button>
+              </>
+            )}
+          </div>
+          <p className="text-xs text-gray-500">
+            Accepted formats: JPEG, PNG, WebP • Max size: 5MB
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const ProfileEditForm = ({ profile, type, onUserUpdate }) => {
   const dispatch = useDispatch();
   const { refreshUser } = useAuth();
@@ -424,6 +582,17 @@ const ProfileEditForm = ({ profile, type, onUserUpdate }) => {
   if (type === "personal") {
     return (
       <div className="space-y-6">
+        {/* Profile Photo Upload Section */}
+        <ProfilePhotoUpload 
+          currentPhoto={currentUser?.profilePhoto} 
+          onPhotoUpdate={(updatedUser) => {
+            setCurrentUser(updatedUser);
+            dispatch(updateUser(updatedUser));
+            if (onUserUpdate) {
+              onUserUpdate(updatedUser);
+            }
+          }}
+        />
         
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid md:grid-cols-2 gap-6">

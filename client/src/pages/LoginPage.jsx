@@ -8,6 +8,7 @@ const LoginPage = () => {
   const navigate = useNavigate();
   const { isAuthenticated } = useSelector((state) => state.auth);
   const [mode, setMode] = useState("login"); // 'login', 'forgot-password'
+  const [isVideoReady, setIsVideoReady] = useState(false);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -50,14 +51,14 @@ const LoginPage = () => {
         <div className="w-full max-w-md">
           {/* Logo/Brand Section */}
           <div className="text-center mb-4">
-            <div className="my-[-40px]">
+            <div className="my-[-80px]">
               <img 
                 src="https://res.cloudinary.com/dvqvxu0b1/image/upload/v1753662373/2_uuolcb.webp"
                 alt="Teerthanker Aadinath Bright Dental Care"
-                className="h-52 w-auto mx-auto object-contain"
+                className="h-80 w-auto mx-auto object-contain"
               />    
             </div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            <h1 className="text-3xl text-primary font-bold mb-2">
               Welcome Back
             </h1>
             <p className="text-lg text-[#346870] font-medium">
@@ -91,17 +92,19 @@ const LoginPage = () => {
           loop
           playsInline
           className="absolute inset-0 w-full h-full object-cover"
+          onCanPlay={() => setIsVideoReady(true)}
           onError={(e) => {
             console.log("Video failed to load, hiding video element");
             e.target.style.display = 'none';
+            setIsVideoReady(false);
           }}
         >
-          <source src="/assets/videos/dental-background.mp4" type="video/mp4" />
+          <source src="/assets/videos/bg-video.mp4" type="video/mp4" />
           {/* Fallback gradient background when video fails */}
         </video>
         
-        {/* Fallback Background (always visible as base layer) */}
-        <div className="absolute inset-0 bg-gradient-to-br from-[#346870] via-[#4a7c85] to-[#BDCFD1]"></div>
+        {/* Fallback Background (visible only if video isn't ready) */}
+        <div className={`absolute inset-0 bg-gradient-to-br from-[#346870] via-[#4a7c85] to-[#BDCFD1] ${isVideoReady ? 'hidden' : ''}`}></div>
 
         {/* Gradient Overlay */}
         <div className="absolute inset-0 bg-gradient-to-br from-[#346870]/90 via-[#346870]/70 to-[#4a7c85]/80"></div>
@@ -167,7 +170,7 @@ const LoginPage = () => {
               <img 
                 src="https://res.cloudinary.com/dvqvxu0b1/image/upload/v1753662373/2_uuolcb.webp"
                 alt="Teerthanker Aadinath Bright Dental Care"
-                className="h-48 w-auto mx-auto object-contain"
+                className="h-56 w-auto mx-auto object-contain"
               />
             </div>
             <h1 className="text-lg font-bold text-gray-900">

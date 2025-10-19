@@ -12,7 +12,6 @@ const RescheduleModal = ({ appointment, onClose, onReschedule }) => {
   const [availableSlots, setAvailableSlots] = useState([]);
   const [loading, setLoading] = useState(false);
   const [loadingSlots, setLoadingSlots] = useState(false);
-  l;
   const timeSlots = [
     "08:00-09:00",
     "09:00-10:00",
@@ -48,8 +47,9 @@ const RescheduleModal = ({ appointment, onClose, onReschedule }) => {
       );
 
       // Ensure we're getting the actual data from backend
-      console.log("Available slots response:", response);
-      setAvailableSlots(response.data.availableSlots || []);
+      console.log("Available slots response:", response?.data);
+      const slots = response?.data?.data?.availableSlots;
+      setAvailableSlots(Array.isArray(slots) ? slots : []);
     } catch (error) {
       console.error("Failed to load available slots:", error);
       toast.error("Failed to load available time slots");
@@ -351,7 +351,7 @@ const RescheduleModal = ({ appointment, onClose, onReschedule }) => {
                               type="button"
                               onClick={() => setSelectedTimeSlot(slot)}
                               disabled={!available}
-                              className={`relative p-4 text-sm font-semibold rounded-xl border-2 transition-all duration-200 ${
+                              className={`relative p-4 text-sm font-semibold rounded-xl border-2 transition-all duration-200 h-20 ${
                                 selectedTimeSlot === slot
                                   ? "bg-purple-600 text-white border-purple-600 shadow-lg transform scale-105"
                                   : available
@@ -373,11 +373,9 @@ const RescheduleModal = ({ appointment, onClose, onReschedule }) => {
                                 </svg>
                                 <span>{slot}</span>
                               </div>
-                              {!available && (
-                                <div className="text-xs mt-2 font-medium">
-                                  Unavailable
-                                </div>
-                              )}
+                              <div className="text-xs mt-2 font-medium h-4">
+                                {!available ? "Unavailable" : ""}
+                              </div>
                               {selectedTimeSlot === slot && (
                                 <div className="absolute -top-1 -right-1 w-6 h-6 bg-white rounded-full flex items-center justify-center shadow-md">
                                   <svg
