@@ -45,149 +45,179 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="min-h-screen flex">
-      {/* Left Side - Login Form (50% width) */}
-      <div className="w-1/2 flex items-center justify-center bg-white px-8 py-12">
-        <div className="w-full max-w-md">
-          {/* Logo/Brand Section */}
-          <div className="text-center mb-4">
-            <div className="my-[-80px]">
-              <img 
+    <div className="h-screen flex relative overflow-hidden bg-gradient-to-br from-gray-50 via-white to-gray-100">
+      {/* Ambient Background Elements - Hidden on mobile */}
+      <div className="hidden lg:block absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-40 -right-40 w-96 h-96 bg-primary/5 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-secondary/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-br from-primary/3 to-secondary/5 rounded-full blur-3xl"></div>
+      </div>
+
+      {/* Left Side - Premium Login Form - Full width on mobile */}
+      <div className="w-full lg:w-1/2 flex items-center justify-center px-4 sm:px-6 lg:px-8 py-6 lg:py-12 relative z-10 overflow-y-auto scrollbar-hide">
+        <div className="w-full max-w-md relative z-10">
+          {/* Logo on Mobile - Top */}
+          <div className="lg:hidden text-center mb-4 animate-fade-in-up">
+            <div className="relative inline-block h-40">
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-secondary/10 rounded-2xl blur-xl"></div>
+              <img
                 src="https://res.cloudinary.com/dvqvxu0b1/image/upload/v1753662373/2_uuolcb.webp"
                 alt="Teerthanker Aadinath Bright Dental Care"
-                className="h-80 w-auto mx-auto object-contain"
-              />    
+                className="h-48  w-auto mx-auto object-contain relative z-10 drop-shadow-lg"
+              />
             </div>
-            <h1 className="text-3xl text-primary font-bold mb-2">
-              Welcome Back
-            </h1>
-            <p className="text-lg text-[#346870] font-medium">
-              Sign in to your account
-            </p>
           </div>
 
-          {/* Form Container */}
-          <div className="bg-white">
-            {renderForm()}
+          {/* Premium Typography Header */}
+          <div className="text-center mb-6 lg:mb-8 animate-fade-in-up">
+            <div className="space-y-2 lg:space-y-3">
+              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-primary via-primary-600 to-primary-700 bg-clip-text text-transparent tracking-tight">
+                Welcome Back
+              </h1>
+              <p className="text-sm lg:text-base text-gray-600 font-medium tracking-wide">
+                Sign in to continue your journey
+              </p>
+            </div>
           </div>
 
-          {/* Footer Links */}
-          <div className="mt-8 text-center">
-            <Link 
-              to="/" 
-              className="text-sm text-gray-500 hover:text-[#346870] transition-colors"
+          {/* Premium Form Container with Glass Effect */}
+          <div className="relative group">
+            {/* Glow Effect on Hover */}
+            <div className="absolute -inset-1 bg-gradient-to-r from-primary/20 via-secondary/20 to-primary/20 rounded-3xl blur-xl opacity-0 group-hover:opacity-100 transition-all duration-700"></div>
+
+            {/* Form Card */}
+            <div className="relative bg-white/80 backdrop-blur-xl rounded-2xl lg:rounded-3xl shadow-2xl border border-gray-200/50 p-4 sm:p-6 lg:p-8 transition-all duration-500 hover:shadow-primary/10 overflow-hidden">
+              {/* Background Logo - Watermark in Form */}
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none overflow-hidden">
+                <img
+                  src="https://res.cloudinary.com/dvqvxu0b1/image/upload/v1753662373/2_uuolcb.webp"
+                  alt="Teerthanker Aadinath Bright Dental Care Background"
+                  className="w-[90%] h-auto object-contain opacity-[.06] select-none grayscale"
+                />
+              </div>
+
+              {/* Subtle Top Border Accent */}
+              <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-24 h-1 bg-gradient-to-r from-transparent via-primary to-transparent rounded-full z-10"></div>
+
+              <div className="relative z-10">
+                {renderForm()}
+              </div>
+            </div>
+          </div>
+
+          {/* Footer with Refined Styling */}
+          <div className="mt-4 lg:mt-8 text-center space-y-4 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
+            <Link
+              to="/"
+              className="inline-flex items-center gap-2 text-xs sm:text-sm text-gray-500 hover:text-primary font-medium transition-all duration-300 group"
             >
-              ← Back to Home
+              <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4 transform group-hover:-translate-x-1 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+              </svg>
+              Back to Home
             </Link>
           </div>
         </div>
       </div>
 
-      {/* Right Side - Video Background with Overlay (50% width) */}
-      <div className="w-1/2 relative overflow-hidden">
-        {/* Video Background */}
+      {/* Right Side - Immersive Visual Experience - Hidden on mobile */}
+      <div className="hidden lg:block w-1/2 relative overflow-hidden">
+        {/* Video Background with Enhanced Overlay */}
         <video
           autoPlay
           muted
           loop
           playsInline
-          className="absolute inset-0 w-full h-full object-cover"
+          className="absolute inset-0 w-full h-full object-cover scale-105"
           onCanPlay={() => setIsVideoReady(true)}
           onError={(e) => {
-            console.log("Video failed to load, hiding video element");
+            console.log("Video failed to load, using gradient fallback");
             e.target.style.display = 'none';
             setIsVideoReady(false);
           }}
         >
           <source src="/assets/videos/bg-video.mp4" type="video/mp4" />
-          {/* Fallback gradient background when video fails */}
         </video>
-        
-        {/* Fallback Background (visible only if video isn't ready) */}
-        <div className={`absolute inset-0 bg-gradient-to-br from-[#346870] via-[#4a7c85] to-[#BDCFD1] ${isVideoReady ? 'hidden' : ''}`}></div>
 
-        {/* Gradient Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-br from-[#346870]/90 via-[#346870]/70 to-[#4a7c85]/80"></div>
+        {/* Premium Gradient Fallback */}
+        <div className={`absolute inset-0 bg-gradient-to-br from-[#2a5359] via-[#346870] to-[#4a7c85] ${isVideoReady ? 'hidden' : ''}`}>
+          <div className="absolute inset-0 opacity-30">
+            <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_30%_20%,rgba(189,207,209,0.3)_0%,transparent_50%)]"></div>
+            <div className="absolute bottom-0 right-0 w-full h-full bg-[radial-gradient(circle_at_70%_80%,rgba(189,207,209,0.2)_0%,transparent_50%)]"></div>
+          </div>
+        </div>
 
-        {/* Content Overlay */}
-        <div className="absolute inset-0 flex items-center justify-center px-12">
-          <div className="text-center text-white max-w-lg">
-            {/* Animated Welcome Text */}
-            <div className="animate-fade-in-up">
-              <h2 className="text-5xl font-bold mb-6 leading-tight">
-                Your Smile is Our
-                <span className="block text-transparent bg-clip-text bg-gradient-to-r from-[#BDCFD1] to-white">
-                  Priority
-                </span>
-              </h2>
-              
-              <p className="text-xl text-white/90 mb-8 leading-relaxed">
-                Experience world-class dental care with modern technology and 
+        {/* Sophisticated Multi-Layer Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-br from-[#1e3a40]/95 via-[#346870]/90 to-[#2a5359]/95"></div>
+        <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent"></div>
+
+        {/* Premium Content Section */}
+        <div className="absolute inset-0 flex items-center justify-center px-16">
+          <div className="text-center text-white max-w-xl space-y-8">
+            {/* Hero Heading with Refined Animation */}
+            <div className="space-y-6 animate-fade-in-up">
+              <div className="inline-block">
+                <div className="relative">
+                  <h2 className="text-6xl font-bold leading-tight tracking-tight">
+                    Your Smile is Our
+                    <span className="block mt-2 text-transparent bg-clip-text bg-gradient-to-r from-[#BDCFD1] via-white to-[#BDCFD1] animate-shimmer">
+                      Priority
+                    </span>
+                  </h2>
+                  {/* Subtle Underline Accent */}
+                  <div className="absolute -bottom-4 left-1/2 transform -translate-x-1/2 w-32 h-1 bg-gradient-to-r from-transparent via-[#BDCFD1] to-transparent rounded-full"></div>
+                </div>
+              </div>
+
+              <p className="text-lg text-white/90 leading-relaxed font-light max-w-lg mx-auto">
+                Experience world-class dental care with modern technology and
                 compassionate service that puts you first.
               </p>
+            </div>
 
-              {/* Feature Points */}
-              <div className="space-y-4 mb-8">
-                <div className="flex items-center justify-center text-white/80">
-                  <svg className="w-5 h-5 mr-3 text-[#BDCFD1]" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                  </svg>
-                  Expert dental professionals
+            {/* Premium Feature Cards */}
+            <div className="grid gap-4 mt-12">
+              {[
+                { icon: "M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z", text: "Expert dental professionals" },
+                { icon: "M13 10V3L4 14h7v7l9-11h-7z", text: "State-of-the-art equipment" },
+                { icon: "M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z", text: "Comfortable & safe environment" }
+              ].map((feature, index) => (
+                <div
+                  key={index}
+                  className="flex items-center gap-4 bg-white/10 backdrop-blur-md rounded-2xl px-6 py-4 border border-white/20 hover:bg-white/15 transition-all duration-300 group animate-fade-in-up"
+                  style={{ animationDelay: `${0.2 + index * 0.1}s` }}
+                >
+                  <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-[#BDCFD1]/30 to-white/20 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                    <svg className="w-6 h-6 text-[#BDCFD1]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={feature.icon} />
+                    </svg>
+                  </div>
+                  <span className="text-white/90 font-medium text-left">{feature.text}</span>
                 </div>
-                <div className="flex items-center justify-center text-white/80">
-                  <svg className="w-5 h-5 mr-3 text-[#BDCFD1]" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                  </svg>
-                  State-of-the-art equipment
-                </div>
-                <div className="flex items-center justify-center text-white/80">
-                  <svg className="w-5 h-5 mr-3 text-[#BDCFD1]" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                  </svg>
-                  Comfortable & safe environment
-                </div>
-              </div>
+              ))}
+            </div>
 
-              {/* Call to Action */}
-              <div className="text-[#BDCFD1] font-medium">
-                Book your appointment today and discover the difference
+            {/* Elegant CTA */}
+            <div className="pt-8 animate-fade-in-up" style={{ animationDelay: '0.6s' }}>
+              <div className="inline-block px-8 py-3 bg-gradient-to-r from-[#BDCFD1]/20 to-white/10 backdrop-blur-sm rounded-full border border-[#BDCFD1]/30">
+                <p className="text-[#BDCFD1] font-medium text-sm tracking-wide">
+                  Book your appointment today and discover the difference
+                </p>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Decorative Elements */}
-        <div className="absolute top-8 right-8 w-32 h-32 bg-white/10 rounded-full blur-xl"></div>
-        <div className="absolute bottom-16 left-8 w-24 h-24 bg-[#BDCFD1]/20 rounded-full blur-lg"></div>
-        <div className="absolute top-1/3 left-12 w-16 h-16 bg-white/5 rounded-full blur-md"></div>
+        {/* Enhanced Decorative Elements */}
+        <div className="absolute top-12 right-12 w-40 h-40 bg-gradient-to-br from-white/10 to-[#BDCFD1]/10 rounded-full blur-3xl animate-float"></div>
+        <div className="absolute bottom-20 left-12 w-32 h-32 bg-gradient-to-br from-[#BDCFD1]/15 to-white/5 rounded-full blur-2xl animate-float" style={{ animationDelay: '1s' }}></div>
+        <div className="absolute top-1/3 left-16 w-20 h-20 bg-white/5 rounded-full blur-xl animate-float" style={{ animationDelay: '2s' }}></div>
+
+        {/* Subtle Grid Pattern Overlay */}
+        <div className="absolute inset-0 opacity-5" style={{ backgroundImage: 'radial-gradient(circle, white 1px, transparent 1px)', backgroundSize: '50px 50px' }}></div>
       </div>
 
-      {/* Mobile Responsive Overlay for smaller screens */}
-      <div className="lg:hidden fixed inset-0 bg-[#346870] z-50 flex items-center justify-center p-4">
-        <div className="bg-white rounded-2xl p-6 w-full max-w-md max-h-screen overflow-y-auto">
-          <div className="text-center mb-6">
-            <div className="my-[-40px]">
-              <img 
-                src="https://res.cloudinary.com/dvqvxu0b1/image/upload/v1753662373/2_uuolcb.webp"
-                alt="Teerthanker Aadinath Bright Dental Care"
-                className="h-56 w-auto mx-auto object-contain"
-              />
-            </div>
-            <h1 className="text-lg font-bold text-gray-900">
-              Welcome Back
-            </h1>
-          </div>
-          {renderForm()}
-          <div className="mt-6 text-center">
-            <Link 
-              to="/" 
-              className="text-sm text-gray-500 hover:text-[#346870] transition-colors"
-            >
-              ← Back to Home
-            </Link>
-          </div>
-        </div>
-      </div>
+
     </div>
   );
 };
