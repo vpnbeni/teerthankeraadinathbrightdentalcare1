@@ -19,6 +19,9 @@ import {
 import SimpleLoadingSpinner from "./shared/components/SimpleLoadingSpinner";
 import { setupGlobalErrorHandler, AccessibilityProvider } from "./shared/hooks";
 import { checkAuthStatus } from "./store/authSlice";
+import PWAInstallPrompt from "./components/PWAInstallPrompt";
+import PWAUpdatePrompt from "./components/PWAUpdatePrompt";
+import OfflineIndicator from "./components/OfflineIndicator";
 import "./shared/styles/accessibility.css";
 
 // Safety wrapper to prevent object rendering
@@ -75,6 +78,9 @@ function App() {
     <AccessibilityProvider>
       <ErrorBoundary>
         <div className="min-h-screen bg-gray-50">
+          {/* Offline Indicator */}
+          <OfflineIndicator />
+          
           {/* Skip Links for keyboard navigation */}
           <SkipLinks />
 
@@ -140,6 +146,10 @@ function App() {
 
           {/* Global Toast Container */}
           <ToastContainer />
+          
+          {/* PWA Components */}
+          <PWAInstallPrompt />
+          <PWAUpdatePrompt />
         </div>
       </ErrorBoundary>
     </AccessibilityProvider>

@@ -137,7 +137,7 @@ const Payments = () => {
         {/* Premium Hero Header */}
         <motion.div 
           variants={itemVariants}
-          className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-3xl p-10 md:p-12 shadow-2xl"
+          className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-2xl sm:rounded-3xl p-6 sm:p-8 md:p-10 lg:p-12 shadow-2xl"
         >
           {/* Background Pattern */}
           <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTM2IDM0djItaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6Ii8+PC9nPjwvZz48L3N2Zz4=')] opacity-30"></div>
@@ -147,7 +147,7 @@ const Payments = () => {
           <div className="absolute bottom-0 left-0 w-64 h-64 bg-gradient-to-tr from-purple-500/10 to-pink-500/10 rounded-full blur-3xl"></div>
 
           <div className="relative">
-            <div className="flex items-start justify-between flex-wrap gap-6">
+            <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
               <div className="flex-1 min-w-0">
                 <motion.div 
                   className="inline-flex items-center gap-2 px-3 py-1.5 bg-white/10 backdrop-blur-sm rounded-full text-xs font-semibold text-white border border-white/10 mb-4"
@@ -159,29 +159,29 @@ const Payments = () => {
                   Billing & Subscriptions
                 </motion.div>
                 
-                <h1 className="text-4xl md:text-5xl font-bold text-white tracking-tight mb-4">
+                <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white tracking-tight mb-4">
                   Payments & Subscription
                 </h1>
-                <p className="text-lg text-slate-300 leading-relaxed max-w-2xl">
+                <p className="text-base sm:text-lg text-slate-300 leading-relaxed max-w-2xl">
                   Manage your subscription, view payment history, and upgrade your plan to unlock premium features
                 </p>
               </div>
 
               {/* Quick Stats */}
               <motion.div 
-                className="flex gap-4"
+                className="flex gap-3 sm:gap-4 w-full lg:w-auto"
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.3 }}
               >
-                <div className="bg-white/10 backdrop-blur-sm border border-white/10 rounded-2xl p-4 min-w-[120px]">
-                  <div className="text-2xl font-bold text-white mb-1">
+                <div className="bg-white/10 backdrop-blur-sm border border-white/10 rounded-2xl p-4 flex-1 lg:flex-none lg:min-w-[120px]">
+                  <div className="text-xl sm:text-2xl font-bold text-white mb-1">
                     {user?.subscription?.sessionsRemaining || 0}
                   </div>
                   <div className="text-xs text-slate-300">Sessions Left</div>
                 </div>
-                <div className="bg-white/10 backdrop-blur-sm border border-white/10 rounded-2xl p-4 min-w-[120px]">
-                  <div className="text-2xl font-bold text-white mb-1 capitalize">
+                <div className="bg-white/10 backdrop-blur-sm border border-white/10 rounded-2xl p-4 flex-1 lg:flex-none lg:min-w-[120px]">
+                  <div className="text-xl sm:text-2xl font-bold text-white mb-1 capitalize">
                     {user?.subscription?.status || "N/A"}
                   </div>
                   <div className="text-xs text-slate-300">Status</div>
@@ -195,14 +195,14 @@ const Payments = () => {
         {!showUpgrade && (
           <motion.div 
             variants={itemVariants}
-            className="bg-white/80 backdrop-blur-xl border border-gray-200/50 rounded-3xl shadow-lg shadow-gray-200/50 p-2"
+            className="bg-white/80 backdrop-blur-xl border border-gray-200/50 rounded-2xl sm:rounded-3xl shadow-lg shadow-gray-200/50 p-2"
           >
-            <nav className="flex gap-2">
+            <nav className="flex flex-col sm:flex-row gap-2">
               {tabs.map((tab) => (
                 <motion.button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`relative flex-1 flex items-center justify-center gap-2 px-6 py-4 rounded-2xl font-semibold text-sm transition-all duration-300 ${
+                  className={`relative flex-1 flex items-center justify-center gap-2 px-4 sm:px-6 py-3 sm:py-4 rounded-xl sm:rounded-2xl font-semibold text-sm transition-all duration-300 ${
                     activeTab === tab.id
                       ? "text-white shadow-lg"
                       : "text-gray-600 hover:text-gray-900 hover:bg-gray-50/50"
@@ -213,12 +213,12 @@ const Payments = () => {
                   {activeTab === tab.id && (
                     <motion.div
                       layoutId="activeTab"
-                      className="absolute inset-0 bg-gradient-to-r from-[#346870] to-[#5fa8b5] rounded-2xl"
+                      className="absolute inset-0 bg-gradient-to-r from-[#346870] to-[#5fa8b5] rounded-xl sm:rounded-2xl"
                       transition={{ type: "spring", stiffness: 300, damping: 30 }}
                     />
                   )}
                   <span className="relative z-10">{tab.icon}</span>
-                  <span className="relative z-10">{tab.label}</span>
+                  <span className="relative z-10 whitespace-nowrap">{tab.label}</span>
                 </motion.button>
               ))}
             </nav>
