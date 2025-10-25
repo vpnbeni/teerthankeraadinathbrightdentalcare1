@@ -1,9 +1,8 @@
-import React, { useState, useEffect } from "react";
-import appointmentService from "../../services/appointments";
+import { useState, useEffect } from "react";
 import availabilityService from "../../services/availability";
 import { LoadingSpinner } from "../../shared/components";
 
-const DateSelectionStep = ({ data, onNext, onBack, onDataChange }) => {
+const DateSelectionStep = ({ data, onDataChange }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(
     data.selectedDate ? new Date(data.selectedDate) : null
@@ -91,17 +90,12 @@ const DateSelectionStep = ({ data, onNext, onBack, onDataChange }) => {
   const handleDateSelect = (date) => {
     if (isDateDisabled(date)) return;
     setSelectedDate(date);
-  };
-
-  const handleNext = () => {
-    if (!selectedDate) return;
-    // Store a date-only string to avoid timezone shifts across steps
-    const year = selectedDate.getFullYear();
-    const month = String(selectedDate.getMonth() + 1).padStart(2, '0');
-    const day = String(selectedDate.getDate()).padStart(2, '0');
+    // Auto-save the selected date
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
     const localDateString = `${year}-${month}-${day}`;
     onDataChange({ selectedDate: localDateString });
-    onNext();
   };
 
   const navigateMonth = (direction) => {
@@ -186,14 +180,13 @@ const DateSelectionStep = ({ data, onNext, onBack, onDataChange }) => {
           type="button"
           onClick={() => handleDateSelect(date)}
           disabled={isDisabled}
-          className={`group relative h-12 w-12 rounded-2xl text-sm font-bold transition-all duration-300 ${bgColor} ${textColor} ${hoverColor} ${
-            isDisabled ? "cursor-not-allowed opacity-50" : "hover:scale-110 hover:shadow-lg"
-          } ${isSelected ? "scale-110 shadow-xl ring-2 ring-[#346870]/30" : ""}`}
+          className={`group relative h-8 w-8 md:h-10 md:w-10 lg:h-12 lg:w-12 rounded-lg md:rounded-xl lg:rounded-2xl text-xs md:text-sm font-bold transition-all duration-300 ${bgColor} ${textColor} ${hoverColor} ${isDisabled ? "cursor-not-allowed opacity-50" : "md:hover:scale-110 hover:shadow-md md:hover:shadow-lg"
+            } ${isSelected ? "scale-105 md:scale-110 shadow-lg md:shadow-xl ring-1 md:ring-2 ring-[#346870]/30" : ""}`}
         >
           <span className="relative z-10">{day}</span>
           {indicator}
           {isSelected && (
-            <div className="absolute inset-0 bg-gradient-to-br from-[#346870] to-[#5fa8b5] rounded-2xl blur-md opacity-50"></div>
+            <div className="absolute inset-0 bg-gradient-to-br from-[#346870] to-[#5fa8b5] rounded-lg md:rounded-xl lg:rounded-2xl blur-sm md:blur-md opacity-30 md:opacity-50"></div>
           )}
         </button>
       );
@@ -220,10 +213,9 @@ const DateSelectionStep = ({ data, onNext, onBack, onDataChange }) => {
   const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
   return (
-    <div className="h-full flex flex-col">
-      <div className="flex-1 overflow-y-auto space-y-5 pr-1">
-        {/* Premium Header */}
-        {/* <div className="relative overflow-hidden bg-gradient-to-br from-white/80 to-white/60 backdrop-blur-sm border border-gray-200/50 rounded-2xl p-5 shadow-lg">
+    <div className="space-y-4 md:space-y-5 w-full">
+      {/* Premium Header */}
+      {/* <div className="relative overflow-hidden bg-gradient-to-br from-white/80 to-white/60 backdrop-blur-sm border border-gray-200/50 rounded-2xl p-5 shadow-lg">
           <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-100/30 to-cyan-100/30 rounded-full blur-3xl -mr-16 -mt-16"></div>
           <div className="relative flex items-center gap-3">
             <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-2xl flex items-center justify-center shadow-xl shadow-blue-500/25">
@@ -238,47 +230,47 @@ const DateSelectionStep = ({ data, onNext, onBack, onDataChange }) => {
           </div>
         </div> */}
 
-        {/* Premium Calendar Container */}
-      <div className="relative overflow-hidden bg-gradient-to-br from-white/80 to-white/60 backdrop-blur-sm border border-gray-200/50 rounded-2xl p-5 md:p-6 shadow-lg">
-        <div className="absolute bottom-0 left-0 w-40 h-40 bg-gradient-to-tr from-purple-100/20 to-pink-100/20 rounded-full blur-3xl -ml-20 -mb-20"></div>
-        
-        <div className="relative max-w-md mx-auto ">
+      {/* Premium Calendar Container */}
+      <div className="relative overflow-hidden bg-gradient-to-br from-white/80 to-white/60 backdrop-blur-sm border border-gray-200/50 rounded-xl md:rounded-2xl p-3 md:p-5 lg:p-6 shadow-md md:shadow-lg w-full">
+        <div className="absolute bottom-0 left-0 w-24 h-24 md:w-40 md:h-40 bg-gradient-to-tr from-purple-100/10 to-pink-100/10 md:from-purple-100/20 md:to-pink-100/20 rounded-full blur-2xl md:blur-3xl -ml-12 -mb-12 md:-ml-20 md:-mb-20"></div>
+
+        <div className="relative w-full max-w-4xl mx-auto">
           {/* Calendar Header with Premium Styling */}
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center justify-between mb-4 md:mb-6">
             <button
               type="button"
               onClick={() => navigateMonth(-1)}
-              className="group w-10 h-10 bg-white/80 hover:bg-gradient-to-br hover:from-[#346870] hover:to-[#5fa8b5] border border-gray-200 hover:border-transparent rounded-xl flex items-center justify-center transition-all duration-300 shadow-md hover:shadow-xl hover:-translate-y-0.5"
+              className="group w-8 h-8 md:w-10 md:h-10 lg:w-12 lg:h-12 bg-white/80 hover:bg-gradient-to-br hover:from-[#346870] hover:to-[#5fa8b5] border border-gray-200 hover:border-transparent rounded-lg md:rounded-xl flex items-center justify-center transition-all duration-300 shadow-sm md:shadow-md hover:shadow-lg md:hover:shadow-xl hover:-translate-y-0.5"
             >
-              <svg className="w-5 h-5 text-gray-700 group-hover:text-white transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+              <svg className="w-4 h-4 md:w-5 md:h-5 text-gray-700 group-hover:text-white transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
               </svg>
             </button>
 
             <div className="text-center">
-              <h4 className="text-xl md:text-2xl font-bold text-gray-900 tracking-tight">
+              <h4 className="text-lg md:text-xl lg:text-2xl font-bold text-gray-900 tracking-tight">
                 {monthNames[currentDate.getMonth()]}
               </h4>
-              <p className="text-sm text-gray-600 font-medium">{currentDate.getFullYear()}</p>
+              <p className="text-xs md:text-sm text-gray-600 font-medium">{currentDate.getFullYear()}</p>
             </div>
 
             <button
               type="button"
               onClick={() => navigateMonth(1)}
-              className="group w-10 h-10 bg-white/80 hover:bg-gradient-to-br hover:from-[#346870] hover:to-[#5fa8b5] border border-gray-200 hover:border-transparent rounded-xl flex items-center justify-center transition-all duration-300 shadow-md hover:shadow-xl hover:-translate-y-0.5"
+              className="group w-8 h-8 md:w-10 md:h-10 lg:w-12 lg:h-12 bg-white/80 hover:bg-gradient-to-br hover:from-[#346870] hover:to-[#5fa8b5] border border-gray-200 hover:border-transparent rounded-lg md:rounded-xl flex items-center justify-center transition-all duration-300 shadow-sm md:shadow-md hover:shadow-lg md:hover:shadow-xl hover:-translate-y-0.5"
             >
-              <svg className="w-5 h-5 text-gray-700 group-hover:text-white transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+              <svg className="w-4 h-4 md:w-5 md:h-5 text-gray-700 group-hover:text-white transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
               </svg>
             </button>
           </div>
 
           {/* Day Names with Premium Styling */}
-          <div className="grid grid-cols-7 gap-2 mb-3">
+          <div className="grid grid-cols-7 gap-1 md:gap-2 lg:gap-3 mb-2 md:mb-3">
             {dayNames.map((day) => (
               <div
                 key={day}
-                className="h-10 flex items-center justify-center text-xs font-bold text-gray-600 uppercase tracking-wider"
+                className="h-6 md:h-8 lg:h-10 flex items-center justify-center text-[10px] md:text-xs font-bold text-gray-600 uppercase tracking-wider"
               >
                 {day.slice(0, 3)}
               </div>
@@ -287,29 +279,29 @@ const DateSelectionStep = ({ data, onNext, onBack, onDataChange }) => {
 
           {/* Calendar Grid with Loading State */}
           {loading ? (
-            <div className="flex flex-col items-center justify-center py-12 space-y-4">
+            <div className="flex flex-col items-center justify-center py-8 md:py-12 space-y-3 md:space-y-4">
               <LoadingSpinner size="medium" />
-              <p className="text-sm text-gray-600 font-medium">Loading available dates...</p>
+              <p className="text-xs md:text-sm text-gray-600 font-medium">Loading available dates...</p>
             </div>
           ) : (
-            <div className="grid grid-cols-7 gap-2">{renderCalendar()}</div>
+            <div className="grid grid-cols-7 gap-1 md:gap-2 lg:gap-3">{renderCalendar()}</div>
           )}
         </div>
       </div>
 
-        {/* Premium Selected Date Display */}
-        {selectedDate && (
-        <div className="relative overflow-hidden bg-gradient-to-br from-[#346870]/10 via-[#4a8a95]/10 to-[#5fa8b5]/10 backdrop-blur-sm border border-[#346870]/30 rounded-2xl p-5 shadow-lg">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-[#5fa8b5]/20 to-[#346870]/20 rounded-full blur-2xl -mr-12 -mt-12"></div>
-          <div className="relative flex items-center gap-4">
-            <div className="flex-shrink-0 w-14 h-14 bg-gradient-to-br from-[#346870] to-[#5fa8b5] rounded-2xl flex items-center justify-center shadow-xl shadow-[#346870]/30">
-              <svg className="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      {/* Premium Selected Date Display */}
+      {selectedDate && (
+        <div className="relative overflow-hidden bg-gradient-to-br from-[#346870]/10 via-[#4a8a95]/10 to-[#5fa8b5]/10 backdrop-blur-sm border border-[#346870]/30 rounded-xl md:rounded-2xl p-3 md:p-4 lg:p-5 shadow-md md:shadow-lg w-full">
+          <div className="absolute top-0 right-0 w-16 h-16 md:w-24 md:h-24 bg-gradient-to-br from-[#5fa8b5]/10 to-[#346870]/10 md:from-[#5fa8b5]/20 md:to-[#346870]/20 rounded-full blur-xl md:blur-2xl -mr-8 -mt-8 md:-mr-12 md:-mt-12"></div>
+          <div className="relative flex items-center gap-3 md:gap-4">
+            <div className="flex-shrink-0 w-10 h-10 md:w-12 md:h-12 lg:w-14 lg:h-14 bg-gradient-to-br from-[#346870] to-[#5fa8b5] rounded-xl md:rounded-2xl flex items-center justify-center shadow-lg md:shadow-xl shadow-[#346870]/20 md:shadow-[#346870]/30">
+              <svg className="w-5 h-5 md:w-6 md:h-6 lg:w-7 lg:h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
               </svg>
             </div>
-            <div className="flex-1">
-              <p className="text-xs font-semibold text-[#346870] uppercase tracking-wider mb-1">Selected Date</p>
-              <p className="text-base md:text-lg font-bold text-gray-900">
+            <div className="flex-1 min-w-0">
+              <p className="text-[10px] md:text-xs font-semibold text-[#346870] uppercase tracking-wider mb-0.5 md:mb-1">Selected Date</p>
+              <p className="text-sm md:text-base lg:text-lg font-bold text-gray-900 truncate">
                 {selectedDate.toLocaleDateString("en-IN", {
                   weekday: "long",
                   year: "numeric",
@@ -321,15 +313,15 @@ const DateSelectionStep = ({ data, onNext, onBack, onDataChange }) => {
                 const availability = getDateAvailability(selectedDate);
                 if (availability?.template) {
                   return (
-                    <div className="flex items-center gap-3 mt-2 text-xs text-gray-600">
-                      <span className="inline-flex items-center gap-1 px-2 py-1 bg-white/60 rounded-lg font-medium">
-                        <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <div className="flex flex-wrap items-center gap-2 md:gap-3 mt-1.5 md:mt-2 text-[10px] md:text-xs text-gray-600">
+                      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 md:px-2 md:py-1 bg-white/60 rounded-md md:rounded-lg font-medium">
+                        <svg className="w-2.5 h-2.5 md:w-3 md:h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                           <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                         {availability.template.workingHours.start}-{availability.template.workingHours.end}
                       </span>
-                      <span className="inline-flex items-center gap-1 px-2 py-1 bg-white/60 rounded-lg font-medium">
-                        <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 md:px-2 md:py-1 bg-white/60 rounded-md md:rounded-lg font-medium">
+                        <svg className="w-2.5 h-2.5 md:w-3 md:h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                           <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                         </svg>
                         {availability.totalSlots} slots
@@ -342,75 +334,49 @@ const DateSelectionStep = ({ data, onNext, onBack, onDataChange }) => {
             </div>
           </div>
         </div>
-        )}
+      )}
 
-        {/* Premium Legend */}
-        <div className="relative overflow-hidden bg-gradient-to-br from-white/60 to-white/40 backdrop-blur-sm border border-gray-200/50 rounded-2xl p-4 md:p-5 shadow-md">
-        <div className="space-y-3">
-          <h4 className="text-sm font-bold text-gray-900 uppercase tracking-wider">Legend</h4>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-xs">
-            <div className="flex items-center gap-2">
-              <div className="w-6 h-6 bg-gradient-to-br from-[#346870] to-[#5fa8b5] rounded-lg shadow-md"></div>
+      {/* Premium Legend */}
+      <div className="relative overflow-hidden bg-gradient-to-br from-white/60 to-white/40 backdrop-blur-sm border border-gray-200/50 rounded-xl md:rounded-2xl p-3 md:p-4 lg:p-5 shadow-sm md:shadow-md w-full">
+        <div className="space-y-2 md:space-y-3">
+          <h4 className="text-xs md:text-sm font-bold text-gray-900 uppercase tracking-wider">Legend</h4>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2 md:gap-3 text-[10px] md:text-xs">
+            <div className="flex items-center gap-1.5 md:gap-2">
+              <div className="w-5 h-5 md:w-6 md:h-6 bg-gradient-to-br from-[#346870] to-[#5fa8b5] rounded-md md:rounded-lg shadow-sm md:shadow-md flex-shrink-0"></div>
               <span className="font-medium text-gray-700">Selected</span>
             </div>
-            <div className="flex items-center gap-2">
-              <div className="w-6 h-6 bg-yellow-100 border-2 border-yellow-300 rounded-lg flex items-center justify-center">
-                <div className="w-2 h-2 bg-yellow-600 rounded-full"></div>
+            <div className="flex items-center gap-1.5 md:gap-2">
+              <div className="w-5 h-5 md:w-6 md:h-6 bg-yellow-100 border border-yellow-300 md:border-2 rounded-md md:rounded-lg flex items-center justify-center flex-shrink-0">
+                <div className="w-1.5 h-1.5 md:w-2 md:h-2 bg-yellow-600 rounded-full"></div>
               </div>
               <span className="font-medium text-gray-700">Today</span>
             </div>
-            <div className="flex items-center gap-2">
-              <div className="w-6 h-6 bg-green-50 border-2 border-green-300 rounded-lg flex items-center justify-center">
-                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+            <div className="flex items-center gap-1.5 md:gap-2">
+              <div className="w-5 h-5 md:w-6 md:h-6 bg-green-50 border border-green-300 md:border-2 rounded-md md:rounded-lg flex items-center justify-center flex-shrink-0">
+                <div className="w-1.5 h-1.5 md:w-2 md:h-2 bg-green-500 rounded-full"></div>
               </div>
               <span className="font-medium text-gray-700">Regular</span>
             </div>
-            <div className="flex items-center gap-2">
-              <div className="w-6 h-6 bg-blue-50 border-2 border-blue-300 rounded-lg flex items-center justify-center">
-                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+            <div className="flex items-center gap-1.5 md:gap-2">
+              <div className="w-5 h-5 md:w-6 md:h-6 bg-blue-50 border border-blue-300 md:border-2 rounded-md md:rounded-lg flex items-center justify-center flex-shrink-0">
+                <div className="w-1.5 h-1.5 md:w-2 md:h-2 bg-blue-500 rounded-full"></div>
               </div>
               <span className="font-medium text-gray-700">Extended</span>
             </div>
-            <div className="flex items-center gap-2">
-              <div className="w-6 h-6 bg-red-50 border-2 border-red-300 rounded-lg flex items-center justify-center">
-                <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+            <div className="flex items-center gap-1.5 md:gap-2">
+              <div className="w-5 h-5 md:w-6 md:h-6 bg-red-50 border border-red-300 md:border-2 rounded-md md:rounded-lg flex items-center justify-center flex-shrink-0">
+                <div className="w-1.5 h-1.5 md:w-2 md:h-2 bg-red-500 rounded-full"></div>
               </div>
               <span className="font-medium text-gray-700">Holiday</span>
             </div>
-            <div className="flex items-center gap-2">
-              <div className="w-6 h-6 bg-gray-200 rounded-lg"></div>
+            <div className="flex items-center gap-1.5 md:gap-2">
+              <div className="w-5 h-5 md:w-6 md:h-6 bg-gray-200 rounded-md md:rounded-lg flex-shrink-0"></div>
               <span className="font-medium text-gray-700">Unavailable</span>
             </div>
           </div>
-          <p className="text-[10px] text-gray-500 leading-relaxed pt-2 border-t border-gray-200">
+          <p className="text-[9px] md:text-[10px] text-gray-500 leading-relaxed pt-1.5 md:pt-2 border-t border-gray-200">
             Color indicators show different availability templates with varying clinic hours
           </p>
-        </div>
-      </div>
-
-        {/* Premium Action Buttons */}
-        <div className="flex justify-between gap-3 pt-2">
-        <button
-          type="button"
-          onClick={onBack}
-          className="group inline-flex items-center gap-2 px-6 py-3.5 bg-white/80 backdrop-blur-sm border-2 border-gray-200 text-gray-700 text-sm font-bold rounded-2xl hover:border-gray-300 hover:bg-white transition-all duration-300 shadow-md hover:shadow-lg hover:-translate-y-0.5"
-        >
-          <svg className="w-5 h-5 group-hover:-translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M11 17l-5-5m0 0l5-5m-5 5h12" />
-          </svg>
-          <span>Back</span>
-        </button>
-        <button
-          type="button"
-          onClick={handleNext}
-          disabled={!selectedDate}
-          className="group inline-flex items-center gap-3 px-8 py-3.5 bg-gradient-to-r from-[#346870] via-[#4a8a95] to-[#5fa8b5] text-white text-sm font-bold rounded-2xl hover:shadow-2xl hover:shadow-[#346870]/30 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-none hover:-translate-y-0.5 shadow-xl"
-        >
-          <span>Continue to Time Selection</span>
-          <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
-          </svg>
-        </button>
         </div>
       </div>
     </div>

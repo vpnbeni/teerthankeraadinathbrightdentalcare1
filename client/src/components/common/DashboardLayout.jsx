@@ -20,7 +20,7 @@ const DashboardLayout = ({ children }) => {
   const dispatch = useDispatch();
   // Get user directly from Redux store instead of using useAuth hook
   const { user } = useSelector((state) => state.auth);
-  
+
   // Debug: Log user data to check if profilePhoto is present
   console.log("DashboardLayout - User data:", user);
   console.log("DashboardLayout - Profile photo:", user?.profilePhoto);
@@ -46,23 +46,21 @@ const DashboardLayout = ({ children }) => {
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/20">
       {/* Mobile sidebar */}
       <div
-        className={`fixed inset-0 z-50 lg:hidden transition-opacity duration-300 ${
-          sidebarOpen ? "opacity-100" : "opacity-0 pointer-events-none"
-        }`}
+        className={`fixed inset-0 z-50 lg:hidden transition-opacity duration-300 ${sidebarOpen ? "opacity-100" : "opacity-0 pointer-events-none"
+          }`}
       >
         <div
           className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm"
           onClick={() => setSidebarOpen(false)}
         />
-        <div className={`fixed inset-y-0 left-0 flex w-72 flex-col bg-white/95 backdrop-blur-xl shadow-2xl transition-transform duration-300 ${
-          sidebarOpen ? "translate-x-0" : "-translate-x-full"
-        }`}>
+        <div className={`fixed inset-y-0 left-0 flex w-72 flex-col bg-white/95 backdrop-blur-xl shadow-2xl transition-transform duration-300 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"
+          }`}>
           {/* Mobile Header */}
           <div className="flex h-20 items-center justify-between px-6 border-b border-gray-200/50">
             <img
               src="https://res.cloudinary.com/dvqvxu0b1/image/upload/v1753662373/2_uuolcb.webp"
               alt="Teerthanker Aadinath Bright Dental Care"
-              className="h-12 w-auto object-contain"
+              className="h-24 w-auto object-cover my-[40px]"
             />
             <button
               onClick={() => setSidebarOpen(false)}
@@ -81,17 +79,15 @@ const DashboardLayout = ({ children }) => {
                   key={item.name}
                   to={item.href}
                   onClick={() => setSidebarOpen(false)}
-                  className={`group flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${
-                    isActive
-                      ? "bg-gradient-to-r from-[#2E676F] via-[#346870] to-[#4a8a95] text-white shadow-lg shadow-[#346870]/25"
-                      : "text-gray-700 hover:bg-gray-100/80 hover:text-gray-900"
-                  }`}
+                  className={`group flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${isActive
+                    ? "bg-gradient-to-r from-[#2E676F] via-[#346870] to-[#4a8a95] text-white shadow-lg shadow-[#346870]/25"
+                    : "text-gray-700 hover:bg-gray-100/80 hover:text-gray-900"
+                    }`}
                 >
-                  <div className={`w-9 h-9 flex items-center justify-center rounded-lg transition-all ${
-                    isActive 
-                      ? "bg-white/10" 
-                      : "bg-gray-100 group-hover:bg-gray-200"
-                  }`}>
+                  <div className={`w-9 h-9 flex items-center justify-center rounded-lg transition-all ${isActive
+                    ? "bg-white/10"
+                    : "bg-gray-100 group-hover:bg-gray-200"
+                    }`}>
                     <item.icon className={`h-5 w-5 ${isActive ? "text-white" : "text-gray-600 group-hover:text-gray-900"}`} />
                   </div>
                   <span>{item.name}</span>
@@ -140,12 +136,8 @@ const DashboardLayout = ({ children }) => {
       <div className="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-72 lg:flex-col">
         <div className="flex flex-col flex-grow bg-white/80 backdrop-blur-xl border-r border-gray-200/50 shadow-xl">
           {/* Logo Section */}
-          <div className="flex h-24 justify-center items-center px-6 border-b border-gray-200/50 bg-gradient-to-b from-white/50 to-transparent">
-            <img
-              src="https://res.cloudinary.com/dvqvxu0b1/image/upload/v1753662373/2_uuolcb.webp"
-              alt="Teerthanker Aadinath Bright Dental Care"
-              className="h-16 w-auto object-contain"
-            />
+          <div class="flex h-32 justify-center items-center px-4 border-b bg-white">
+            <img src="https://res.cloudinary.com/dvqvxu0b1/image/upload/v1753662373/2_uuolcb.webp" alt="Teerthanker Aadinath Bright Dental Care" class="h-54 pt-6 w-auto object-cover object-center" />
           </div>
 
           {/* Navigation */}
@@ -156,17 +148,15 @@ const DashboardLayout = ({ children }) => {
                 <Link
                   key={item.name}
                   to={item.href}
-                  className={`group flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${
-                    isActive
-                      ? "bg-gradient-to-r from-[#2E676F] via-[#346870] to-[#4a8a95] text-white shadow-lg shadow-[#346870]/25"
-                      : "text-gray-700 hover:bg-gray-100/80 hover:text-gray-900"
-                  }`}
+                  className={`group flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${isActive
+                    ? "bg-gradient-to-r from-[#2E676F] via-[#346870] to-[#4a8a95] text-white shadow-lg shadow-[#346870]/25"
+                    : "text-gray-700 hover:bg-gray-100/80 hover:text-gray-900"
+                    }`}
                 >
-                  <div className={`w-9 h-9 flex items-center justify-center rounded-lg transition-all ${
-                    isActive 
-                      ? "bg-white/10" 
-                      : "bg-gray-100 group-hover:bg-gray-200"
-                  }`}>
+                  <div className={`w-9 h-9 flex items-center justify-center rounded-lg transition-all ${isActive
+                    ? "bg-white/10"
+                    : "bg-gray-100 group-hover:bg-gray-200"
+                    }`}>
                     <item.icon className={`h-5 w-5 ${isActive ? "text-white" : "text-gray-600 group-hover:text-gray-900"}`} />
                   </div>
                   <span>{item.name}</span>
@@ -231,7 +221,7 @@ const DashboardLayout = ({ children }) => {
             <img
               src="https://res.cloudinary.com/dvqvxu0b1/image/upload/v1753662373/2_uuolcb.webp"
               alt="Teerthanker Aadinath Bright Dental Care"
-              className="h-10 w-auto object-contain lg:hidden"
+              className="h-32 w-auto object-contain lg:hidden"
             />
 
             {/* Desktop - Empty space to push content right */}

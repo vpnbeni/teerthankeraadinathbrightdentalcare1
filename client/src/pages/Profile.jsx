@@ -3,7 +3,6 @@ import { useSelector, useDispatch } from "react-redux";
 import DashboardLayout from "../components/common/DashboardLayout";
 import DocumentUpload from "../components/profile/DocumentUpload";
 import ProfileEditForm from "../components/profile/ProfileEditForm";
-import SubscriptionInfo from "../components/profile/SubscriptionInfo";
 
 import { LoadingSpinner } from "../shared/components";
 import userService from "../services/user";
@@ -84,28 +83,19 @@ const Profile = () => {
         </svg>
       )
     },
-    { 
-      id: "subscription", 
-      label: "Subscription", 
-      icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
-        </svg>
-      )
-    },
   ];
 
   return (
     <DashboardLayout>
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-teal-50/20">
         {/* Premium Header Section */}
-        <div className="relative overflow-hidden bg-gradient-to-r from-[#346870] via-[#2a5359] to-[#346870] rounded-2xl shadow-2xl mb-8 p-8">
+        <div className="relative overflow-hidden bg-gradient-to-r from-[#346870] via-[#2a5359] to-[#346870] rounded-xl md:rounded-2xl shadow-2xl mb-3 md:mb-6 p-4 md:p-6">
           <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTM2IDM0djItaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6Ii8+PC9nPjwvZz48L3N2Zz4=')] opacity-30"></div>
           <div className="relative flex items-center justify-between">
-            <div className="flex items-center space-x-6">
+            <div className="flex items-center space-x-3 md:space-x-4">
               <div className="relative group">
                 <div className="absolute -inset-1 bg-gradient-to-r from-teal-400 to-blue-400 rounded-full blur opacity-75 group-hover:opacity-100 transition duration-300"></div>
-                <div className="relative h-24 w-24 rounded-full overflow-hidden bg-white ring-4 ring-white/20 shadow-xl">
+                <div className="relative h-16 w-16 md:h-20 md:w-20 rounded-full overflow-hidden bg-white ring-2 md:ring-4 ring-white/20 shadow-xl">
                   {user?.profilePhoto ? (
                     <img
                       src={user.profilePhoto}
@@ -114,7 +104,7 @@ const Profile = () => {
                     />
                   ) : (
                     <div className="h-full w-full bg-gradient-to-br from-[#346870] to-[#2a5359] flex items-center justify-center">
-                      <span className="text-white text-3xl font-bold">
+                      <span className="text-white text-2xl md:text-3xl font-bold">
                         {user?.name?.charAt(0)?.toUpperCase() || "U"}
                       </span>
                     </div>
@@ -122,16 +112,16 @@ const Profile = () => {
                 </div>
               </div>
               <div className="text-white">
-                <h1 className="text-3xl font-bold mb-1 tracking-tight">{user?.name || "User"}</h1>
-                <p className="text-teal-100 text-sm flex items-center space-x-2">
-                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                <h1 className="text-xl md:text-2xl font-bold mb-0.5 md:mb-1 tracking-tight">{user?.name || "User"}</h1>
+                <p className="text-teal-100 text-xs md:text-sm flex items-center space-x-1.5 md:space-x-2">
+                  <svg className="w-3 h-3 md:w-4 md:h-4" fill="currentColor" viewBox="0 0 20 20">
                     <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
                     <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
                   </svg>
-                  <span>{user?.email || "No email provided"}</span>
+                  <span className="truncate max-w-[150px] md:max-w-none">{user?.email || "No email provided"}</span>
                 </p>
-                <p className="text-teal-100 text-sm flex items-center space-x-2 mt-1">
-                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                <p className="text-teal-100 text-xs md:text-sm flex items-center space-x-1.5 md:space-x-2 mt-0.5 md:mt-1">
+                  <svg className="w-3 h-3 md:w-4 md:h-4" fill="currentColor" viewBox="0 0 20 20">
                     <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
                   </svg>
                   <span>{user?.phone || "No phone provided"}</span>
@@ -148,19 +138,19 @@ const Profile = () => {
         </div>
 
         {/* Premium Tab Navigation */}
-        <div className="bg-white rounded-2xl shadow-lg mb-6 p-2 backdrop-blur-sm bg-white/80">
-          <div className="flex space-x-2 overflow-x-auto">
+        <div className="bg-white rounded-xl md:rounded-2xl shadow-lg mb-3 md:mb-4 p-1 md:p-1.5 backdrop-blur-sm bg-white/80">
+          <div className="flex space-x-1 md:space-x-1.5 overflow-x-auto scrollbar-hide">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center space-x-2 px-6 py-3 rounded-xl text-sm font-medium transition-all duration-300 whitespace-nowrap ${
+                className={`flex items-center space-x-1.5 md:space-x-2 px-3 py-2 md:px-4 md:py-2.5 rounded-lg md:rounded-xl text-xs md:text-sm font-medium transition-all duration-300 whitespace-nowrap ${
                   activeTab === tab.id
-                    ? "bg-gradient-to-r from-[#346870] to-[#2a5359] text-white shadow-lg shadow-[#346870]/30 scale-105"
+                    ? "bg-gradient-to-r from-[#346870] to-[#2a5359] text-white shadow-md md:shadow-lg shadow-[#346870]/30"
                     : "text-gray-600 hover:bg-gray-50 hover:text-[#346870]"
                 }`}
               >
-                <span className={activeTab === tab.id ? "scale-110" : ""}>{tab.icon}</span>
+                <span className="w-4 h-4 md:w-5 md:h-5">{tab.icon}</span>
                 <span>{tab.label}</span>
               </button>
             ))}
@@ -168,13 +158,13 @@ const Profile = () => {
         </div>
 
         {/* Premium Tab Content */}
-        <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-gray-100/50 overflow-hidden">
-          <div className="p-8">
+        <div className="bg-white/80 backdrop-blur-sm rounded-xl md:rounded-2xl shadow-xl border border-gray-100/50 overflow-hidden">
+          <div className="p-4 md:p-6">
             {activeTab === "personal" && (
               <div className="animate-fade-in">
-                <div className="flex items-center space-x-3 mb-8">
-                  <div className="h-10 w-1 bg-gradient-to-b from-[#346870] to-teal-400 rounded-full"></div>
-                  <h3 className="text-2xl font-bold text-gray-800">
+                <div className="flex items-center space-x-2 md:space-x-3 mb-4 md:mb-6">
+                  <div className="h-8 md:h-10 w-1 bg-gradient-to-b from-[#346870] to-teal-400 rounded-full"></div>
+                  <h3 className="text-lg md:text-2xl font-bold text-gray-800">
                     Personal Information
                   </h3>
                 </div>
@@ -190,9 +180,9 @@ const Profile = () => {
 
             {activeTab === "medical" && (
               <div className="animate-fade-in">
-                <div className="flex items-center space-x-3 mb-8">
-                  <div className="h-10 w-1 bg-gradient-to-b from-[#346870] to-teal-400 rounded-full"></div>
-                  <h3 className="text-2xl font-bold text-gray-800">
+                <div className="flex items-center space-x-2 md:space-x-3 mb-4 md:mb-6">
+                  <div className="h-8 md:h-10 w-1 bg-gradient-to-b from-[#346870] to-teal-400 rounded-full"></div>
+                  <h3 className="text-lg md:text-2xl font-bold text-gray-800">
                     Medical Information
                   </h3>
                 </div>
@@ -201,10 +191,10 @@ const Profile = () => {
             )}
 
             {activeTab === "documents" && (
-              <div className="space-y-6 animate-fade-in">
-                <div className="flex items-center space-x-3 mb-8">
-                  <div className="h-10 w-1 bg-gradient-to-b from-[#346870] to-teal-400 rounded-full"></div>
-                  <h3 className="text-2xl font-bold text-gray-800">
+              <div className="space-y-4 md:space-y-6 animate-fade-in">
+                <div className="flex items-center space-x-2 md:space-x-3 mb-4 md:mb-6">
+                  <div className="h-8 md:h-10 w-1 bg-gradient-to-b from-[#346870] to-teal-400 rounded-full"></div>
+                  <h3 className="text-lg md:text-2xl font-bold text-gray-800">
                     Documents
                   </h3>
                 </div>
@@ -301,17 +291,7 @@ const Profile = () => {
               </div>
             )}
 
-            {activeTab === "subscription" && (
-              <div className="animate-fade-in">
-                <div className="flex items-center space-x-3 mb-8">
-                  <div className="h-10 w-1 bg-gradient-to-b from-[#346870] to-teal-400 rounded-full"></div>
-                  <h3 className="text-2xl font-bold text-gray-800">
-                    Subscription Details
-                  </h3>
-                </div>
-                <SubscriptionInfo subscription={user.subscription} />
-              </div>
-            )}
+
           </div>
         </div>
       </div>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import appointmentService from "../../services/appointments";
 import availabilityService from "../../services/availability";
 import { LoadingSpinner } from "../../shared/components";
@@ -93,7 +93,7 @@ const AvailabilityInfo = ({ selectedDate }) => {
 	);
 };
 
-const TimeSlotStep = ({ data, onNext, onBack, onDataChange }) => {
+const TimeSlotStep = ({ data, onDataChange }) => {
 	const [availableSlots, setAvailableSlots] = useState([]);
 	const [selectedSlot, setSelectedSlot] = useState(data.selectedTimeSlot);
 	const [loading, setLoading] = useState(false);
@@ -121,8 +121,7 @@ const TimeSlotStep = ({ data, onNext, onBack, onDataChange }) => {
 				// Handle special cases based on new availability system metadata
 				if (metadata.isHoliday) {
 					setError(
-						`This date is a holiday: ${
-							metadata.holidayName || "Holiday"
+						`This date is a holiday: ${metadata.holidayName || "Holiday"
 						}. Please select a different date.`
 					);
 					setAvailableSlots([]);
@@ -162,12 +161,12 @@ const TimeSlotStep = ({ data, onNext, onBack, onDataChange }) => {
 			if (error.response?.status === 400) {
 				setError(
 					error.response.data.message ||
-						"Invalid date selected. Please choose a different date."
+					"Invalid date selected. Please choose a different date."
 				);
 			} else {
 				setError(
 					error.response?.data?.message ||
-						"Failed to load available time slots. Please try again."
+					"Failed to load available time slots. Please try again."
 				);
 			}
 			setAvailableSlots([]);
@@ -178,12 +177,8 @@ const TimeSlotStep = ({ data, onNext, onBack, onDataChange }) => {
 
 	const handleSlotSelect = (slot) => {
 		setSelectedSlot(slot);
-	};
-
-	const handleNext = () => {
-		if (!selectedSlot) return;
-		onDataChange({ selectedTimeSlot: selectedSlot });
-		onNext();
+		// Auto-save the selected slot
+		onDataChange({ selectedTimeSlot: slot });
 	};
 
 	const formatTime = (timeString) => {
@@ -275,22 +270,6 @@ const TimeSlotStep = ({ data, onNext, onBack, onDataChange }) => {
 						{error}
 					</div>
 				</div>
-				<div className="flex justify-between pt-4 border-t">
-					<button
-						type="button"
-						onClick={onBack}
-						className="btn-secondary px-6 py-2"
-					>
-						Back
-					</button>
-					<button
-						type="button"
-						onClick={fetchAvailableSlots}
-						className="btn-primary px-6 py-2"
-					>
-						Retry
-					</button>
-				</div>
 			</div>
 		);
 	}
@@ -336,16 +315,6 @@ const TimeSlotStep = ({ data, onNext, onBack, onDataChange }) => {
 						date.
 					</p>
 				</div>
-
-				<div className="flex justify-between pt-4 border-t">
-					<button
-						type="button"
-						onClick={onBack}
-						className="btn-secondary px-6 py-2"
-					>
-						Back to Date Selection
-					</button>
-				</div>
 			</div>
 		);
 	}
@@ -353,79 +322,61 @@ const TimeSlotStep = ({ data, onNext, onBack, onDataChange }) => {
 	const groupedSlots = groupSlotsByPeriod();
 
 	return (
-		<div className="h-full flex flex-col">
-			<div className="flex-1 overflow-y-auto space-y-5 pr-1">
-				{/* Premium Header */}
-				<div className="relative overflow-hidden bg-gradient-to-br from-white/80 to-white/60 backdrop-blur-sm border border-gray-200/50 rounded-2xl p-5 shadow-lg">
-					<div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-indigo-100/30 to-purple-100/30 rounded-full blur-3xl -mr-16 -mt-16"></div>
-					<div className="relative flex items-center gap-3">
-						<div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-xl shadow-indigo-500/25">
-							<svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-								<path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-							</svg>
-						</div>
-						<div>
-							<h3 className="text-lg md:text-xl font-bold text-gray-900 tracking-tight">Select Time Slot</h3>
-							<p className="text-gray-600 text-xs md:text-sm font-medium">
-								{selectedDate.toLocaleDateString("en-IN", {
-									weekday: "long",
-									year: "numeric",
-									month: "long",
-									day: "numeric",
-								})}
-							</p>
-						</div>
-					</div>
-				</div>
+		<div className="space-y-4">
+			{/* Header */}
+			<div className="text-center">
+				<h3 className="text-lg font-semibold text-gray-800 mb-1">Select Time Slot</h3>
+				<p className="text-sm text-gray-600">
+					{selectedDate.toLocaleDateString("en-IN", {
+						weekday: "long",
+						year: "numeric",
+						month: "long",
+						day: "numeric",
+					})}
+				</p>
+			</div>
 
-				{/* Premium Time Slots by Period */}
-				<div className="space-y-5">
+			{/* Time Slots by Period */}
+			<div className="space-y-4">
 				{Object.entries(groupedSlots).map(([period, slots]) => {
 					if (slots.length === 0) return null;
 
-					const periodColors = {
-						Morning: { gradient: "from-amber-500 to-orange-600", bg: "from-amber-50 to-orange-50", icon: "🌅" },
-						Afternoon: { gradient: "from-yellow-500 to-amber-600", bg: "from-yellow-50 to-amber-50", icon: "☀️" },
-						Evening: { gradient: "from-indigo-500 to-purple-600", bg: "from-indigo-50 to-purple-50", icon: "🌆" }
+					const periodIcons = {
+						Morning: "🌅",
+						Afternoon: "☀️",
+						Evening: "🌆"
 					};
 
-					const colors = periodColors[period];
-
 					return (
-						<div key={period} className="relative overflow-hidden bg-gradient-to-br from-white/60 to-white/40 backdrop-blur-sm border border-gray-200/50 rounded-2xl p-5 shadow-md">
-							<div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br ${colors.bg} rounded-full blur-3xl opacity-50 -mr-12 -mt-12"></div>
-							
-							<div className="relative flex items-center gap-3 mb-4">
-								<div className={`w-10 h-10 bg-gradient-to-br ${colors.gradient} rounded-2xl flex items-center justify-center shadow-lg text-xl`}>
-									{colors.icon}
-								</div>
+						<div key={period} className="bg-white border border-gray-200 rounded-lg p-4">
+							<div className="flex items-center gap-2 mb-3">
+								<span className="text-lg">{periodIcons[period]}</span>
 								<div>
-									<h4 className="text-base md:text-lg font-bold text-gray-900">{period}</h4>
-									<p className="text-xs text-gray-600">{slots.length} slots available</p>
+									<h4 className="text-sm font-semibold text-gray-900">{period}</h4>
+									<p className="text-xs text-gray-500">{slots.length} available</p>
 								</div>
 							</div>
 
-							<div className="relative grid grid-cols-2 md:grid-cols-3 gap-3">
+							<div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
 								{slots.map((slot) => (
 									<button
 										key={slot}
 										type="button"
 										onClick={() => handleSlotSelect(slot)}
-										className={`group relative p-4 rounded-2xl border-2 text-sm font-bold transition-all duration-300 ${
-											selectedSlot === slot
-												? "border-[#346870] bg-gradient-to-br from-[#346870] to-[#5fa8b5] text-white shadow-xl scale-105"
-												: "border-gray-200 bg-white/80 text-gray-700 hover:border-[#346870] hover:bg-gradient-to-br hover:from-[#346870]/10 hover:to-[#5fa8b5]/10 hover:scale-105 hover:shadow-lg"
-										}`}
+										className={`relative px-3 py-2.5 rounded-lg border-2 text-xs font-medium transition-all ${selectedSlot === slot
+												? "border-[#346870] bg-[#346870] text-white shadow-md"
+												: "border-gray-200 bg-white text-gray-700 hover:border-[#346870] hover:bg-[#346870]/5"
+											}`}
 									>
-										<div className="flex items-center justify-center gap-2">
-											<svg className={`w-4 h-4 ${selectedSlot === slot ? "text-white" : "text-gray-400 group-hover:text-[#346870]"}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+										<div className="flex items-center justify-center gap-1">
+											<svg className={`w-3 h-3 ${selectedSlot === slot ? "text-white" : "text-gray-400"}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
 												<path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
 											</svg>
 											<span>{formatTime(slot)}</span>
 										</div>
 										{selectedSlot === slot && (
-											<div className="absolute -top-1 -right-1 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center shadow-lg">
-												<svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+											<div className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full flex items-center justify-center">
+												<svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
 													<path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
 												</svg>
 											</div>
@@ -436,71 +387,43 @@ const TimeSlotStep = ({ data, onNext, onBack, onDataChange }) => {
 						</div>
 					);
 				})}
-				</div>
+			</div>
 
-				{/* Premium Selected Slot Display */}
-				{selectedSlot && (
-					<div className="relative overflow-hidden bg-gradient-to-br from-green-50 via-emerald-50 to-green-50 border border-green-200/60 rounded-2xl p-5 shadow-lg">
-					<div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-green-300/20 to-emerald-300/20 rounded-full blur-3xl -mr-16 -mt-16"></div>
-					<div className="relative flex items-center gap-4">
-						<div className="flex-shrink-0 w-14 h-14 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl flex items-center justify-center shadow-xl shadow-green-500/30">
-							<svg className="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+			{/* Selected Slot Display */}
+			{selectedSlot && (
+				<div className="bg-green-50 border border-green-200 rounded-lg p-4">
+					<div className="flex items-center gap-3">
+						<div className="w-10 h-10 bg-green-500 rounded-lg flex items-center justify-center flex-shrink-0">
+							<svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
 								<path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
 							</svg>
 						</div>
-						<div className="flex-1">
-							<p className="text-xs font-semibold text-green-700 uppercase tracking-wider mb-1">Selected Time</p>
-							<p className="text-lg md:text-xl font-bold text-gray-900">{formatTime(selectedSlot)}</p>
+						<div>
+							<p className="text-xs font-medium text-green-700 uppercase">Selected Time</p>
+							<p className="text-base font-bold text-gray-900">{formatTime(selectedSlot)}</p>
 						</div>
 					</div>
-					</div>
-				)}
+				</div>
+			)}
 
-				{/* Availability Information */}
-				<AvailabilityInfo selectedDate={data.selectedDate} />
+			{/* Availability Information */}
+			<AvailabilityInfo selectedDate={data.selectedDate} />
 
-				{/* Premium Info Banner */}
-				<div className="relative overflow-hidden bg-gradient-to-br from-blue-50 via-cyan-50 to-blue-50 border border-blue-200/60 rounded-2xl p-5 shadow-md">
-				<div className="absolute bottom-0 left-0 w-32 h-32 bg-gradient-to-tr from-blue-300/20 to-cyan-300/20 rounded-full blur-3xl -ml-16 -mb-16"></div>
-				<div className="relative flex items-start gap-4">
-					<div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/25">
-						<svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+			{/* Info Banner */}
+			<div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+				<div className="flex items-start gap-3">
+					<div className="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center flex-shrink-0">
+						<svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
 							<path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
 						</svg>
 					</div>
-					<div className="flex-1">
-						<h4 className="font-bold text-blue-900 mb-2 text-sm md:text-base">Appointment Duration</h4>
-						<p className="text-xs md:text-sm text-blue-800 leading-relaxed">
+					<div>
+						<h4 className="text-sm font-semibold text-blue-900 mb-1">Appointment Duration</h4>
+						<p className="text-xs text-blue-800">
 							Each appointment slot is 1 hour long. Please arrive 10 minutes early for check-in and registration.
 						</p>
 					</div>
 				</div>
-			</div>
-			</div>
-
-			{/* Premium Action Buttons */}
-			<div className="flex justify-between gap-3 pt-2">
-				<button
-					type="button"
-					onClick={onBack}
-					className="group inline-flex items-center gap-2 px-6 py-3.5 bg-white/80 backdrop-blur-sm border-2 border-gray-200 text-gray-700 text-sm font-bold rounded-2xl hover:border-gray-300 hover:bg-white transition-all duration-300 shadow-md hover:shadow-lg hover:-translate-y-0.5"
-				>
-					<svg className="w-5 h-5 group-hover:-translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-						<path strokeLinecap="round" strokeLinejoin="round" d="M11 17l-5-5m0 0l5-5m-5 5h12" />
-					</svg>
-					<span>Back</span>
-				</button>
-				<button
-					type="button"
-					onClick={handleNext}
-					disabled={!selectedSlot}
-					className="group inline-flex items-center gap-3 px-8 py-3.5 bg-gradient-to-r from-[#346870] via-[#4a8a95] to-[#5fa8b5] text-white text-sm font-bold rounded-2xl hover:shadow-2xl hover:shadow-[#346870]/30 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-none hover:-translate-y-0.5 shadow-xl"
-				>
-					<span>Continue to Confirmation</span>
-					<svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-						<path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
-					</svg>
-				</button>
 			</div>
 		</div>
 	);

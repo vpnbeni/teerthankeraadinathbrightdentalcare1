@@ -1,11 +1,11 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useSelector } from "react-redux";
 import { VALIDATION_RULES, ERROR_MESSAGES } from "../../shared/constants";
 import EmailInput from "./EmailInput";
 import PhoneInput from "./PhoneInput";
 
-const PersonalDetailsStep = ({ data, onNext, onDataChange }) => {
+const PersonalDetailsStep = ({ data, onDataChange }) => {
   const { user } = useSelector((state) => state.auth);
   const [medicalExpanded, setMedicalExpanded] = useState(false);
   const [emailValidation, setEmailValidation] = useState({
@@ -21,7 +21,6 @@ const PersonalDetailsStep = ({ data, onNext, onDataChange }) => {
 
   const {
     register,
-    handleSubmit,
     formState: { errors },
     watch,
     setValue,
@@ -34,31 +33,29 @@ const PersonalDetailsStep = ({ data, onNext, onDataChange }) => {
     },
   });
 
-  const onSubmit = (formData) => {
-    // Validate phone uniqueness before proceeding
-    if (!phoneValidation.isUnique) {
-      return; // Don't proceed if phone is not unique
-    }
+  // Auto-save data on change
+  useEffect(() => {
+    const subscription = watch((formData) => {
+      const personalDetails = {
+        name: formData.name || "",
+        phone: formData.phone || "",
+        email: formData.email || "",
+        address: formData.address || "",
+        alternativePhone: formData.alternativePhone || "",
+      };
 
-    const personalDetails = {
-      name: formData.name,
-      phone: formData.phone,
-      email: formData.email,
-      address: formData.address,
-      alternativePhone: formData.alternativePhone,
-    };
+      const medicalInfo = {
+        systemicDiseases: formData.systemicDiseases || [],
+        drugAllergies: formData.drugAllergies || [],
+        isPregnant: formData.isPregnant || false,
+        pastTreatments: formData.pastTreatments || [],
+        previousExperiences: formData.previousExperiences || [],
+      };
 
-    const medicalInfo = {
-      systemicDiseases: formData.systemicDiseases || [],
-      drugAllergies: formData.drugAllergies || [],
-      isPregnant: formData.isPregnant || false,
-      pastTreatments: formData.pastTreatments || [],
-      previousExperiences: formData.previousExperiences || [],
-    };
-
-    onDataChange({ personalDetails, medicalInfo });
-    onNext();
-  };
+      onDataChange({ personalDetails, medicalInfo });
+    });
+    return () => subscription.unsubscribe();
+  }, [watch, onDataChange]);
 
   // Handle email validation changes
   const handleEmailValidationChange = useCallback((validation) => {
@@ -91,7 +88,7 @@ const PersonalDetailsStep = ({ data, onNext, onDataChange }) => {
   }, [setValue]);
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+    <div className="space-y-6">
       {/* Personal Information Section */}
       <div className="relative overflow-hidden bg-gradient-to-br from-white/80 to-white/60 backdrop-blur-sm border border-gray-200/50 rounded-2xl p-5 md:p-6 shadow-md">
         <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-100/30 to-purple-100/30 rounded-full blur-3xl -mr-16 -mt-16"></div>
@@ -351,21 +348,7 @@ const PersonalDetailsStep = ({ data, onNext, onDataChange }) => {
           </div>
         )}
       </div>
-
-      {/* Action Button */}
-      <div className="flex justify-end pt-2">
-        <button
-          type="submit"
-          disabled={!phoneValidation.isUnique || !phoneValidation.isValid}
-          className="group inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-[#346870] via-[#4a8a95] to-[#5fa8b5] text-white text-sm font-bold rounded-2xl hover:shadow-2xl hover:shadow-[#346870]/30 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-none hover:-translate-y-0.5 shadow-xl"
-        >
-          <span>Continue to Date Selection</span>
-          <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
-          </svg>
-        </button>
-      </div>
-    </form>
+    </div>
   );
 };
 

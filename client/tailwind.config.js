@@ -141,6 +141,13 @@ export default {
             top: "6px",
           },
         },
+        ".scrollbar-hide": {
+          "-ms-overflow-style": "none",
+          "scrollbar-width": "none",
+          "&::-webkit-scrollbar": {
+            display: "none",
+          },
+        },
       };
       addUtilities(newUtilities);
     },

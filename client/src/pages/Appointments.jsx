@@ -248,13 +248,13 @@ const Appointments = () => {
         )}
 
         {/* Premium Tabs */}
-        <div className="bg-white/80 backdrop-blur-xl border border-gray-200/50 rounded-3xl shadow-lg shadow-gray-200/50 p-2">
-          <nav className="flex gap-2">
+        <div className="bg-white/80 backdrop-blur-xl border border-gray-200/50 rounded-2xl md:rounded-3xl shadow-lg shadow-gray-200/50 p-1.5 md:p-2">
+          <nav className="flex gap-1.5 md:gap-2">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex-1 relative px-6 py-3.5 rounded-2xl font-semibold text-sm transition-all duration-200 ${
+                className={`flex-1 relative px-3 py-2.5 md:px-6 md:py-3.5 rounded-xl md:rounded-2xl font-semibold text-xs md:text-sm transition-all duration-200 ${
                   activeTab === tab.id
                     ? "bg-gradient-to-r from-[#2E676F] via-[#346870] to-[#4a8a95] text-white shadow-lg shadow-[#346870]/25"
                     : "text-gray-600 hover:text-gray-900 hover:bg-gray-100/80"
@@ -263,7 +263,7 @@ const Appointments = () => {
                 <span className="relative z-10">{tab.label}</span>
                 {tab.count > 0 && (
                   <span
-                    className={`ml-2 inline-flex items-center justify-center min-w-[24px] h-6 px-2 rounded-full text-xs font-bold ${
+                    className={`ml-1 md:ml-2 inline-flex items-center justify-center min-w-[20px] md:min-w-[24px] h-5 md:h-6 px-1.5 md:px-2 rounded-full text-[10px] md:text-xs font-bold ${
                       activeTab === tab.id
                         ? "bg-white/20 text-white"
                         : "bg-gray-200 text-gray-700"

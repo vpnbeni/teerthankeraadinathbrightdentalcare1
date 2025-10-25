@@ -54,14 +54,12 @@ const ProfilePhotoUpload = ({ currentPhoto, onPhotoUpdate }) => {
     try {
       const response = await userService.uploadProfilePhoto(selectedFile);
       if (response.data.success && response.data.data.user) {
-        showToast.success("Profile photo updated successfully!");
         onPhotoUpdate(response.data.data.user);
         setSelectedFile(null);
         setShowPreview(false);
       }
     } catch (error) {
       console.error("Upload error:", error);
-      showToast.error(error.response?.data?.message || "Failed to upload profile photo");
       // Revert preview
       setPreviewUrl(currentPhoto || null);
       setSelectedFile(null);
@@ -78,18 +76,18 @@ const ProfilePhotoUpload = ({ currentPhoto, onPhotoUpdate }) => {
   };
 
   return (
-    <div className="relative overflow-hidden bg-gradient-to-br from-white via-blue-50/30 to-teal-50/20 rounded-2xl p-8 border border-gray-200/50 shadow-lg">
+    <div className="relative overflow-hidden bg-gradient-to-br from-white via-blue-50/30 to-teal-50/20 rounded-xl md:rounded-2xl p-4 md:p-6 border border-gray-200/50 shadow-lg">
       <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-[#346870]/5 to-teal-400/5 rounded-full blur-3xl"></div>
       <div className="relative">
-        <div className="flex items-center space-x-3 mb-6">
-          <div className="h-8 w-1 bg-gradient-to-b from-[#346870] to-teal-400 rounded-full"></div>
-          <h4 className="text-xl font-bold text-gray-800">Profile Photo</h4>
+        <div className="flex items-center space-x-2 md:space-x-3 mb-4 md:mb-5">
+          <div className="h-6 md:h-8 w-1 bg-gradient-to-b from-[#346870] to-teal-400 rounded-full"></div>
+          <h4 className="text-lg md:text-xl font-bold text-gray-800">Profile Photo</h4>
         </div>
-        <div className="flex flex-col md:flex-row items-center gap-8">
+        <div className="flex flex-col md:flex-row items-center gap-4 md:gap-6">
           {/* Photo Preview */}
           <div className="relative group">
             <div className="absolute -inset-1 bg-gradient-to-r from-[#346870] via-teal-400 to-blue-400 rounded-full blur opacity-60 group-hover:opacity-100 transition duration-300"></div>
-            <div className="relative h-40 w-40 rounded-full overflow-hidden bg-gradient-to-br from-[#346870] to-[#2a5359] flex items-center justify-center ring-4 ring-white shadow-2xl">
+            <div className="relative h-28 w-28 md:h-36 md:w-36 rounded-full overflow-hidden bg-gradient-to-br from-[#346870] to-[#2a5359] flex items-center justify-center ring-2 md:ring-4 ring-white shadow-2xl">
               {previewUrl ? (
                 <img
                   src={previewUrl}
@@ -110,17 +108,17 @@ const ProfilePhotoUpload = ({ currentPhoto, onPhotoUpdate }) => {
           </div>
 
           {/* Upload Controls */}
-          <div className="flex-1 space-y-4">
-            <div className="bg-white/80 backdrop-blur-sm rounded-xl p-4 border border-gray-200/50">
-              <p className="text-sm text-gray-700 font-medium mb-1">
+          <div className="flex-1 space-y-3 md:space-y-4 w-full">
+            <div className="bg-white/80 backdrop-blur-sm rounded-lg md:rounded-xl p-3 md:p-4 border border-gray-200/50">
+              <p className="text-xs md:text-sm text-gray-700 font-medium mb-0.5 md:mb-1">
                 Personalize Your Profile
               </p>
               <p className="text-xs text-gray-500">
                 Upload a high-quality photo (300x300px recommended) to make your profile stand out
               </p>
             </div>
-            <div className="flex flex-wrap gap-3">
-              <label className="group relative px-6 py-3 bg-gradient-to-r from-gray-50 to-gray-100 hover:from-gray-100 hover:to-gray-200 text-gray-700 font-medium rounded-xl cursor-pointer inline-flex items-center transition-all duration-300 shadow-sm hover:shadow-md border border-gray-200">
+            <div className="flex flex-wrap gap-2 md:gap-3">
+              <label className="group relative px-4 md:px-6 py-2 md:py-3 bg-gradient-to-r from-gray-50 to-gray-100 hover:from-gray-100 hover:to-gray-200 text-gray-700 text-sm md:text-base font-medium rounded-lg md:rounded-xl cursor-pointer inline-flex items-center transition-all duration-300 shadow-sm hover:shadow-md border border-gray-200">
                 <input
                   type="file"
                   accept="image/jpeg,image/jpg,image/png,image/webp"
@@ -128,7 +126,7 @@ const ProfilePhotoUpload = ({ currentPhoto, onPhotoUpdate }) => {
                   className="hidden"
                   disabled={uploading}
                 />
-                <svg className="w-5 h-5 mr-2 text-[#346870]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4 md:w-5 md:h-5 mr-1.5 md:mr-2 text-[#346870]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
                 Choose Photo
@@ -140,7 +138,7 @@ const ProfilePhotoUpload = ({ currentPhoto, onPhotoUpdate }) => {
                     type="button"
                     onClick={handleUpload}
                     disabled={uploading}
-                    className="px-6 py-3 bg-gradient-to-r from-[#346870] to-[#2a5359] hover:from-[#2a5359] hover:to-[#346870] text-white font-medium rounded-xl inline-flex items-center transition-all duration-300 shadow-lg shadow-[#346870]/30 hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="px-4 md:px-6 py-2 md:py-3 bg-gradient-to-r from-[#346870] to-[#2a5359] hover:from-[#2a5359] hover:to-[#346870] text-white text-sm md:text-base font-medium rounded-lg md:rounded-xl inline-flex items-center transition-all duration-300 shadow-lg shadow-[#346870]/30 hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {uploading ? (
                       <>
@@ -149,7 +147,7 @@ const ProfilePhotoUpload = ({ currentPhoto, onPhotoUpdate }) => {
                       </>
                     ) : (
                       <>
-                        <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-4 h-4 md:w-5 md:h-5 mr-1.5 md:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                         </svg>
                         Upload Photo
@@ -160,7 +158,7 @@ const ProfilePhotoUpload = ({ currentPhoto, onPhotoUpdate }) => {
                     type="button"
                     onClick={handleCancel}
                     disabled={uploading}
-                    className="px-6 py-3 bg-white hover:bg-gray-50 text-gray-700 font-medium rounded-xl transition-all duration-300 border border-gray-200 shadow-sm hover:shadow-md disabled:opacity-50"
+                    className="px-4 md:px-6 py-2 md:py-3 bg-white hover:bg-gray-50 text-gray-700 text-sm md:text-base font-medium rounded-lg md:rounded-xl transition-all duration-300 border border-gray-200 shadow-sm hover:shadow-md disabled:opacity-50"
                   >
                     Cancel
                   </button>
@@ -581,7 +579,7 @@ const ProfileEditForm = ({ profile, type, onUserUpdate }) => {
 
   if (type === "personal") {
     return (
-      <div className="space-y-8">
+      <div className="space-y-4 md:space-y-6">
         {/* Profile Photo Upload Section */}
         <ProfilePhotoUpload 
           currentPhoto={currentUser?.profilePhoto} 
@@ -594,13 +592,13 @@ const ProfileEditForm = ({ profile, type, onUserUpdate }) => {
           }}
         />
         
-        <form onSubmit={handleSubmit} className="space-y-8">
-          <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-8 border border-gray-200/50 shadow-lg">
-            <div className="flex items-center space-x-3 mb-6">
-              <div className="h-8 w-1 bg-gradient-to-b from-[#346870] to-teal-400 rounded-full"></div>
-              <h4 className="text-xl font-bold text-gray-800">Contact Details</h4>
+        <form onSubmit={handleSubmit} className="space-y-4 md:space-y-6">
+          <div className="bg-white/80 backdrop-blur-sm rounded-xl md:rounded-2xl p-4 md:p-6 border border-gray-200/50 shadow-lg">
+            <div className="flex items-center space-x-2 md:space-x-3 mb-4 md:mb-5">
+              <div className="h-6 md:h-8 w-1 bg-gradient-to-b from-[#346870] to-teal-400 rounded-full"></div>
+              <h4 className="text-lg md:text-xl font-bold text-gray-800">Contact Details</h4>
             </div>
-            <div className="grid md:grid-cols-2 gap-6">
+            <div className="grid md:grid-cols-2 gap-4 md:gap-5">
               <div className="group">
                 <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
                   <svg className="w-4 h-4 mr-2 text-[#346870]" fill="currentColor" viewBox="0 0 20 20">
@@ -854,15 +852,15 @@ const ProfileEditForm = ({ profile, type, onUserUpdate }) => {
             </div>
           </div>
 
-          <div className="flex justify-end pt-4">
+          <div className="flex justify-end pt-2 md:pt-4">
             <button
               type="submit"
               disabled={loading}
-              className="group relative px-8 py-3.5 bg-gradient-to-r from-[#346870] to-[#2a5359] hover:from-[#2a5359] hover:to-[#346870] text-white font-semibold rounded-xl transition-all duration-300 shadow-lg shadow-[#346870]/30 hover:shadow-xl hover:shadow-[#346870]/40 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-3"
+              className="group relative w-full md:w-auto px-6 md:px-8 py-3 md:py-3.5 bg-gradient-to-r from-[#346870] to-[#2a5359] hover:from-[#2a5359] hover:to-[#346870] text-white text-sm md:text-base font-semibold rounded-lg md:rounded-xl transition-all duration-300 shadow-lg shadow-[#346870]/30 hover:shadow-xl hover:shadow-[#346870]/40 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2 md:space-x-3"
             >
               {loading && <LoadingSpinner size="sm" />}
               <span>Update Personal Information</span>
-              <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-4 h-4 md:w-5 md:h-5 group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
               </svg>
             </button>
@@ -874,13 +872,13 @@ const ProfileEditForm = ({ profile, type, onUserUpdate }) => {
 
   if (type === "medical") {
     return (
-      <form onSubmit={handleSubmit} className="space-y-8">
-        <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-8 border border-gray-200/50 shadow-lg">
-          <div className="flex items-center space-x-3 mb-6">
-            <div className="h-8 w-1 bg-gradient-to-b from-[#346870] to-teal-400 rounded-full"></div>
-            <h4 className="text-xl font-bold text-gray-800">Medical History</h4>
+      <form onSubmit={handleSubmit} className="space-y-4 md:space-y-6">
+        <div className="bg-white/80 backdrop-blur-sm rounded-xl md:rounded-2xl p-4 md:p-6 border border-gray-200/50 shadow-lg">
+          <div className="flex items-center space-x-2 md:space-x-3 mb-4 md:mb-5">
+            <div className="h-6 md:h-8 w-1 bg-gradient-to-b from-[#346870] to-teal-400 rounded-full"></div>
+            <h4 className="text-lg md:text-xl font-bold text-gray-800">Medical History</h4>
           </div>
-          <div className="space-y-6">
+          <div className="space-y-4 md:space-y-5">
             <div className="group">
               <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
                 <svg className="w-4 h-4 mr-2 text-[#346870]" fill="currentColor" viewBox="0 0 20 20">
@@ -997,11 +995,11 @@ const ProfileEditForm = ({ profile, type, onUserUpdate }) => {
           <button
             type="submit"
             disabled={loading}
-            className="group relative px-8 py-3.5 bg-gradient-to-r from-[#346870] to-[#2a5359] hover:from-[#2a5359] hover:to-[#346870] text-white font-semibold rounded-xl transition-all duration-300 shadow-lg shadow-[#346870]/30 hover:shadow-xl hover:shadow-[#346870]/40 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-3"
+            className="group relative w-full md:w-auto px-6 md:px-8 py-3 md:py-3.5 bg-gradient-to-r from-[#346870] to-[#2a5359] hover:from-[#2a5359] hover:to-[#346870] text-white text-sm md:text-base font-semibold rounded-lg md:rounded-xl transition-all duration-300 shadow-lg shadow-[#346870]/30 hover:shadow-xl hover:shadow-[#346870]/40 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2 md:space-x-3"
           >
             {loading && <LoadingSpinner size="sm" />}
             <span>Update Medical Information</span>
-            <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-4 h-4 md:w-5 md:h-5 group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
             </svg>
           </button>

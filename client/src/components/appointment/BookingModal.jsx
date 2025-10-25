@@ -267,6 +267,7 @@ const BookingModal = ({ isOpen, onClose, onSuccess, refreshTrigger }) => {
             onConfirm={handleConfirmBooking}
             onBack={handleBack}
             isLoading={isLoading}
+            onDataChange={handleStepData}
           />
         );
       default:
@@ -357,8 +358,66 @@ const BookingModal = ({ isOpen, onClose, onSuccess, refreshTrigger }) => {
         )}
 
         {/* Step Content - No extra wrapper */}
-        <div className="flex-1 min-h-0 overflow-y-auto pr-2 custom-scrollbar">
+        <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar p-2">
           {renderStep()}
+        </div>
+
+        {/* Fixed Navigation Footer */}
+        <div className="flex-shrink-0 pt-4 border-t border-gray-200 mt-4">
+          <div className="flex justify-between gap-3">
+            {currentStep > 1 && (
+              <button
+                type="button"
+                onClick={handleBack}
+                disabled={isLoading}
+                className="group inline-flex items-center gap-2 px-5 py-2.5 bg-white/80 backdrop-blur-sm border-2 border-gray-200 text-gray-700 text-sm font-bold rounded-xl hover:border-gray-300 hover:bg-white transition-all duration-300 shadow-sm hover:shadow-md hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <svg className="w-4 h-4 group-hover:-translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M11 17l-5-5m0 0l5-5m-5 5h12" />
+                </svg>
+                <span>Back</span>
+              </button>
+            )}
+            
+            {currentStep < 4 ? (
+              <button
+                type="button"
+                onClick={handleNext}
+                disabled={
+                  (currentStep === 1 && (!bookingData.personalDetails.name || !bookingData.personalDetails.phone)) ||
+                  (currentStep === 2 && !bookingData.selectedDate) ||
+                  (currentStep === 3 && !bookingData.selectedTimeSlot)
+                }
+                className="group inline-flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-[#346870] via-[#4a8a95] to-[#5fa8b5] text-white text-sm font-bold rounded-xl hover:shadow-xl hover:shadow-[#346870]/30 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-none hover:-translate-y-0.5 shadow-md ml-auto"
+              >
+                <span>Continue</span>
+                <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                </svg>
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={handleConfirmBooking}
+                disabled={isLoading}
+                className="group inline-flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-green-500 via-emerald-600 to-green-600 text-white text-sm font-bold rounded-xl hover:shadow-xl hover:shadow-green-500/40 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-none hover:-translate-y-0.5 shadow-md ml-auto"
+              >
+                {isLoading ? (
+                  <>
+                    <LoadingSpinner size="sm" color="white" />
+                    <span>Booking...</span>
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span>Confirm Appointment</span>
+                  </>
+                )}
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </Modal>

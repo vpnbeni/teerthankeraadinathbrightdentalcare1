@@ -1,9 +1,7 @@
-import React, { useState } from "react";
-import { LoadingSpinner } from "../../shared/components";
+import { useState } from "react";
 
-const BookingConfirmation = ({ data, onConfirm, onBack, isLoading }) => {
+const BookingConfirmation = ({ data, onDataChange }) => {
   const [notes, setNotes] = useState(data.notes || "");
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const selectedDate = new Date(data.selectedDate);
 
@@ -20,23 +18,17 @@ const BookingConfirmation = ({ data, onConfirm, onBack, isLoading }) => {
     return `${formatSingleTime(start)} - ${formatSingleTime(end)}`;
   };
 
-  const handleConfirm = async () => {
-    // Prevent double submissions
-    if (isSubmitting || isLoading) {
-      return;
-    }
-
-    setIsSubmitting(true);
-    try {
-      await onConfirm({ ...data, notes });
-    } finally {
-      setIsSubmitting(false);
+  // Auto-save notes when they change
+  const handleNotesChange = (e) => {
+    const newNotes = e.target.value;
+    setNotes(newNotes);
+    if (onDataChange) {
+      onDataChange({ notes: newNotes });
     }
   };
 
   return (
-    <div className="h-full flex flex-col">
-      <div className="flex-1 overflow-y-auto space-y-5 pr-1">
+    <div className="space-y-5">
         {/* Premium Header */}
         <div className="relative overflow-hidden bg-gradient-to-br from-white/80 to-white/60 backdrop-blur-sm border border-gray-200/50 rounded-2xl p-5 shadow-lg">
           <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-green-100/30 to-emerald-100/30 rounded-full blur-3xl -mr-16 -mt-16"></div>
@@ -215,7 +207,7 @@ const BookingConfirmation = ({ data, onConfirm, onBack, isLoading }) => {
         <div className="relative">
           <textarea
             value={notes}
-            onChange={(e) => setNotes(e.target.value)}
+            onChange={handleNotesChange}
             rows={4}
             className="w-full px-4 py-3 bg-white/80 backdrop-blur-sm border-2 border-gray-200 rounded-xl text-sm font-medium transition-all duration-300 focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 hover:border-gray-300 resize-none"
             placeholder="Any specific concerns, requests, or information you'd like to share about your appointment..."
@@ -288,45 +280,6 @@ const BookingConfirmation = ({ data, onConfirm, onBack, isLoading }) => {
               </li>
             </ul>
           </div>
-        </div>
-      </div>
-
-        {/* Premium Action Buttons */}
-        <div className="flex justify-between gap-3 pt-2">
-        <button
-          type="button"
-          onClick={onBack}
-          disabled={isLoading}
-          className="group inline-flex items-center gap-2 px-6 py-3.5 bg-white/80 backdrop-blur-sm border-2 border-gray-200 text-gray-700 text-sm font-bold rounded-2xl hover:border-gray-300 hover:bg-white transition-all duration-300 shadow-md hover:shadow-lg hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          <svg className="w-5 h-5 group-hover:-translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M11 17l-5-5m0 0l5-5m-5 5h12" />
-          </svg>
-          <span>Back</span>
-        </button>
-        <button
-          type="button"
-          onClick={handleConfirm}
-          disabled={isLoading || isSubmitting}
-          className="group inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-green-500 via-emerald-600 to-green-600 text-white text-sm font-bold rounded-2xl hover:shadow-2xl hover:shadow-green-500/40 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-none hover:-translate-y-0.5 shadow-xl"
-        >
-          {(isLoading || isSubmitting) ? (
-            <>
-              <LoadingSpinner size="sm" color="white" />
-              <span>Booking...</span>
-            </>
-          ) : (
-            <>
-              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-              </svg>
-              <span>Confirm Appointment</span>
-              <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
-              </svg>
-            </>
-          )}
-        </button>
         </div>
       </div>
     </div>
