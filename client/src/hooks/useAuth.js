@@ -1,9 +1,14 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import userService from "../services/user";
 import authService from "../services/auth";
 import { validateUserAuthContext, clearAdminTokens, clearUserToken } from "../utils/authGuard.js";
 import { setAuthState } from "../store/authSlice";
+
+// Global flag to prevent duplicate auth checks across all hook instances
+let isAuthCheckInProgress = false;
+let lastAuthCheckTime = 0;
+const AUTH_CHECK_COOLDOWN = 1000; // 1 second cooldown between auth checks
 
 /**
  * Custom hook for managing authentication state and user data
@@ -13,12 +18,23 @@ export const useAuth = () => {
   const dispatch = useDispatch();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [user, setUser] = useState(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  
+  // Use Redux state as the source of truth
+  const { user, isAuthenticated } = useSelector((state) => state.auth);
+  const hasInitialized = useRef(false);
 
   // Check if user is authenticated and get user details
   const checkAuthStatus = useCallback(async () => {
+    // Prevent duplicate calls using global flag and cooldown
+    const now = Date.now();
+    if (isAuthCheckInProgress || (now - lastAuthCheckTime < AUTH_CHECK_COOLDOWN)) {
+      console.log("🔍 checkAuthStatus: Skipping - check already in progress or in cooldown");
+      return user;
+    }
+
     console.log("🔍 checkAuthStatus: Starting auth check...");
+    isAuthCheckInProgress = true;
+    lastAuthCheckTime = now;
     setIsLoading(true);
     setError(null);
 
@@ -39,13 +55,16 @@ export const useAuth = () => {
         if (!validateUserAuthContext(userData)) {
           console.warn("🔍 checkAuthStatus: Admin user detected - clearing session");
           clearUserToken();
-          setIsAuthenticated(false);
-          setUser(null);
+          
+          // Update Redux store to sync with AuthModal
+          dispatch(setAuthState({
+            isAuthenticated: false,
+            user: null,
+            token: null
+          }));
+          
           return null;
         }
-        
-        setIsAuthenticated(true);
-        setUser(userData);
         
         // Update Redux store to sync with AuthModal
         dispatch(setAuthState({
@@ -57,8 +76,6 @@ export const useAuth = () => {
         return userData;
       } else {
         console.log("🔍 checkAuthStatus: Auth failed - no success flag");
-        setIsAuthenticated(false);
-        setUser(null);
         
         // Update Redux store to sync with AuthModal
         dispatch(setAuthState({
@@ -72,8 +89,6 @@ export const useAuth = () => {
     } catch (error) {
       console.error("🔍 checkAuthStatus: Auth check failed:", error);
       setError(error.response?.data?.message || "Authentication check failed");
-      setIsAuthenticated(false);
-      setUser(null);
       
       // Update Redux store to sync with AuthModal
       dispatch(setAuthState({
@@ -93,9 +108,10 @@ export const useAuth = () => {
       return null;
     } finally {
       console.log("🔍 checkAuthStatus: Auth check completed");
+      isAuthCheckInProgress = false;
       setIsLoading(false);
     }
-  }, [dispatch]);
+  }, [dispatch, user]);
 
   // Get full user profile with detailed information
   const getUserProfile = useCallback(async () => {
@@ -117,8 +133,6 @@ export const useAuth = () => {
           "📋 getUserProfile: Profile fetch successful, user data:",
           userData
         );
-        setUser(userData);
-        setIsAuthenticated(true);
         
         // Update Redux store to sync with AuthModal
         dispatch(setAuthState({
@@ -141,8 +155,6 @@ export const useAuth = () => {
       // If profile fetch fails due to auth, try to check auth status
       if (error.response?.status === 401) {
         console.log("📋 getUserProfile: 401 error - setting auth to false");
-        setIsAuthenticated(false);
-        setUser(null);
         
         // Update Redux store to sync with AuthModal
         dispatch(setAuthState({
@@ -159,10 +171,15 @@ export const useAuth = () => {
     }
   }, [dispatch]);
 
-  // Initialize auth check on mount
+  // Initialize auth check on mount - but only once per hook instance
+  // This prevents duplicate API calls when multiple components use this hook
   useEffect(() => {
-    checkAuthStatus();
-  }, [checkAuthStatus]);
+    // Only check auth if we haven't initialized yet and don't have user data
+    if (!hasInitialized.current && !user && !isAuthenticated) {
+      hasInitialized.current = true;
+      checkAuthStatus();
+    }
+  }, []); // Empty dependency array to run only once on mount
 
   // Logout function
   const logout = useCallback(async () => {
@@ -173,8 +190,6 @@ export const useAuth = () => {
       // Clear localStorage even if server logout fails
       clearUserToken();
     } finally {
-      setIsAuthenticated(false);
-      setUser(null);
       setError(null);
       
       // Update Redux store to sync with AuthModal

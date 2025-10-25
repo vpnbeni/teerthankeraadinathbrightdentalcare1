@@ -106,13 +106,18 @@ const PhoneInput = ({
 
   return (
     <div className="space-y-2">
-      <div className="relative">
+      <div className="relative group">
+        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-[#346870] transition-colors z-10">
+          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+          </svg>
+        </div>
         <input
           type="tel"
           value={phone}
           onChange={handlePhoneChange}
           disabled={disabled}
-          className={`input-field pr-24 ${className} ${
+          className={`w-full pl-11 pr-24 py-3 bg-white border-2 border-gray-200 rounded-xl text-sm font-medium transition-all duration-300 focus:outline-none focus:border-[#346870] focus:ring-2 focus:ring-[#346870]/20 hover:border-gray-300 ${className} ${
             error ? "border-red-500" : ""
           } ${isCurrentUserPhone ? "bg-blue-50 border-blue-500" : ""}`}
           placeholder="Enter your phone number"

@@ -79,6 +79,9 @@ const userSlice = createSlice({
         state.subscription = userData?.subscription || null;
         state.documents = userData?.documents || [];
         state.error = null;
+        
+        // Note: The ProtectedRoute component will also update the auth store
+        // to ensure both stores are in sync
       })
       .addCase(fetchUserProfile.rejected, (state, action) => {
         state.isLoading = false;

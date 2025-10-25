@@ -78,87 +78,102 @@ const ProfilePhotoUpload = ({ currentPhoto, onPhotoUpdate }) => {
   };
 
   return (
-    <div className="bg-gradient-to-r from-[#346870]/5 to-blue-50 rounded-lg p-6 border border-[#346870]/20">
-      <h4 className="text-md font-semibold text-gray-800 mb-4">Profile Photo</h4>
-      <div className="flex flex-col md:flex-row items-center gap-6">
-        {/* Photo Preview */}
-        <div className="relative">
-          <div className="h-32 w-32 rounded-full overflow-hidden bg-[#346870] flex items-center justify-center border-4 border-white shadow-lg">
-            {previewUrl ? (
-              <img
-                src={previewUrl}
-                alt="Profile"
-                className="h-full w-full object-cover"
-              />
-            ) : (
-              <span className="text-white text-4xl font-medium">
-                {currentPhoto ? "?" : "?"}
-              </span>
-            )}
-          </div>
-          {uploading && (
-            <div className="absolute inset-0 bg-black bg-opacity-50 rounded-full flex items-center justify-center">
-              <LoadingSpinner size="sm" />
-            </div>
-          )}
+    <div className="relative overflow-hidden bg-gradient-to-br from-white via-blue-50/30 to-teal-50/20 rounded-2xl p-8 border border-gray-200/50 shadow-lg">
+      <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-[#346870]/5 to-teal-400/5 rounded-full blur-3xl"></div>
+      <div className="relative">
+        <div className="flex items-center space-x-3 mb-6">
+          <div className="h-8 w-1 bg-gradient-to-b from-[#346870] to-teal-400 rounded-full"></div>
+          <h4 className="text-xl font-bold text-gray-800">Profile Photo</h4>
         </div>
-
-        {/* Upload Controls */}
-        <div className="flex-1 space-y-3">
-          <p className="text-sm text-gray-600">
-            Upload a profile photo to personalize your account. Recommended size: 300x300px
-          </p>
-          <div className="flex flex-wrap gap-3">
-            <label className="btn-secondary cursor-pointer inline-flex items-center">
-              <input
-                type="file"
-                accept="image/jpeg,image/jpg,image/png,image/webp"
-                onChange={handleFileSelect}
-                className="hidden"
-                disabled={uploading}
-              />
-              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-              </svg>
-              Choose Photo
-            </label>
-
-            {showPreview && selectedFile && (
-              <>
-                <button
-                  type="button"
-                  onClick={handleUpload}
-                  disabled={uploading}
-                  className="btn-primary inline-flex items-center"
-                >
-                  {uploading ? (
-                    <>
-                      <LoadingSpinner size="sm" />
-                      <span className="ml-2">Uploading...</span>
-                    </>
-                  ) : (
-                    <>
-                      <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                      </svg>
-                      Upload Photo
-                    </>
-                  )}
-                </button>
-                <button
-                  type="button"
-                  onClick={handleCancel}
-                  disabled={uploading}
-                  className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
-                >
-                  Cancel
-                </button>
-              </>
+        <div className="flex flex-col md:flex-row items-center gap-8">
+          {/* Photo Preview */}
+          <div className="relative group">
+            <div className="absolute -inset-1 bg-gradient-to-r from-[#346870] via-teal-400 to-blue-400 rounded-full blur opacity-60 group-hover:opacity-100 transition duration-300"></div>
+            <div className="relative h-40 w-40 rounded-full overflow-hidden bg-gradient-to-br from-[#346870] to-[#2a5359] flex items-center justify-center ring-4 ring-white shadow-2xl">
+              {previewUrl ? (
+                <img
+                  src={previewUrl}
+                  alt="Profile"
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                <span className="text-white text-5xl font-bold">
+                  {currentPhoto ? "?" : "?"}
+                </span>
+              )}
+            </div>
+            {uploading && (
+              <div className="absolute inset-0 bg-black/60 backdrop-blur-sm rounded-full flex items-center justify-center">
+                <LoadingSpinner size="sm" />
+              </div>
             )}
           </div>
-          <p className="text-xs text-gray-500">
-            Accepted formats: JPEG, PNG, WebP • Max size: 5MB
-          </p>
+
+          {/* Upload Controls */}
+          <div className="flex-1 space-y-4">
+            <div className="bg-white/80 backdrop-blur-sm rounded-xl p-4 border border-gray-200/50">
+              <p className="text-sm text-gray-700 font-medium mb-1">
+                Personalize Your Profile
+              </p>
+              <p className="text-xs text-gray-500">
+                Upload a high-quality photo (300x300px recommended) to make your profile stand out
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-3">
+              <label className="group relative px-6 py-3 bg-gradient-to-r from-gray-50 to-gray-100 hover:from-gray-100 hover:to-gray-200 text-gray-700 font-medium rounded-xl cursor-pointer inline-flex items-center transition-all duration-300 shadow-sm hover:shadow-md border border-gray-200">
+                <input
+                  type="file"
+                  accept="image/jpeg,image/jpg,image/png,image/webp"
+                  onChange={handleFileSelect}
+                  className="hidden"
+                  disabled={uploading}
+                />
+                <svg className="w-5 h-5 mr-2 text-[#346870]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                Choose Photo
+              </label>
+
+              {showPreview && selectedFile && (
+                <>
+                  <button
+                    type="button"
+                    onClick={handleUpload}
+                    disabled={uploading}
+                    className="px-6 py-3 bg-gradient-to-r from-[#346870] to-[#2a5359] hover:from-[#2a5359] hover:to-[#346870] text-white font-medium rounded-xl inline-flex items-center transition-all duration-300 shadow-lg shadow-[#346870]/30 hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {uploading ? (
+                      <>
+                        <LoadingSpinner size="sm" />
+                        <span className="ml-2">Uploading...</span>
+                      </>
+                    ) : (
+                      <>
+                        <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                        Upload Photo
+                      </>
+                    )}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleCancel}
+                    disabled={uploading}
+                    className="px-6 py-3 bg-white hover:bg-gray-50 text-gray-700 font-medium rounded-xl transition-all duration-300 border border-gray-200 shadow-sm hover:shadow-md disabled:opacity-50"
+                  >
+                    Cancel
+                  </button>
+                </>
+              )}
+            </div>
+            <div className="flex items-center space-x-2 text-xs text-gray-500">
+              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+              </svg>
+              <span>JPEG, PNG, WebP • Max 5MB</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -167,7 +182,6 @@ const ProfilePhotoUpload = ({ currentPhoto, onPhotoUpdate }) => {
 
 const ProfileEditForm = ({ profile, type, onUserUpdate }) => {
   const dispatch = useDispatch();
-  const { refreshUser } = useAuth();
   const [formData, setFormData] = useState({});
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
@@ -309,13 +323,6 @@ const ProfileEditForm = ({ profile, type, onUserUpdate }) => {
           setCanEditPhone(false);
           setPhoneVerificationComplete(true);
         }
-        
-        // Refresh auth context to ensure all components have updated user data
-        try {
-          await refreshUser();
-        } catch (refreshError) {
-          console.warn("Failed to refresh user after phone verification:", refreshError);
-        }
       } else if (result.user) {
         // Fallback for direct user object in response
         setCurrentUser(result.user);
@@ -331,13 +338,6 @@ const ProfileEditForm = ({ profile, type, onUserUpdate }) => {
         if (result.user.phoneVerified) {
           setCanEditPhone(false);
           setPhoneVerificationComplete(true);
-        }
-        
-        // Refresh auth context to ensure all components have updated user data
-        try {
-          await refreshUser();
-        } catch (refreshError) {
-          console.warn("Failed to refresh user after phone verification:", refreshError);
         }
       }
     } catch (error) {
@@ -581,7 +581,7 @@ const ProfileEditForm = ({ profile, type, onUserUpdate }) => {
 
   if (type === "personal") {
     return (
-      <div className="space-y-6">
+      <div className="space-y-8">
         {/* Profile Photo Upload Section */}
         <ProfilePhotoUpload 
           currentPhoto={currentUser?.profilePhoto} 
@@ -594,234 +594,277 @@ const ProfileEditForm = ({ profile, type, onUserUpdate }) => {
           }}
         />
         
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Full Name *
-              </label>
-              <input
-                type="text"
-                name="name"
-                value={formData.name || ""}
-                onChange={handleChange}
-                className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#346870] ${
-                  errors.name ? "border-red-500" : "border-gray-300"
-                }`}
-                placeholder="Enter your full name"
-              />
-              {errors.name && (
-                <p className="text-red-500 text-sm mt-1">{errors.name}</p>
-              )}
+        <form onSubmit={handleSubmit} className="space-y-8">
+          <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-8 border border-gray-200/50 shadow-lg">
+            <div className="flex items-center space-x-3 mb-6">
+              <div className="h-8 w-1 bg-gradient-to-b from-[#346870] to-teal-400 rounded-full"></div>
+              <h4 className="text-xl font-bold text-gray-800">Contact Details</h4>
             </div>
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="group">
+                <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
+                  <svg className="w-4 h-4 mr-2 text-[#346870]" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                  </svg>
+                  Full Name *
+                </label>
+                <input
+                  type="text"
+                  name="name"
+                  value={formData.name || ""}
+                  onChange={handleChange}
+                  className={`w-full px-4 py-3 bg-white border-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#346870]/20 focus:border-[#346870] transition-all duration-300 ${
+                    errors.name ? "border-red-500" : "border-gray-200 group-hover:border-gray-300"
+                  }`}
+                  placeholder="Enter your full name"
+                />
+                {errors.name && (
+                  <p className="text-red-500 text-xs mt-2 flex items-center">
+                    <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                    </svg>
+                    {errors.name}
+                  </p>
+                )}
+              </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Phone Number *
-              </label>
-              <div className="relative">
+              <div className="group">
+                <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
+                  <svg className="w-4 h-4 mr-2 text-[#346870]" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
+                  </svg>
+                  Phone Number *
+                </label>
+                <div className="relative">
+                  <input
+                    type="tel"
+                    name="phone"
+                    value={formData.phone || ""}
+                    onChange={handleChange}
+                    maxLength="10"
+                    disabled={!canEditPhone}
+                    readOnly={!canEditPhone}
+                    title={!canEditPhone ? "Verified phone cannot be changed." : undefined}
+                    className={`w-full px-4 py-3 pr-12 bg-white border-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#346870]/20 focus:border-[#346870] transition-all duration-300 ${
+                      errors.phone ? "border-red-500" : "border-gray-200 group-hover:border-gray-300"
+                    } ${!canEditPhone ? "bg-gray-50 cursor-not-allowed" : ""}`}
+                    placeholder="Enter your phone number"
+                  />
+                  {isPhoneVerifiedForCurrentInput && (
+                    <div className="absolute inset-y-0 right-0 pr-4 flex items-center">
+                      <div className="bg-green-100 rounded-full p-1">
+                        <svg className="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                        </svg>
+                      </div>
+                    </div>
+                  )}
+                </div>
+                {errors.phone && (
+                  <p className="text-red-500 text-xs mt-2 flex items-center">
+                    <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                    </svg>
+                    {errors.phone}
+                  </p>
+                )}
+                
+                {/* Phone OTP Section */}
+                {formData.phone && !isPhoneVerifiedForCurrentInput && !phoneVerificationComplete && (
+                  <div className="mt-4 p-4 bg-blue-50/50 rounded-xl border border-blue-200/50 space-y-3">
+                    {!phoneOtpStep ? (
+                      <button
+                        type="button"
+                        onClick={handleSendPhoneOTP}
+                        disabled={otpLoading}
+                        className="w-full px-4 py-2.5 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white text-sm font-medium rounded-lg transition-all duration-300 shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {otpLoading ? "Sending OTP..." : "Send Verification Code"}
+                      </button>
+                    ) : (
+                      <div className="space-y-3">
+                        <input
+                          type="text"
+                          value={phoneOtp}
+                          onChange={(e) => setPhoneOtp(e.target.value.replace(/\D/g, ""))}
+                          placeholder="Enter 6-digit OTP"
+                          maxLength="6"
+                          className="w-full px-4 py-2.5 text-center text-lg font-semibold tracking-widest border-2 border-blue-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        />
+                        <button
+                          type="button"
+                          onClick={handleVerifyPhoneOTP}
+                          disabled={otpLoading || phoneOtp.length !== 6}
+                          className="w-full px-4 py-2.5 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white text-sm font-medium rounded-lg transition-all duration-300 shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          {otpLoading ? "Verifying..." : "Verify Code"}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={handleSendPhoneOTP}
+                          disabled={resendCooldown > 0 || otpLoading}
+                          className="w-full text-xs text-blue-600 hover:text-blue-700 font-medium disabled:text-gray-400"
+                        >
+                          {resendCooldown > 0 ? `Resend in ${resendCooldown}s` : "Resend Code"}
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              <div className="group">
+                <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
+                  <svg className="w-4 h-4 mr-2 text-[#346870]" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
+                    <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
+                  </svg>
+                  Email Address
+                </label>
+                <div className="relative">
+                  <input
+                    type="email"
+                    name="email"
+                    value={formData.email || ""}
+                    onChange={handleChange}
+                    disabled={!canEditEmail}
+                    readOnly={!canEditEmail}
+                    title={!canEditEmail ? "Verified email cannot be changed." : undefined}
+                    className={`w-full px-4 py-3 pr-12 bg-white border-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#346870]/20 focus:border-[#346870] transition-all duration-300 ${
+                      errors.email ? "border-red-500" : "border-gray-200 group-hover:border-gray-300"
+                    } ${!canEditEmail ? "bg-gray-50 cursor-not-allowed" : ""}`}
+                    placeholder="Enter your email address"
+                  />
+                  {profile?.emailVerified && (
+                    <div className="absolute inset-y-0 right-0 pr-4 flex items-center">
+                      <div className="bg-green-100 rounded-full p-1">
+                        <svg className="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                        </svg>
+                      </div>
+                    </div>
+                  )}
+                </div>
+                {errors.email && (
+                  <p className="text-red-500 text-xs mt-2 flex items-center">
+                    <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                    </svg>
+                    {errors.email}
+                  </p>
+                )}
+                
+                {/* Email OTP Section */}
+                {formData.email && !profile?.emailVerified && !emailVerificationComplete && (
+                  <div className="mt-4 p-4 bg-purple-50/50 rounded-xl border border-purple-200/50 space-y-3">
+                    {!emailOtpStep ? (
+                      <button
+                        type="button"
+                        onClick={handleSendEmailOTP}
+                        disabled={otpLoading}
+                        className="w-full px-4 py-2.5 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white text-sm font-medium rounded-lg transition-all duration-300 shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {otpLoading ? "Sending OTP..." : "Send Verification Code"}
+                      </button>
+                    ) : (
+                      <div className="space-y-3">
+                        <input
+                          type="text"
+                          value={emailOtp}
+                          onChange={(e) => setEmailOtp(e.target.value.replace(/\D/g, ""))}
+                          placeholder="Enter 6-digit OTP"
+                          maxLength="6"
+                          className="w-full px-4 py-2.5 text-center text-lg font-semibold tracking-widest border-2 border-purple-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                        />
+                        <button
+                          type="button"
+                          onClick={handleVerifyEmailOTP}
+                          disabled={otpLoading || emailOtp.length !== 6}
+                          className="w-full px-4 py-2.5 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white text-sm font-medium rounded-lg transition-all duration-300 shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          {otpLoading ? "Verifying..." : "Verify Code"}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={handleSendEmailOTP}
+                          disabled={emailResendCooldown > 0 || otpLoading}
+                          className="w-full text-xs text-purple-600 hover:text-purple-700 font-medium disabled:text-gray-400"
+                        >
+                          {emailResendCooldown > 0 ? `Resend in ${emailResendCooldown}s` : "Resend Code"}
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              <div className="group">
+                <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
+                  <svg className="w-4 h-4 mr-2 text-[#346870]" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
+                  </svg>
+                  Alternative Phone
+                </label>
                 <input
                   type="tel"
-                  name="phone"
-                  value={formData.phone || ""}
+                  name="alternativePhone"
+                  value={formData.alternativePhone || ""}
                   onChange={handleChange}
-                  maxLength="10"
-                  disabled={!canEditPhone}
-                  readOnly={!canEditPhone}
-                  title={!canEditPhone ? "Verified phone cannot be changed." : undefined}
-                  className={`w-full px-3 py-2 pr-10 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#346870] ${
-                    errors.phone ? "border-red-500" : "border-gray-300"
-                  }`}
-                  placeholder="Enter your phone number"
+                  className="w-full px-4 py-3 bg-white border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#346870]/20 focus:border-[#346870] transition-all duration-300 group-hover:border-gray-300"
+                  placeholder="Enter alternative phone number"
                 />
-                {isPhoneVerifiedForCurrentInput && (
-                  <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
-                    <svg className="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                    </svg>
-                  </div>
-                )}
               </div>
-              {errors.phone && (
-                <p className="text-red-500 text-sm mt-1">{errors.phone}</p>
-              )}
-              
-              {/* Phone OTP Section */}
-              {formData.phone && !isPhoneVerifiedForCurrentInput && !phoneVerificationComplete && (
-                <div className="mt-3 space-y-3">
-                  {!phoneOtpStep ? (
-                    <button
-                      type="button"
-                      onClick={handleSendPhoneOTP}
-                      disabled={otpLoading}
-                      className="text-sm bg-blue-50 text-blue-600 px-3 py-1 rounded-md hover:bg-blue-100 disabled:opacity-50"
-                    >
-                      {otpLoading ? "Sending..." : "Send OTP"}
-                    </button>
-                  ) : (
-                    <div className="flex space-x-2">
-                      <input
-                        type="text"
-                        value={phoneOtp}
-                        onChange={(e) => setPhoneOtp(e.target.value.replace(/\D/g, ""))}
-                        placeholder="Enter 6-digit OTP"
-                        maxLength="6"
-                        className="flex-1 px-3 py-1 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#346870]"
-                      />
-                      <button
-                        type="button"
-                        onClick={handleVerifyPhoneOTP}
-                        disabled={otpLoading || phoneOtp.length !== 6}
-                        className="text-sm bg-green-50 text-green-600 px-3 py-1 rounded-md hover:bg-green-100 disabled:opacity-50"
-                      >
-                        {otpLoading ? "Verifying..." : "Verify"}
-                      </button>
-                    </div>
-                  )}
-                  {phoneOtpStep && (
-                    <button
-                      type="button"
-                      onClick={handleSendPhoneOTP}
-                      disabled={resendCooldown > 0 || otpLoading}
-                      className="text-xs text-blue-600 hover:underline disabled:text-gray-400 disabled:no-underline"
-                    >
-                      {resendCooldown > 0 ? `Resend in ${resendCooldown}s` : "Resend OTP"}
-                    </button>
-                  )}
-                </div>
-              )}
-            </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Email Address
-              </label>
-              <div className="relative">
-                <input
-                  type="email"
-                  name="email"
-                  value={formData.email || ""}
+              <div className="group">
+                <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
+                  <svg className="w-4 h-4 mr-2 text-[#346870]" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                  </svg>
+                  Gender
+                </label>
+                <select
+                  name="gender"
+                  value={formData.gender || ""}
                   onChange={handleChange}
-                  disabled={!canEditEmail}
-                  readOnly={!canEditEmail}
-                  title={!canEditEmail ? "Verified email cannot be changed." : undefined}
-                  className={`w-full px-3 py-2 pr-10 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#346870] ${
-                    errors.email ? "border-red-500" : "border-gray-300"
-                  }`}
-                  placeholder="Enter your email address"
-                />
-                {profile?.emailVerified && (
-                  <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
-                    <svg className="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                    </svg>
-                  </div>
-                )}
+                  className="w-full px-4 py-3 bg-white border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#346870]/20 focus:border-[#346870] transition-all duration-300 group-hover:border-gray-300 cursor-pointer"
+                >
+                  <option value="">Select Gender</option>
+                  <option value="male">Male</option>
+                  <option value="female">Female</option>
+                  <option value="other">Other</option>
+                </select>
               </div>
-              {errors.email && (
-                <p className="text-red-500 text-sm mt-1">{errors.email}</p>
-              )}
-              
-              {/* Email OTP Section */}
-              {formData.email && !profile?.emailVerified && !emailVerificationComplete && (
-                <div className="mt-3 space-y-3">
-                  {!emailOtpStep ? (
-                    <button
-                      type="button"
-                      onClick={handleSendEmailOTP}
-                      disabled={otpLoading}
-                      className="text-sm bg-blue-50 text-blue-600 px-3 py-1 rounded-md hover:bg-blue-100 disabled:opacity-50"
-                    >
-                      {otpLoading ? "Sending..." : "Send OTP"}
-                    </button>
-                  ) : (
-                    <div className="flex space-x-2">
-                      <input
-                        type="text"
-                        value={emailOtp}
-                        onChange={(e) => setEmailOtp(e.target.value.replace(/\D/g, ""))}
-                        placeholder="Enter 6-digit OTP"
-                        maxLength="6"
-                        className="flex-1 px-3 py-1 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#346870]"
-                      />
-                      <button
-                        type="button"
-                        onClick={handleVerifyEmailOTP}
-                        disabled={otpLoading || emailOtp.length !== 6}
-                        className="text-sm bg-green-50 text-green-600 px-3 py-1 rounded-md hover:bg-green-100 disabled:opacity-50"
-                      >
-                        {otpLoading ? "Verifying..." : "Verify"}
-                      </button>
-                    </div>
-                  )}
-                  {emailOtpStep && (
-                    <button
-                      type="button"
-                      onClick={handleSendEmailOTP}
-                      disabled={emailResendCooldown > 0 || otpLoading}
-                      className="text-xs text-blue-600 hover:underline disabled:text-gray-400 disabled:no-underline"
-                    >
-                      {emailResendCooldown > 0 ? `Resend in ${emailResendCooldown}s` : "Resend OTP"}
-                    </button>
-                  )}
-                </div>
-              )}
-            </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Alternative Phone
-              </label>
-              <input
-                type="tel"
-                name="alternativePhone"
-                value={formData.alternativePhone || ""}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#346870]"
-                placeholder="Enter alternative phone number"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Gender
-              </label>
-              <select
-                name="gender"
-                value={formData.gender || ""}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#346870]"
-              >
-                <option value="">Select Gender</option>
-                <option value="male">Male</option>
-                <option value="female">Female</option>
-                <option value="other">Other</option>
-              </select>
+              <div className="md:col-span-2 group">
+                <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
+                  <svg className="w-4 h-4 mr-2 text-[#346870]" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                  </svg>
+                  Address
+                </label>
+                <textarea
+                  name="address"
+                  value={formData.address || ""}
+                  onChange={handleChange}
+                  rows={4}
+                  className="w-full px-4 py-3 bg-white border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#346870]/20 focus:border-[#346870] transition-all duration-300 group-hover:border-gray-300 resize-none"
+                  placeholder="Enter your complete address"
+                />
+              </div>
             </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Address
-            </label>
-            <textarea
-              name="address"
-              value={formData.address || ""}
-              onChange={handleChange}
-              rows={3}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#346870]"
-              placeholder="Enter your complete address"
-            />
-          </div>
-
-          <div className="flex justify-end">
+          <div className="flex justify-end pt-4">
             <button
               type="submit"
               disabled={loading}
-              className="btn-primary flex items-center space-x-2"
+              className="group relative px-8 py-3.5 bg-gradient-to-r from-[#346870] to-[#2a5359] hover:from-[#2a5359] hover:to-[#346870] text-white font-semibold rounded-xl transition-all duration-300 shadow-lg shadow-[#346870]/30 hover:shadow-xl hover:shadow-[#346870]/40 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-3"
             >
               {loading && <LoadingSpinner size="sm" />}
-              <span>Update Personal Info</span>
+              <span>Update Personal Information</span>
+              <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+              </svg>
             </button>
           </div>
         </form>
@@ -831,100 +874,136 @@ const ProfileEditForm = ({ profile, type, onUserUpdate }) => {
 
   if (type === "medical") {
     return (
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="space-y-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Systemic Diseases
-            </label>
-            <input
-              type="text"
-              name="systemicDiseases"
-              value={formData.systemicDiseases || ""}
-              onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#346870]"
-              placeholder="Enter systemic diseases (comma-separated)"
-            />
-            <p className="text-sm text-gray-500 mt-1">
-              Separate multiple diseases with commas
-            </p>
+      <form onSubmit={handleSubmit} className="space-y-8">
+        <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-8 border border-gray-200/50 shadow-lg">
+          <div className="flex items-center space-x-3 mb-6">
+            <div className="h-8 w-1 bg-gradient-to-b from-[#346870] to-teal-400 rounded-full"></div>
+            <h4 className="text-xl font-bold text-gray-800">Medical History</h4>
           </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Drug Allergies
-            </label>
-            <input
-              type="text"
-              name="drugAllergies"
-              value={formData.drugAllergies || ""}
-              onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#346870]"
-              placeholder="Enter drug allergies (comma-separated)"
-            />
-            <p className="text-sm text-gray-500 mt-1">
-              Separate multiple allergies with commas
-            </p>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Past Treatments
-            </label>
-            <textarea
-              name="pastTreatments"
-              value={formData.pastTreatments || ""}
-              onChange={handleChange}
-              rows={3}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#346870]"
-              placeholder="Enter past dental treatments (comma-separated)"
-            />
-            <p className="text-sm text-gray-500 mt-1">
-              Separate multiple treatments with commas
-            </p>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Previous Experiences
-            </label>
-            <textarea
-              name="previousExperiences"
-              value={formData.previousExperiences || ""}
-              onChange={handleChange}
-              rows={3}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#346870]"
-              placeholder="Enter previous dental experiences (comma-separated)"
-            />
-            <p className="text-sm text-gray-500 mt-1">
-              Separate multiple experiences with commas
-            </p>
-          </div>
-
-          {formData.gender === "female" && (
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                name="isPregnant"
-                checked={formData.isPregnant || false}
-                onChange={handleChange}
-                className="h-4 w-4 text-[#346870] focus:ring-[#346870] border-gray-300 rounded"
-              />
-              <label className="ml-2 block text-sm text-gray-700">
-                Currently pregnant
+          <div className="space-y-6">
+            <div className="group">
+              <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
+                <svg className="w-4 h-4 mr-2 text-[#346870]" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" />
+                </svg>
+                Systemic Diseases
               </label>
+              <input
+                type="text"
+                name="systemicDiseases"
+                value={formData.systemicDiseases || ""}
+                onChange={handleChange}
+                className="w-full px-4 py-3 bg-white border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#346870]/20 focus:border-[#346870] transition-all duration-300 group-hover:border-gray-300"
+                placeholder="e.g., Diabetes, Hypertension, Asthma"
+              />
+              <p className="text-xs text-gray-500 mt-2 flex items-center">
+                <svg className="w-3.5 h-3.5 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                </svg>
+                Separate multiple diseases with commas
+              </p>
             </div>
-          )}
+
+            <div className="group">
+              <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
+                <svg className="w-4 h-4 mr-2 text-red-500" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                </svg>
+                Drug Allergies
+              </label>
+              <input
+                type="text"
+                name="drugAllergies"
+                value={formData.drugAllergies || ""}
+                onChange={handleChange}
+                className="w-full px-4 py-3 bg-white border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#346870]/20 focus:border-[#346870] transition-all duration-300 group-hover:border-gray-300"
+                placeholder="e.g., Penicillin, Aspirin, Latex"
+              />
+              <p className="text-xs text-gray-500 mt-2 flex items-center">
+                <svg className="w-3.5 h-3.5 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                </svg>
+                Separate multiple allergies with commas
+              </p>
+            </div>
+
+            <div className="group">
+              <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
+                <svg className="w-4 h-4 mr-2 text-[#346870]" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" />
+                  <path fillRule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clipRule="evenodd" />
+                </svg>
+                Past Treatments
+              </label>
+              <textarea
+                name="pastTreatments"
+                value={formData.pastTreatments || ""}
+                onChange={handleChange}
+                rows={4}
+                className="w-full px-4 py-3 bg-white border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#346870]/20 focus:border-[#346870] transition-all duration-300 group-hover:border-gray-300 resize-none"
+                placeholder="e.g., Root canal, Tooth extraction, Dental implants"
+              />
+              <p className="text-xs text-gray-500 mt-2 flex items-center">
+                <svg className="w-3.5 h-3.5 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                </svg>
+                Separate multiple treatments with commas
+              </p>
+            </div>
+
+            <div className="group">
+              <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
+                <svg className="w-4 h-4 mr-2 text-[#346870]" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M18 13V5a2 2 0 00-2-2H4a2 2 0 00-2 2v8a2 2 0 002 2h3l3 3 3-3h3a2 2 0 002-2zM5 7a1 1 0 011-1h8a1 1 0 110 2H6a1 1 0 01-1-1zm1 3a1 1 0 100 2h3a1 1 0 100-2H6z" clipRule="evenodd" />
+                </svg>
+                Previous Experiences
+              </label>
+              <textarea
+                name="previousExperiences"
+                value={formData.previousExperiences || ""}
+                onChange={handleChange}
+                rows={4}
+                className="w-full px-4 py-3 bg-white border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#346870]/20 focus:border-[#346870] transition-all duration-300 group-hover:border-gray-300 resize-none"
+                placeholder="Share your previous dental experiences or concerns"
+              />
+              <p className="text-xs text-gray-500 mt-2 flex items-center">
+                <svg className="w-3.5 h-3.5 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                </svg>
+                Separate multiple experiences with commas
+              </p>
+            </div>
+
+            {formData.gender === "female" && (
+              <div className="bg-pink-50/50 border-2 border-pink-200/50 rounded-xl p-4">
+                <label className="flex items-center cursor-pointer group">
+                  <input
+                    type="checkbox"
+                    name="isPregnant"
+                    checked={formData.isPregnant || false}
+                    onChange={handleChange}
+                    className="h-5 w-5 text-[#346870] focus:ring-2 focus:ring-[#346870] border-gray-300 rounded transition-all duration-300"
+                  />
+                  <span className="ml-3 text-sm font-medium text-gray-700 group-hover:text-[#346870] transition-colors">
+                    Currently pregnant
+                  </span>
+                </label>
+              </div>
+            )}
+          </div>
         </div>
 
         <div className="flex justify-end">
           <button
             type="submit"
             disabled={loading}
-            className="btn-primary flex items-center space-x-2"
+            className="group relative px-8 py-3.5 bg-gradient-to-r from-[#346870] to-[#2a5359] hover:from-[#2a5359] hover:to-[#346870] text-white font-semibold rounded-xl transition-all duration-300 shadow-lg shadow-[#346870]/30 hover:shadow-xl hover:shadow-[#346870]/40 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-3"
           >
             {loading && <LoadingSpinner size="sm" />}
-            <span>Update Medical Info</span>
+            <span>Update Medical Information</span>
+            <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+            </svg>
           </button>
         </div>
       </form>

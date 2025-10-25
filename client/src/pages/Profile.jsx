@@ -16,22 +16,6 @@ const Profile = () => {
   const [documents, setDocuments] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  // Fetch latest user profile when component mounts
-  useEffect(() => {
-    const fetchLatestProfile = async () => {
-      try {
-        const response = await userService.getProfile();
-        if (response.data.success && response.data.data) {
-          dispatch(updateUser(response.data.data));
-        }
-      } catch (error) {
-        console.error("Failed to fetch latest profile:", error);
-      }
-    };
-
-    fetchLatestProfile();
-  }, [dispatch]);
-
   useEffect(() => {
     if (activeTab === "documents") {
       fetchDocuments();
@@ -73,145 +57,262 @@ const Profile = () => {
   };
 
   const tabs = [
-    { id: "personal", label: "Personal Info", icon: "👤" },
-    { id: "medical", label: "Medical Info", icon: "🏥" },
-    { id: "documents", label: "Documents", icon: "📄" },
-    { id: "subscription", label: "Subscription", icon: "💳" },
+    { 
+      id: "personal", 
+      label: "Personal Info", 
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+        </svg>
+      )
+    },
+    { 
+      id: "medical", 
+      label: "Medical Info", 
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
+      )
+    },
+    { 
+      id: "documents", 
+      label: "Documents", 
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+        </svg>
+      )
+    },
+    { 
+      id: "subscription", 
+      label: "Subscription", 
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+        </svg>
+      )
+    },
   ];
 
   return (
     <DashboardLayout>
-      <div className="space-y-6">
-        {/* Tab Navigation */}
-        <div className="flex space-x-4 border-b">
-          {tabs.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`pb-4 px-4 text-sm font-medium border-b-2 transition-colors ${
-                activeTab === tab.id
-                  ? "border-[#346870] text-[#346870]"
-                  : "border-transparent text-gray-500 hover:text-gray-700"
-              }`}
-            >
-              <span className="mr-2">{tab.icon}</span>
-              {tab.label}
-            </button>
-          ))}
-        </div>
-
-        {/* Tab Content */}
-        <div className="bg-white rounded-lg shadow p-6">
-          {activeTab === "personal" && (
-            <div>
-              <h3 className="text-lg font-semibold mb-6">
-                Personal Information
-              </h3>
-              <ProfileEditForm
-                profile={user}
-                type="personal"
-                onUserUpdate={(updatedUser) =>
-                  dispatch(updateUser(updatedUser))
-                }
-              />
-            </div>
-          )}
-
-          {activeTab === "medical" && (
-            <div>
-              <h3 className="text-lg font-semibold mb-6">
-                Medical Information
-              </h3>
-              <ProfileEditForm profile={user} type="medical" />
-            </div>
-          )}
-
-          {activeTab === "documents" && (
-            <div className="space-y-6">
-              <DocumentUpload
-                onUploadSuccess={handleUploadSuccess}
-                onUploadError={(message) =>
-                  console.error("Upload error:", message)
-                }
-              />
-
-              {loading ? (
-                <div className="flex justify-center py-8">
-                  <LoadingSpinner />
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  <h3 className="text-lg font-semibold">Uploaded Documents</h3>
-                  <p className="text-sm text-gray-500">
-                    Found {documents.length} documents
-                  </p>
-
-                  {documents.length > 0 ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {documents.map((doc) => (
-                        <div
-                          key={doc._id}
-                          className="border rounded-lg p-4 flex items-start justify-between"
-                        >
-                          <div className="flex-1">
-                            <h4 className="font-medium capitalize">
-                              {doc.type.replace(/_/g, " ")}
-                            </h4>
-                            <p className="text-sm text-gray-500">
-                              Uploaded on{" "}
-                              {new Date(doc.uploadDate).toLocaleDateString()}
-                            </p>
-                            {doc.fileName && (
-                              <p className="text-sm text-gray-600 mt-1">
-                                File: {doc.fileName}
-                              </p>
-                            )}
-                            {doc.fileSize && (
-                              <p className="text-sm text-gray-500">
-                                Size: {(doc.fileSize / 1024 / 1024).toFixed(2)}{" "}
-                                MB
-                              </p>
-                            )}
-                          </div>
-                          <div className="flex space-x-2">
-                            <a
-                              href={
-                                doc.fileUrl?.startsWith("http")
-                                  ? doc.fileUrl
-                                  : `http://localhost:5000/${doc.fileUrl}`
-                              }
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-blue-600 hover:text-blue-800 text-sm"
-                            >
-                              View
-                            </a>
-                            <button
-                              onClick={() => handleDeleteDocument(doc._id)}
-                              className="text-red-600 hover:text-red-800 text-sm"
-                            >
-                              Delete
-                            </button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-teal-50/20">
+        {/* Premium Header Section */}
+        <div className="relative overflow-hidden bg-gradient-to-r from-[#346870] via-[#2a5359] to-[#346870] rounded-2xl shadow-2xl mb-8 p-8">
+          <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTM2IDM0djItaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6Ii8+PC9nPjwvZz48L3N2Zz4=')] opacity-30"></div>
+          <div className="relative flex items-center justify-between">
+            <div className="flex items-center space-x-6">
+              <div className="relative group">
+                <div className="absolute -inset-1 bg-gradient-to-r from-teal-400 to-blue-400 rounded-full blur opacity-75 group-hover:opacity-100 transition duration-300"></div>
+                <div className="relative h-24 w-24 rounded-full overflow-hidden bg-white ring-4 ring-white/20 shadow-xl">
+                  {user?.profilePhoto ? (
+                    <img
+                      src={user.profilePhoto}
+                      alt={user.name}
+                      className="h-full w-full object-cover"
+                    />
                   ) : (
-                    <p className="text-gray-500">No documents uploaded yet.</p>
+                    <div className="h-full w-full bg-gradient-to-br from-[#346870] to-[#2a5359] flex items-center justify-center">
+                      <span className="text-white text-3xl font-bold">
+                        {user?.name?.charAt(0)?.toUpperCase() || "U"}
+                      </span>
+                    </div>
                   )}
                 </div>
-              )}
+              </div>
+              <div className="text-white">
+                <h1 className="text-3xl font-bold mb-1 tracking-tight">{user?.name || "User"}</h1>
+                <p className="text-teal-100 text-sm flex items-center space-x-2">
+                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
+                    <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
+                  </svg>
+                  <span>{user?.email || "No email provided"}</span>
+                </p>
+                <p className="text-teal-100 text-sm flex items-center space-x-2 mt-1">
+                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
+                  </svg>
+                  <span>{user?.phone || "No phone provided"}</span>
+                </p>
+              </div>
             </div>
-          )}
+            <div className="hidden md:flex items-center space-x-4">
+              <div className="text-right text-white">
+                <p className="text-xs text-teal-100 uppercase tracking-wider">Member Since</p>
+                <p className="text-lg font-semibold">{new Date(user?.createdAt).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}</p>
+              </div>
+            </div>
+          </div>
+        </div>
 
-          {activeTab === "subscription" && (
-            <div>
-              <h3 className="text-lg font-semibold mb-6">
-                Subscription Details
-              </h3>
-              <SubscriptionInfo subscription={user.subscription} />
-            </div>
-          )}
+        {/* Premium Tab Navigation */}
+        <div className="bg-white rounded-2xl shadow-lg mb-6 p-2 backdrop-blur-sm bg-white/80">
+          <div className="flex space-x-2 overflow-x-auto">
+            {tabs.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex items-center space-x-2 px-6 py-3 rounded-xl text-sm font-medium transition-all duration-300 whitespace-nowrap ${
+                  activeTab === tab.id
+                    ? "bg-gradient-to-r from-[#346870] to-[#2a5359] text-white shadow-lg shadow-[#346870]/30 scale-105"
+                    : "text-gray-600 hover:bg-gray-50 hover:text-[#346870]"
+                }`}
+              >
+                <span className={activeTab === tab.id ? "scale-110" : ""}>{tab.icon}</span>
+                <span>{tab.label}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Premium Tab Content */}
+        <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-gray-100/50 overflow-hidden">
+          <div className="p-8">
+            {activeTab === "personal" && (
+              <div className="animate-fade-in">
+                <div className="flex items-center space-x-3 mb-8">
+                  <div className="h-10 w-1 bg-gradient-to-b from-[#346870] to-teal-400 rounded-full"></div>
+                  <h3 className="text-2xl font-bold text-gray-800">
+                    Personal Information
+                  </h3>
+                </div>
+                <ProfileEditForm
+                  profile={user}
+                  type="personal"
+                  onUserUpdate={(updatedUser) =>
+                    dispatch(updateUser(updatedUser))
+                  }
+                />
+              </div>
+            )}
+
+            {activeTab === "medical" && (
+              <div className="animate-fade-in">
+                <div className="flex items-center space-x-3 mb-8">
+                  <div className="h-10 w-1 bg-gradient-to-b from-[#346870] to-teal-400 rounded-full"></div>
+                  <h3 className="text-2xl font-bold text-gray-800">
+                    Medical Information
+                  </h3>
+                </div>
+                <ProfileEditForm profile={user} type="medical" />
+              </div>
+            )}
+
+            {activeTab === "documents" && (
+              <div className="space-y-6 animate-fade-in">
+                <div className="flex items-center space-x-3 mb-8">
+                  <div className="h-10 w-1 bg-gradient-to-b from-[#346870] to-teal-400 rounded-full"></div>
+                  <h3 className="text-2xl font-bold text-gray-800">
+                    Documents
+                  </h3>
+                </div>
+                <DocumentUpload
+                  onUploadSuccess={handleUploadSuccess}
+                  onUploadError={(message) =>
+                    console.error("Upload error:", message)
+                  }
+                />
+
+                {loading ? (
+                  <div className="flex justify-center py-12">
+                    <LoadingSpinner />
+                  </div>
+                ) : (
+                  <div className="space-y-6">
+                    <div className="flex items-center justify-between">
+                      <h4 className="text-lg font-semibold text-gray-800">Uploaded Documents</h4>
+                      <span className="px-4 py-1.5 bg-gradient-to-r from-[#346870] to-teal-600 text-white text-sm font-medium rounded-full shadow-sm">
+                        {documents.length} {documents.length === 1 ? 'Document' : 'Documents'}
+                      </span>
+                    </div>
+
+                    {documents.length > 0 ? (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {documents.map((doc) => (
+                          <div
+                            key={doc._id}
+                            className="group relative bg-gradient-to-br from-white to-gray-50 border border-gray-200 rounded-xl p-5 hover:shadow-xl hover:border-[#346870]/30 transition-all duration-300"
+                          >
+                            <div className="flex items-start justify-between">
+                              <div className="flex-1">
+                                <div className="flex items-center space-x-2 mb-2">
+                                  <svg className="w-5 h-5 text-[#346870]" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clipRule="evenodd" />
+                                  </svg>
+                                  <h4 className="font-semibold text-gray-800 capitalize">
+                                    {doc.type.replace(/_/g, " ")}
+                                  </h4>
+                                </div>
+                                <p className="text-xs text-gray-500 mb-1">
+                                  {new Date(doc.uploadDate).toLocaleDateString('en-US', { 
+                                    year: 'numeric', 
+                                    month: 'long', 
+                                    day: 'numeric' 
+                                  })}
+                                </p>
+                                {doc.fileName && (
+                                  <p className="text-xs text-gray-600 truncate">
+                                    {doc.fileName}
+                                  </p>
+                                )}
+                                {doc.fileSize && (
+                                  <p className="text-xs text-gray-500 mt-1">
+                                    {(doc.fileSize / 1024 / 1024).toFixed(2)} MB
+                                  </p>
+                                )}
+                              </div>
+                              <div className="flex flex-col space-y-2">
+                                <a
+                                  href={
+                                    doc.fileUrl?.startsWith("http")
+                                      ? doc.fileUrl
+                                      : `http://localhost:5000/${doc.fileUrl}`
+                                  }
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="px-3 py-1.5 bg-[#346870] text-white text-xs font-medium rounded-lg hover:bg-[#2a5359] transition-colors shadow-sm"
+                                >
+                                  View
+                                </a>
+                                <button
+                                  onClick={() => handleDeleteDocument(doc._id)}
+                                  className="px-3 py-1.5 bg-red-50 text-red-600 text-xs font-medium rounded-lg hover:bg-red-100 transition-colors"
+                                >
+                                  Delete
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-center py-12 bg-gradient-to-br from-gray-50 to-blue-50/30 rounded-xl border-2 border-dashed border-gray-300">
+                        <svg className="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        <p className="text-gray-500 font-medium">No documents uploaded yet</p>
+                        <p className="text-sm text-gray-400 mt-1">Upload your first document to get started</p>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {activeTab === "subscription" && (
+              <div className="animate-fade-in">
+                <div className="flex items-center space-x-3 mb-8">
+                  <div className="h-10 w-1 bg-gradient-to-b from-[#346870] to-teal-400 rounded-full"></div>
+                  <h3 className="text-2xl font-bold text-gray-800">
+                    Subscription Details
+                  </h3>
+                </div>
+                <SubscriptionInfo subscription={user.subscription} />
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </DashboardLayout>

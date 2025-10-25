@@ -145,13 +145,18 @@ const EmailInput = ({
 
   return (
     <div className="space-y-2">
-      <div className="relative">
+      <div className="relative group">
+        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-[#346870] transition-colors z-10">
+          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+          </svg>
+        </div>
         <input
           type="email"
           value={email}
           onChange={handleEmailChange}
           disabled={disabled || isVerified}
-          className={`input-field pr-24 ${className} ${
+          className={`w-full pl-11 pr-24 py-3 bg-white border-2 border-gray-200 rounded-xl text-sm font-medium transition-all duration-300 focus:outline-none focus:border-[#346870] focus:ring-2 focus:ring-[#346870]/20 hover:border-gray-300 ${className} ${
             error ? "border-red-500" : ""
           } ${isVerified ? "bg-green-50 border-green-500" : ""}`}
           placeholder="Enter your email address"

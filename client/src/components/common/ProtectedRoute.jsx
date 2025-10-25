@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { Navigate } from "react-router-dom";
-import { checkAuthStatus } from "../../store/authSlice";
+import { checkAuthStatus, updateUser } from "../../store/authSlice";
 import { fetchUserProfile } from "../../store/userSlice";
 import LoadingSpinner from "../../shared/components/LoadingSpinner";
 import { validateUserAuthContext, clearAdminTokens, clearUserToken } from "../../utils/authGuard.js";
@@ -25,8 +25,9 @@ const ProtectedRoute = ({ children }) => {
         }
       }
 
-      // Always fetch user profile if authenticated to ensure we have latest data
-      if (isAuthenticated && user) {
+      // Only fetch user profile if authenticated and we don't have profile data yet
+      // This prevents redundant API calls on every route change
+      if (isAuthenticated && user && !profile) {
         try {
           // Validate that this user should be using the client app
           if (!validateUserAuthContext(user)) {
@@ -37,8 +38,16 @@ const ProtectedRoute = ({ children }) => {
             return;
           }
           
-          await dispatch(fetchUserProfile()).unwrap();
-          console.log("User profile fetched successfully");
+          const profileData = await dispatch(fetchUserProfile()).unwrap();
+          console.log("ProtectedRoute - Profile data fetched:", profileData);
+          
+          // Also update the auth store with the full profile data to keep both stores in sync
+          if (profileData && profileData.data) {
+            const userData = profileData.data.user || profileData.data;
+            console.log("ProtectedRoute - Updating auth store with user data:", userData);
+            console.log("ProtectedRoute - Profile photo in user data:", userData.profilePhoto);
+            dispatch(updateUser(userData));
+          }
         } catch (error) {
           console.error("Failed to fetch user profile:", error);
         }
@@ -48,7 +57,7 @@ const ProtectedRoute = ({ children }) => {
     };
 
     checkAuth();
-  }, [isAuthenticated, user, dispatch]);
+  }, [isAuthenticated, user, profile, dispatch]);
 
   if (isChecking) {
     return (

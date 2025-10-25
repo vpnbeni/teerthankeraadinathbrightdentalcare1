@@ -164,8 +164,7 @@ const BookingModal = ({ isOpen, onClose, onSuccess, refreshTrigger }) => {
         // Check for special conditions
         if (metadata.isHoliday) {
           setError(
-            `Cannot book on holiday: ${
-              metadata.holidayName || "Holiday"
+            `Cannot book on holiday: ${metadata.holidayName || "Holiday"
             }. Please select a different date.`
           );
           return;
@@ -250,7 +249,7 @@ const BookingModal = ({ isOpen, onClose, onSuccess, refreshTrigger }) => {
             onNext={handleNext}
             onBack={handleBack}
             onDataChange={handleStepData}
-          />
+          />  
         );
       case 3:
         return (
@@ -276,105 +275,91 @@ const BookingModal = ({ isOpen, onClose, onSuccess, refreshTrigger }) => {
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={handleClose} size="lg">
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-800">Book Appointment</h2>
-          <p className="text-gray-600 mt-1">
-            Schedule your dental visit in a few simple steps
-          </p>
+    <Modal isOpen={isOpen} onClose={handleClose} size="booking">
+      <div className="h-full flex flex-col">
+        {/* Compact Header */}
+        <div className="flex-shrink-0 flex items-center justify-between pb-4 border-b border-gray-200">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-gradient-to-br from-[#346870] to-[#5fa8b5] rounded-xl flex items-center justify-center shadow-md">
+              <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+            </div>
+            <div>
+              <h2 className="text-xl font-bold text-gray-900">Book Appointment</h2>
+              <p className="text-xs text-gray-600">Step {currentStep} of {steps.length}</p>
+            </div>
+          </div>
+
           {user?.subscription && (
-            <div className="mt-2 inline-flex items-center px-3 py-1 bg-[#346870] bg-opacity-10 text-[#346870] text-sm font-medium rounded-full">
+            <div className="flex items-center gap-2 px-3 py-2 bg-[#346870]/10 border border-[#346870]/20 text-[#346870] text-xs font-semibold rounded-lg">
               {loadingSessionInfo ? (
                 <>
                   <LoadingSpinner size="small" />
-                  <span className="ml-1">Loading...</span>
+                  <span>Loading...</span>
                 </>
               ) : (
                 <>
-                  <svg
-                    className="w-4 h-4 mr-1"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                    />
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                   </svg>
-                  {sessionInfo
-                    ? sessionInfo.sessionsRemaining
-                    : user.subscription.sessionsRemaining}{" "}
-                  sessions remaining
+                  <span>{sessionInfo ? sessionInfo.sessionsRemaining : user.subscription.sessionsRemaining} sessions left</span>
                 </>
               )}
             </div>
           )}
         </div>
 
-        {/* Progress Steps */}
-        <div className="flex items-center justify-between">
-          {steps.map((step, index) => (
-            <div key={step.id} className="flex items-center">
-              <div className="flex flex-col items-center">
-                <div
-                  className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium ${
-                    currentStep >= step.id
-                      ? "bg-[#346870] text-white"
-                      : "bg-gray-200 text-gray-600"
-                  }`}
-                >
-                  {currentStep > step.id ? (
-                    <svg
-                      className="w-5 h-5"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M5 13l4 4L19 7"
-                      />
-                    </svg>
-                  ) : (
-                    step.id
-                  )}
-                </div>
-                <div className="mt-2 text-center">
-                  <div className="text-sm font-medium text-gray-800">
+        {/* Compact Progress Bar */}
+        <div className="flex-shrink-0 py-4">
+          <div className="flex items-center gap-2">
+            {steps.map((step, index) => (
+              <React.Fragment key={step.id}>
+                <div className="flex items-center gap-2">
+                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold transition-all ${currentStep >= step.id
+                      ? "bg-gradient-to-br from-[#346870] to-[#5fa8b5] text-white shadow-md"
+                      : "bg-gray-100 text-gray-400"
+                    }`}>
+                    {currentStep > step.id ? (
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                      </svg>
+                    ) : (
+                      step.id
+                    )}
+                  </div>
+                  <span className={`hidden md:block text-xs font-medium ${currentStep >= step.id ? "text-gray-900" : "text-gray-500"
+                    }`}>
                     {step.title}
-                  </div>
-                  <div className="text-xs text-gray-600">
-                    {step.description}
-                  </div>
+                  </span>
                 </div>
-              </div>
-              {index < steps.length - 1 && (
-                <div
-                  className={`flex-1 h-0.5 mx-4 ${
-                    currentStep > step.id ? "bg-[#346870]" : "bg-gray-200"
-                  }`}
-                />
-              )}
-            </div>
-          ))}
+                {index < steps.length - 1 && (
+                  <div className="flex-1 h-1 rounded-full bg-gray-200 overflow-hidden min-w-[20px]">
+                    <div className={`h-full transition-all duration-500 ${currentStep > step.id ? "bg-gradient-to-r from-[#346870] to-[#5fa8b5] w-full" : "w-0"
+                      }`} />
+                  </div>
+                )}
+              </React.Fragment>
+            ))}
+          </div>
         </div>
 
-        {/* Error Message */}
+        {/* Compact Error Banner */}
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
-            {error}
-          </div>
+          <div className="flex-shrink-0 mb-4 flex items-start gap-3 p-3 bg-red-50 border border-red-200 rounded-lg">
+            <div className="flex-shrink-0 w-8 h-8 bg-red-500 rounded-lg flex items-center justify-center">
+              <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+            </div>
+            <p className="text-red-800 text-sm font-medium flex-1">{error}</p>
+          </div> 
         )}
 
-        {/* Step Content */}
-        <div className="min-h-[400px]">{renderStep()}</div>
+        {/* Step Content - No extra wrapper */}
+        <div className="flex-1 min-h-0 overflow-y-auto pr-2 custom-scrollbar">
+          {renderStep()}
+        </div>
       </div>
     </Modal>
   );

@@ -186,12 +186,15 @@ const DateSelectionStep = ({ data, onNext, onBack, onDataChange }) => {
           type="button"
           onClick={() => handleDateSelect(date)}
           disabled={isDisabled}
-          className={`relative h-10 w-10 rounded-lg text-sm font-medium transition-colors ${bgColor} ${textColor} ${hoverColor} ${
-            isDisabled ? "cursor-not-allowed" : ""
-          }`}
+          className={`group relative h-12 w-12 rounded-2xl text-sm font-bold transition-all duration-300 ${bgColor} ${textColor} ${hoverColor} ${
+            isDisabled ? "cursor-not-allowed opacity-50" : "hover:scale-110 hover:shadow-lg"
+          } ${isSelected ? "scale-110 shadow-xl ring-2 ring-[#346870]/30" : ""}`}
         >
-          {day}
+          <span className="relative z-10">{day}</span>
           {indicator}
+          {isSelected && (
+            <div className="absolute inset-0 bg-gradient-to-br from-[#346870] to-[#5fa8b5] rounded-2xl blur-md opacity-50"></div>
+          )}
         </button>
       );
     }
@@ -217,120 +220,121 @@ const DateSelectionStep = ({ data, onNext, onBack, onDataChange }) => {
   const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
   return (
-    <div className="space-y-6">
-      <div className="text-center">
-        <h3 className="text-lg font-semibold text-gray-800 mb-2">
-          Select Appointment Date
-        </h3>
-        <p className="text-gray-600">
-          Choose a date for your dental appointment
-        </p>
-      </div>
-
-      {/* Calendar */}
-      <div className="max-w-md mx-auto">
-        {/* Calendar Header */}
-        <div className="flex items-center justify-between mb-4">
-          <button
-            type="button"
-            onClick={() => navigateMonth(-1)}
-            className="p-2 hover:bg-gray-100 rounded-lg"
-          >
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M15 19l-7-7 7-7"
-              />
-            </svg>
-          </button>
-
-          <h4 className="text-lg font-semibold text-gray-800">
-            {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
-          </h4>
-
-          <button
-            type="button"
-            onClick={() => navigateMonth(1)}
-            className="p-2 hover:bg-gray-100 rounded-lg"
-          >
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M9 5l7 7-7 7"
-              />
-            </svg>
-          </button>
-        </div>
-
-        {/* Day Names */}
-        <div className="grid grid-cols-7 gap-1 mb-2">
-          {dayNames.map((day) => (
-            <div
-              key={day}
-              className="h-10 flex items-center justify-center text-sm font-medium text-gray-500"
-            >
-              {day}
+    <div className="h-full flex flex-col">
+      <div className="flex-1 overflow-y-auto space-y-5 pr-1">
+        {/* Premium Header */}
+        {/* <div className="relative overflow-hidden bg-gradient-to-br from-white/80 to-white/60 backdrop-blur-sm border border-gray-200/50 rounded-2xl p-5 shadow-lg">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-100/30 to-cyan-100/30 rounded-full blur-3xl -mr-16 -mt-16"></div>
+          <div className="relative flex items-center gap-3">
+            <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-2xl flex items-center justify-center shadow-xl shadow-blue-500/25">
+              <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
             </div>
-          ))}
-        </div>
-
-        {/* Calendar Grid */}
-        {loading ? (
-          <div className="flex justify-center py-8">
-            <LoadingSpinner size="medium" />
+            <div>
+              <h3 className="text-lg md:text-xl font-bold text-gray-900 tracking-tight">Select Appointment Date</h3>
+              <p className="text-gray-600 text-xs md:text-sm">Choose your preferred date from available slots</p>
+            </div>
           </div>
-        ) : (
-          <div className="grid grid-cols-7 gap-1">{renderCalendar()}</div>
-        )}
+        </div> */}
+
+        {/* Premium Calendar Container */}
+      <div className="relative overflow-hidden bg-gradient-to-br from-white/80 to-white/60 backdrop-blur-sm border border-gray-200/50 rounded-2xl p-5 md:p-6 shadow-lg">
+        <div className="absolute bottom-0 left-0 w-40 h-40 bg-gradient-to-tr from-purple-100/20 to-pink-100/20 rounded-full blur-3xl -ml-20 -mb-20"></div>
+        
+        <div className="relative max-w-md mx-auto ">
+          {/* Calendar Header with Premium Styling */}
+          <div className="flex items-center justify-between mb-6">
+            <button
+              type="button"
+              onClick={() => navigateMonth(-1)}
+              className="group w-10 h-10 bg-white/80 hover:bg-gradient-to-br hover:from-[#346870] hover:to-[#5fa8b5] border border-gray-200 hover:border-transparent rounded-xl flex items-center justify-center transition-all duration-300 shadow-md hover:shadow-xl hover:-translate-y-0.5"
+            >
+              <svg className="w-5 h-5 text-gray-700 group-hover:text-white transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+
+            <div className="text-center">
+              <h4 className="text-xl md:text-2xl font-bold text-gray-900 tracking-tight">
+                {monthNames[currentDate.getMonth()]}
+              </h4>
+              <p className="text-sm text-gray-600 font-medium">{currentDate.getFullYear()}</p>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => navigateMonth(1)}
+              className="group w-10 h-10 bg-white/80 hover:bg-gradient-to-br hover:from-[#346870] hover:to-[#5fa8b5] border border-gray-200 hover:border-transparent rounded-xl flex items-center justify-center transition-all duration-300 shadow-md hover:shadow-xl hover:-translate-y-0.5"
+            >
+              <svg className="w-5 h-5 text-gray-700 group-hover:text-white transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          </div>
+
+          {/* Day Names with Premium Styling */}
+          <div className="grid grid-cols-7 gap-2 mb-3">
+            {dayNames.map((day) => (
+              <div
+                key={day}
+                className="h-10 flex items-center justify-center text-xs font-bold text-gray-600 uppercase tracking-wider"
+              >
+                {day.slice(0, 3)}
+              </div>
+            ))}
+          </div>
+
+          {/* Calendar Grid with Loading State */}
+          {loading ? (
+            <div className="flex flex-col items-center justify-center py-12 space-y-4">
+              <LoadingSpinner size="medium" />
+              <p className="text-sm text-gray-600 font-medium">Loading available dates...</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-7 gap-2">{renderCalendar()}</div>
+          )}
+        </div>
       </div>
 
-      {/* Selected Date Display */}
-      {selectedDate && (
-        <div className="text-center">
-          <div className="inline-flex items-center px-4 py-2 bg-[#346870] bg-opacity-10 rounded-lg">
-            <svg
-              className="w-5 h-5 text-[#346870] mr-2"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-              />
-            </svg>
-            <div className="text-left">
-              <span className="text-[#346870] font-medium block">
-                Selected: {selectedDate.toLocaleDateString("en-IN", {
+        {/* Premium Selected Date Display */}
+        {selectedDate && (
+        <div className="relative overflow-hidden bg-gradient-to-br from-[#346870]/10 via-[#4a8a95]/10 to-[#5fa8b5]/10 backdrop-blur-sm border border-[#346870]/30 rounded-2xl p-5 shadow-lg">
+          <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-[#5fa8b5]/20 to-[#346870]/20 rounded-full blur-2xl -mr-12 -mt-12"></div>
+          <div className="relative flex items-center gap-4">
+            <div className="flex-shrink-0 w-14 h-14 bg-gradient-to-br from-[#346870] to-[#5fa8b5] rounded-2xl flex items-center justify-center shadow-xl shadow-[#346870]/30">
+              <svg className="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <div className="flex-1">
+              <p className="text-xs font-semibold text-[#346870] uppercase tracking-wider mb-1">Selected Date</p>
+              <p className="text-base md:text-lg font-bold text-gray-900">
+                {selectedDate.toLocaleDateString("en-IN", {
                   weekday: "long",
                   year: "numeric",
                   month: "long",
                   day: "numeric",
                 })}
-              </span>
+              </p>
               {(() => {
                 const availability = getDateAvailability(selectedDate);
                 if (availability?.template) {
                   return (
-                    <span className="text-xs text-gray-600">
-                      {availability.template.name} • {availability.totalSlots} slots • {availability.template.workingHours.start}-{availability.template.workingHours.end}
-                    </span>
+                    <div className="flex items-center gap-3 mt-2 text-xs text-gray-600">
+                      <span className="inline-flex items-center gap-1 px-2 py-1 bg-white/60 rounded-lg font-medium">
+                        <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        {availability.template.workingHours.start}-{availability.template.workingHours.end}
+                      </span>
+                      <span className="inline-flex items-center gap-1 px-2 py-1 bg-white/60 rounded-lg font-medium">
+                        <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                        </svg>
+                        {availability.totalSlots} slots
+                      </span>
+                    </div>
                   );
                 }
                 return null;
@@ -338,66 +342,76 @@ const DateSelectionStep = ({ data, onNext, onBack, onDataChange }) => {
             </div>
           </div>
         </div>
-      )}
+        )}
 
-      {/* Legend */}
-      <div className="text-center space-y-3">
-        <div className="flex flex-wrap items-center justify-center gap-4 text-sm">
-          <div className="flex items-center">
-            <div className="w-4 h-4 bg-[#346870] rounded mr-2"></div>
-            <span>Selected</span>
-          </div>
-          <div className="flex items-center">
-            <div className="w-4 h-4 bg-yellow-100 border border-yellow-200 rounded flex items-center justify-center mr-2">
-              <div className="w-1.5 h-1.5 bg-yellow-600 rounded-full"></div>
+        {/* Premium Legend */}
+        <div className="relative overflow-hidden bg-gradient-to-br from-white/60 to-white/40 backdrop-blur-sm border border-gray-200/50 rounded-2xl p-4 md:p-5 shadow-md">
+        <div className="space-y-3">
+          <h4 className="text-sm font-bold text-gray-900 uppercase tracking-wider">Legend</h4>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-xs">
+            <div className="flex items-center gap-2">
+              <div className="w-6 h-6 bg-gradient-to-br from-[#346870] to-[#5fa8b5] rounded-lg shadow-md"></div>
+              <span className="font-medium text-gray-700">Selected</span>
             </div>
-            <span>Today</span>
-          </div>
-          <div className="flex items-center">
-            <div className="w-4 h-4 bg-green-50 border border-green-200 rounded flex items-center justify-center mr-2">
-              <div className="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
+            <div className="flex items-center gap-2">
+              <div className="w-6 h-6 bg-yellow-100 border-2 border-yellow-300 rounded-lg flex items-center justify-center">
+                <div className="w-2 h-2 bg-yellow-600 rounded-full"></div>
+              </div>
+              <span className="font-medium text-gray-700">Today</span>
             </div>
-            <span>Regular Hours</span>
-          </div>
-          <div className="flex items-center">
-            <div className="w-4 h-4 bg-blue-50 border border-blue-200 rounded flex items-center justify-center mr-2">
-              <div className="w-1.5 h-1.5 bg-blue-500 rounded-full"></div>
+            <div className="flex items-center gap-2">
+              <div className="w-6 h-6 bg-green-50 border-2 border-green-300 rounded-lg flex items-center justify-center">
+                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+              </div>
+              <span className="font-medium text-gray-700">Regular</span>
             </div>
-            <span>Extended Hours</span>
-          </div>
-          <div className="flex items-center">
-            <div className="w-4 h-4 bg-red-50 border border-red-200 rounded flex items-center justify-center mr-2">
-              <div className="w-1.5 h-1.5 bg-red-500 rounded-full"></div>
+            <div className="flex items-center gap-2">
+              <div className="w-6 h-6 bg-blue-50 border-2 border-blue-300 rounded-lg flex items-center justify-center">
+                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+              </div>
+              <span className="font-medium text-gray-700">Extended</span>
             </div>
-            <span>Holiday</span>
+            <div className="flex items-center gap-2">
+              <div className="w-6 h-6 bg-red-50 border-2 border-red-300 rounded-lg flex items-center justify-center">
+                <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+              </div>
+              <span className="font-medium text-gray-700">Holiday</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-6 h-6 bg-gray-200 rounded-lg"></div>
+              <span className="font-medium text-gray-700">Unavailable</span>
+            </div>
           </div>
-          <div className="flex items-center">
-            <div className="w-4 h-4 bg-gray-200 rounded mr-2"></div>
-            <span>Unavailable</span>
-          </div>
+          <p className="text-[10px] text-gray-500 leading-relaxed pt-2 border-t border-gray-200">
+            Color indicators show different availability templates with varying clinic hours
+          </p>
         </div>
-        <p className="text-xs text-gray-500">
-          Different colored dots indicate different availability templates with varying hours
-        </p>
       </div>
 
-      {/* Action Buttons */}
-      <div className="flex justify-between pt-4 border-t">
+        {/* Premium Action Buttons */}
+        <div className="flex justify-between gap-3 pt-2">
         <button
           type="button"
           onClick={onBack}
-          className="btn-secondary px-6 py-2"
+          className="group inline-flex items-center gap-2 px-6 py-3.5 bg-white/80 backdrop-blur-sm border-2 border-gray-200 text-gray-700 text-sm font-bold rounded-2xl hover:border-gray-300 hover:bg-white transition-all duration-300 shadow-md hover:shadow-lg hover:-translate-y-0.5"
         >
-          Back
+          <svg className="w-5 h-5 group-hover:-translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M11 17l-5-5m0 0l5-5m-5 5h12" />
+          </svg>
+          <span>Back</span>
         </button>
         <button
           type="button"
           onClick={handleNext}
           disabled={!selectedDate}
-          className="btn-primary px-6 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="group inline-flex items-center gap-3 px-8 py-3.5 bg-gradient-to-r from-[#346870] via-[#4a8a95] to-[#5fa8b5] text-white text-sm font-bold rounded-2xl hover:shadow-2xl hover:shadow-[#346870]/30 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-none hover:-translate-y-0.5 shadow-xl"
         >
-          Continue to Time Selection
+          <span>Continue to Time Selection</span>
+          <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+          </svg>
         </button>
+        </div>
       </div>
     </div>
   );
