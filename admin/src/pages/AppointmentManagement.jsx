@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import AdminLayout from "../components/common/AdminLayout";
+import StatCard from "../components/common/StatCard";
 import AppointmentCalendar from "../components/appointments/AppointmentCalendar";
 import AppointmentList from "../components/appointments/AppointmentList";
 import AppointmentFilters from "../components/appointments/AppointmentFilters";
@@ -9,11 +10,15 @@ import Pagination from "../components/common/Pagination";
 import { LoadingSpinner } from "../shared/components";
 import appointmentService from "../services/appointments";
 import { toast } from "react-hot-toast";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   CalendarIcon,
   ListBulletIcon,
   FunnelIcon,
   ArrowPathIcon,
+  CheckCircleIcon,
+  ClockIcon,
+  ChartBarIcon,
 } from "@heroicons/react/24/outline";
 
 const AppointmentManagement = () => {
@@ -187,309 +192,263 @@ const AppointmentManagement = () => {
   const completedAppointments =
     appointments?.filter((apt) => apt.status === "completed") || [];
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1,
+      transition: {
+        type: "spring",
+        stiffness: 100,
+      },
+    },
+  };
+
   return (
     <AdminLayout>
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100/50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-fade-in-up">
-          {/* Modern Page Header */}
-          <div className="mb-8">
-            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
-              <div className="mb-6 lg:mb-0">
-                <div className="flex items-center space-x-3">
-                  <div className="p-2 bg-primary-100 rounded-xl">
-                    <CalendarIcon className="h-8 w-8 text-primary-600" />
-                  </div>
-                  <div>
-                    <h1 className="text-3xl font-bold text-gray-900 tracking-tight">
-                      Appointment Management
-                    </h1>
-                    <p className="text-gray-600 mt-1 text-lg">
-                      Schedule and manage patient appointments efficiently
-                    </p>
-                  </div>
+      <motion.div
+        className="space-y-8 max-w-7xl mx-auto"
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+      >
+        {/* Premium Header Section - Matching Dashboard Style */}
+        <motion.div
+          variants={itemVariants}
+          className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-xl md:rounded-3xl p-3 md:p-12 shadow-2xl"
+        >
+          {/* Ambient background effects */}
+          <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZGVmcz48cGF0dGVybiBpZD0iZ3JpZCIgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiBwYXR0ZXJuVW5pdHM9InVzZXJTcGFjZU9uVXNlIj48cGF0aCBkPSJNIDQwIDAgTCAwIDAgMCA0MCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJyZ2JhKDI1NSwgMjU1LCAyNTUsIDAuMDMpIiBzdHJva2Utd2lkdGg9IjEiLz48L3BhdHRlcm4+PC9kZWZzPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JpZCkiLz48L3N2Zz4=')] opacity-40"></div>
+          <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-green-500/20 to-emerald-500/20 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-0 left-0 w-80 h-80 bg-gradient-to-tr from-[#346870]/30 to-[#5fa8b5]/30 rounded-full blur-3xl"></div>
+
+          <div className="relative flex flex-row items-center justify-between gap-2 md:gap-6">
+            <div className="flex items-center gap-2 md:gap-4 flex-1 min-w-0">
+              <motion.div
+                initial={{ scale: 0, rotate: -180 }}
+                animate={{ scale: 1, rotate: 0 }}
+                transition={{ type: "spring", stiffness: 200, delay: 0.2 }}
+                className="flex-shrink-0"
+              >
+                <div className="w-9 h-9 md:w-14 md:h-14 bg-gradient-to-br from-green-500 to-emerald-500 rounded-lg md:rounded-2xl flex items-center justify-center shadow-xl shadow-green-500/30">
+                  <CalendarIcon className="w-4 h-4 md:w-7 md:h-7 text-white" />
                 </div>
+              </motion.div>
+              <div className="flex-1 min-w-0">
+                <h1 className="text-base md:text-5xl font-bold text-white tracking-tight truncate">
+                  Appointments
+                </h1>
+                <p className="hidden md:block text-slate-300 text-lg leading-relaxed max-w-2xl mt-3">
+                  Schedule and manage patient appointments efficiently across your clinic.
+                </p>
               </div>
-
-              <div className="flex flex-col sm:flex-row gap-3">
-                {/* View Mode Toggle */}
-                <div className="inline-flex rounded-xl bg-gray-100 p-1">
-                  <button
-                    onClick={() => handleViewModeChange("calendar")}
-                    className={`inline-flex items-center px-4 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 ${viewMode === "calendar"
-                        ? "bg-white text-primary-700 shadow-sm"
-                        : "text-gray-600 hover:text-gray-900"
-                      }`}
-                  >
-                    <CalendarIcon className="h-4 w-4 mr-2" />
-                    Calendar
-                  </button>
-                  <button
-                    onClick={() => handleViewModeChange("list")}
-                    className={`inline-flex items-center px-4 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 ${viewMode === "list"
-                        ? "bg-white text-primary-700 shadow-sm"
-                        : "text-gray-600 hover:text-gray-900"
-                      }`}
-                  >
-                    <ListBulletIcon className="h-4 w-4 mr-2" />
-                    List
-                  </button>
-                </div>
-
-                {/* Filters Button */}
+            </div>
+            <div className="flex flex-row gap-1.5 md:gap-3 flex-shrink-0">
+              {/* View Mode Toggle */}
+              <div className="relative inline-flex rounded-lg md:rounded-xl bg-white/10 backdrop-blur-sm border border-white/20 p-0.5 md:p-1 gap-0.5 md:gap-1">
+                <motion.div
+                  className="absolute top-0.5 bottom-0.5 md:top-1 md:bottom-1 bg-white rounded-md md:rounded-lg shadow-lg"
+                  initial={false}
+                  animate={{
+                    left: viewMode === "calendar" ? "0.125rem" : "calc(50% + 0.0625rem)",
+                    right: viewMode === "calendar" ? "calc(50% + 0.0625rem)" : "0.125rem",
+                  }}
+                  transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                />
                 <button
-                  onClick={() => setShowFilters(!showFilters)}
-                  className={`inline-flex items-center px-4 py-2.5 text-sm font-medium rounded-xl border transition-all duration-200 ${showFilters
-                      ? "bg-primary-50 border-primary-200 text-primary-700"
-                      : "bg-white border-gray-200 text-gray-700 hover:bg-gray-50"
+                  onClick={() => handleViewModeChange("calendar")}
+                  className={`relative z-10 inline-flex items-center justify-center px-2 md:px-5 py-1.5 md:py-2 text-xs md:text-sm font-semibold rounded-md md:rounded-lg transition-colors duration-200 ${viewMode === "calendar" ? "text-slate-900" : "text-white"
                     }`}
                 >
-                  <FunnelIcon className="h-4 w-4 mr-2" />
-                  Filters
-                  {showFilters && (
-                    <span className="ml-2 inline-flex items-center justify-center w-2 h-2 bg-primary-500 rounded-full"></span>
-                  )}
+                  <CalendarIcon className="h-3.5 w-3.5 md:h-4 md:w-4 md:mr-2" />
+                  <span className="hidden md:inline">Calendar</span>
                 </button>
-
+                <button
+                  onClick={() => handleViewModeChange("list")}
+                  className={`relative z-10 inline-flex items-center justify-center px-2 md:px-5 py-1.5 md:py-2 text-xs md:text-sm font-semibold rounded-md md:rounded-lg transition-colors duration-200 ${viewMode === "list" ? "text-slate-900" : "text-white"
+                    }`}
+                >
+                  <ListBulletIcon className="h-3.5 w-3.5 md:h-4 md:w-4 md:mr-2" />
+                  <span className="hidden md:inline">List</span>
+                </button>
               </div>
+              {/* Filters Button */}
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => setShowFilters(!showFilters)}
+                className={`inline-flex items-center justify-center gap-1 md:gap-2 px-2 md:px-5 py-1.5 md:py-3 rounded-lg md:rounded-xl text-xs md:text-sm font-semibold transition-all shadow-lg ${showFilters
+                  ? "bg-white text-slate-900 shadow-white/20"
+                  : "bg-white/10 backdrop-blur-sm text-white border border-white/20 hover:bg-white/20 shadow-black/10"
+                  }`}
+              >
+                <FunnelIcon className="h-3.5 w-3.5 md:h-5 md:w-5" />
+                <span className="hidden sm:inline text-xs md:text-sm">{showFilters ? "Hide" : "Show"}</span>
+              </motion.button>
             </div>
           </div>
+        </motion.div>
 
-          {/* Enhanced Stats Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 animate-slide-in-right">
-            <div className="card-modern p-6 hover-lift hover-glow">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600 mb-1">
-                    Total Appointments
-                  </p>
-                  <p className="text-3xl font-bold text-gray-900">
-                    {statistics?.totalAppointments || totalAppointments || 0}
-                  </p>
-                  <p className="text-xs text-gray-500 mt-1">All time</p>
-                </div>
-                <div className="p-3 bg-blue-50 rounded-xl">
-                  <CalendarIcon className="h-6 w-6 text-blue-600" />
-                </div>
-              </div>
-            </div>
+        {/* Stats Cards - Premium Glass Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5">
+          <StatCard
+            value={statistics?.totalAppointments || totalAppointments || 0}
+            label="Total"
+            icon={CalendarIcon}
+            iconColor="from-blue-500 to-cyan-500"
+            hoverColor="blue-200"
+            bgGradient="from-blue-50/50 to-cyan-50/50"
+            badge="All"
+            badgeColor="bg-blue-100 text-blue-700"
+            variants={itemVariants}
+          />
+          <StatCard
+            value={statistics?.todayAppointments || todayAppointments.length}
+            label={new Date().toLocaleDateString("en-US", { weekday: "short" })}
+            icon={ClockIcon}
+            iconColor="from-green-500 to-emerald-500"
+            hoverColor="green-200"
+            bgGradient="from-green-50/50 to-emerald-50/50"
+            badge="Today"
+            badgeColor="bg-green-100 text-green-700"
+            variants={itemVariants}
+          />
+          <StatCard
+            value={statistics?.upcomingAppointments || upcomingAppointments.length}
+            label="Upcoming"
+            icon={ChartBarIcon}
+            iconColor="from-amber-500 to-orange-500"
+            hoverColor="amber-200"
+            bgGradient="from-amber-50/50 to-orange-50/50"
+            badge="7d"
+            badgeColor="bg-amber-100 text-amber-700"
+            variants={itemVariants}
+          />
+          <StatCard
+            value={completedAppointments.length}
+            label="Complete"
+            icon={CheckCircleIcon}
+            iconColor="from-purple-500 to-pink-500"
+            hoverColor="purple-200"
+            bgGradient="from-purple-50/50 to-pink-50/50"
+            badge="Done"
+            badgeColor="bg-purple-100 text-purple-700"
+            variants={itemVariants}
+          />
+        </div>
 
-            <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow duration-200">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600 mb-1">
-                    Today's Appointments
-                  </p>
-                  <p className="text-3xl font-bold text-gray-900">
-                    {statistics?.todayAppointments || todayAppointments.length}
-                  </p>
-                  <p className="text-xs text-emerald-600 mt-1 font-medium">
-                    {new Date().toLocaleDateString("en-US", {
-                      weekday: "long",
-                    })}
-                  </p>
-                </div>
-                <div className="p-3 bg-emerald-50 rounded-xl">
-                  <svg
-                    className="h-6 w-6 text-emerald-600"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                    />
-                  </svg>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow duration-200">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600 mb-1">
-                    Upcoming
-                  </p>
-                  <p className="text-3xl font-bold text-gray-900">
-                    {statistics?.upcomingAppointments ||
-                      upcomingAppointments.length}
-                  </p>
-                  <p className="text-xs text-amber-600 mt-1 font-medium">
-                    Next 7 days
-                  </p>
-                </div>
-                <div className="p-3 bg-amber-50 rounded-xl">
-                  <svg
-                    className="h-6 w-6 text-amber-600"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
-                    />
-                  </svg>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow duration-200">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600 mb-1">
-                    Completed
-                  </p>
-                  <p className="text-3xl font-bold text-gray-900">
-                    {completedAppointments.length}
-                  </p>
-                  <p className="text-xs text-purple-600 mt-1 font-medium">
-                    This month
-                  </p>
-                </div>
-                <div className="p-3 bg-purple-50 rounded-xl">
-                  <svg
-                    className="h-6 w-6 text-purple-600"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                    />
-                  </svg>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Enhanced Filters */}
+        {/* Filters Section - Matching Dashboard Style */}
+        <AnimatePresence mode="wait">
           {showFilters && (
-            <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 mb-8 animate-fade-in">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-gray-900">
-                  Filter Appointments
-                </h3>
-                <button
-                  onClick={() => setShowFilters(false)}
-                  className="text-gray-400 hover:text-gray-600 transition-colors"
-                >
-                  <svg
-                    className="h-5 w-5"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M6 18L18 6M6 6l12 12"
-                    />
-                  </svg>
-                </button>
-              </div>
-              <AppointmentFilters
-                filters={filters}
-                onFilterChange={handleFilterChange}
-                onClearFilters={handleClearFilters}
-              />
-            </div>
-          )}
-
-          {/* Enhanced Main Content */}
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-            {error ? (
-              <div className="p-12 text-center">
-                <div className="mx-auto w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mb-4">
-                  <svg
-                    className="h-8 w-8 text-red-500"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"
-                    />
-                  </svg>
+            <motion.div
+              key="filters"
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3, ease: "easeInOut" }}
+            >
+              <div className="bg-white/80 backdrop-blur-xl border border-gray-200/50 rounded-3xl shadow-lg shadow-gray-200/50 p-8">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-1.5 h-8 bg-gradient-to-b from-green-500 to-emerald-500 rounded-full"></div>
+                  <h2 className="text-xl font-bold text-gray-900 tracking-tight">Filter Appointments</h2>
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                  Unable to load appointments
-                </h3>
-                <p className="text-gray-600 mb-6">{error}</p>
-                <button
-                  onClick={handleRetry}
-                  className="inline-flex items-center px-4 py-2 bg-primary-600 text-white font-medium rounded-xl hover:bg-primary-700 transition-colors duration-200"
-                >
-                  <svg
-                    className="h-4 w-4 mr-2"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-                    />
-                  </svg>
-                  Try Again
-                </button>
-              </div>
-            ) : loading ? (
-              <div className="flex items-center justify-center h-96">
-                <div className="text-center">
-                  <LoadingSpinner
-                    size="large"
-                    ariaLabel="Loading appointments"
-                  />
-                  <p className="text-gray-500 mt-4">Loading appointments...</p>
-                </div>
-              </div>
-            ) : viewMode === "calendar" ? (
-              <div className="p-6">
-                <AppointmentCalendar
-                  appointments={appointments}
-                  loading={loading}
-                  onAppointmentSelect={handleAppointmentSelect}
-                  onRescheduleAppointment={handleRescheduleAppointment}
+                <AppointmentFilters
+                  filters={filters}
+                  onFilterChange={handleFilterChange}
+                  onClearFilters={handleClearFilters}
                 />
               </div>
-            ) : (
-              <>
-                <div className="p-6">
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Main Content Section - Matching Dashboard Style */}
+        <motion.div
+          variants={itemVariants}
+          className="bg-white/80 backdrop-blur-xl border border-gray-200/50 rounded-xl md:rounded-3xl shadow-lg shadow-gray-200/50 overflow-hidden"
+        >
+          {error ? (
+            <div className="p-4 md:p-12 text-center">
+              <motion.div
+                initial={{ scale: 0, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ type: "spring", stiffness: 200 }}
+                className="w-16 h-16 bg-gradient-to-br from-red-100 to-red-200 rounded-2xl flex items-center justify-center mx-auto mb-4"
+              >
+                <svg className="w-8 h-8 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                </svg>
+              </motion.div>
+              <p className="text-red-600 font-semibold mb-2">Error loading appointments</p>
+              <p className="text-gray-600 text-sm mb-4">{error}</p>
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={handleRetry}
+                className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-green-500 to-emerald-500 text-white text-sm font-semibold rounded-xl hover:shadow-lg hover:shadow-green-500/25 transition-all"
+              >
+                <ArrowPathIcon className="w-4 h-4" />
+                Try Again
+              </motion.button>
+            </div>
+          ) : loading ? (
+            <div className="flex items-center justify-center h-96">
+              <div className="text-center">
+                <LoadingSpinner size="large" ariaLabel="Loading appointments" />
+                <p className="text-gray-600 font-medium mt-4">Loading appointments...</p>
+              </div>
+            </div>
+          ) : (
+            <>
+              <div className="p-3 md:p-8">
+                <div className="flex items-center gap-1.5 md:gap-3 mb-3 md:mb-6">
+                  <div className="w-1 md:w-1.5 h-5 md:h-8 bg-gradient-to-b from-green-500 to-emerald-500 rounded-full"></div>
+                  <h2 className="text-sm md:text-2xl font-bold text-gray-900 tracking-tight">
+                    {viewMode === "calendar" ? "Calendar" : "All Appointments"}
+                  </h2>
+                  <div className="ml-auto px-2 md:px-3 py-0.5 md:py-1 bg-gray-100 text-gray-700 text-[10px] md:text-sm font-semibold rounded-full">
+                    {totalAppointments}
+                  </div>
+                </div>
+                {viewMode === "calendar" ? (
+                  <AppointmentCalendar
+                    appointments={appointments}
+                    loading={loading}
+                    onAppointmentSelect={handleAppointmentSelect}
+                    onRescheduleAppointment={handleRescheduleAppointment}
+                  />
+                ) : (
                   <AppointmentList
                     appointments={appointments}
                     loading={loading}
                     onAppointmentSelect={handleAppointmentSelect}
                     onRescheduleAppointment={handleRescheduleAppointment}
                   />
-                </div>
-                {totalPages > 1 && (
-                  <div className="px-6 py-4 border-t border-gray-100 bg-gray-50/50">
-                    <Pagination
-                      currentPage={currentPage}
-                      totalPages={totalPages}
-                      onPageChange={handlePageChange}
-                    />
-                  </div>
                 )}
-              </>
-            )}
-          </div>
-        </div>
-      </div>
+              </div>
+              {totalPages > 1 && viewMode === "list" && (
+                <div className="px-4 md:px-8 py-4 md:py-6 border-t border-gray-200/50 bg-gray-50/50">
+                  <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={handlePageChange}
+                  />
+                </div>
+              )}
+            </>
+          )}
+        </motion.div>
+      </motion.div>
 
       {/* Appointment Details Modal */}
       {showAppointmentDetails && selectedAppointment && (

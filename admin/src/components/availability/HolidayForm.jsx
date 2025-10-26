@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { CalendarIcon, XMarkIcon, InformationCircleIcon } from '@heroicons/react/24/outline';
 import { toast } from 'react-hot-toast';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const HolidayForm = ({ holiday, onSave, onCancel }) => {
   const [formData, setFormData] = useState({
@@ -122,24 +123,42 @@ const HolidayForm = ({ holiday, onSave, onCancel }) => {
   }
 
   return createPortal(
-    <div className="fixed inset-0 z-[1000] bg-gray-600/50 overflow-y-auto">
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-[1000] bg-gray-900/50 backdrop-blur-sm overflow-y-auto"
+    >
       <div className="min-h-full flex items-start justify-center p-4">
-        <div className="relative mt-6 w-full max-w-md p-5 border shadow-lg rounded-md bg-white">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-medium text-gray-900">
-            {holiday ? 'Edit Holiday' : 'Add New Holiday'}
-          </h3>
-          <button
-            onClick={onCancel}
-            className="text-gray-400 hover:text-gray-600"
-          >
-            <XMarkIcon className="h-6 w-6" />
-          </button>
-        </div>
-        
-        <p className="text-sm text-gray-600 mb-6">
-          {holiday ? 'Update the holiday information.' : 'Add a new holiday or unavailable date.'}
-        </p>
+        <motion.div
+          initial={{ scale: 0.95, opacity: 0, y: 20 }}
+          animate={{ scale: 1, opacity: 1, y: 0 }}
+          exit={{ scale: 0.95, opacity: 0, y: 20 }}
+          className="relative mt-6 w-full max-w-md p-6 md:p-8 border border-gray-200 shadow-2xl rounded-3xl bg-white"
+        >
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-gradient-to-br from-amber-500 to-orange-500 rounded-xl flex items-center justify-center shadow-lg shadow-amber-500/25">
+                <CalendarIcon className="h-5 w-5 text-white" />
+              </div>
+              <div>
+                <h3 className="text-xl font-semibold text-gray-900">
+                  {holiday ? 'Edit Holiday' : 'Add New Holiday'}
+                </h3>
+                <p className="text-sm text-gray-600 mt-0.5">
+                  {holiday ? 'Update the holiday information.' : 'Add a new holiday or unavailable date.'}
+                </p>
+              </div>
+            </div>
+            <motion.button
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              onClick={onCancel}
+              className="text-gray-400 hover:text-gray-600 p-2 hover:bg-gray-100 rounded-xl transition-colors"
+            >
+              <XMarkIcon className="h-6 w-6" />
+            </motion.button>
+          </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Date Selection */}
@@ -243,13 +262,19 @@ const HolidayForm = ({ holiday, onSave, onCancel }) => {
                 <p className="text-sm text-red-500">{errors.recurringPattern}</p>
               )}
               
-              <div className="flex items-start gap-2 p-3 bg-blue-50 border border-blue-200 rounded-md">
-                <InformationCircleIcon className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
-                <div className="text-sm text-blue-800">
-                  <p className="font-medium">Recurring Holiday Info:</p>
-                  <p>This holiday will automatically apply to future dates based on the selected pattern.</p>
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="flex items-start gap-3 p-4 bg-gradient-to-br from-blue-50 to-cyan-50 border border-blue-200 rounded-xl"
+              >
+                <div className="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                  <InformationCircleIcon className="h-5 w-5 text-blue-600" />
                 </div>
-              </div>
+                <div className="text-sm text-blue-900">
+                  <p className="font-semibold mb-1">Recurring Holiday Info</p>
+                  <p className="text-blue-700">This holiday will automatically apply to future dates based on the selected pattern.</p>
+                </div>
+              </motion.div>
             </div>
           )}
 
@@ -267,26 +292,30 @@ const HolidayForm = ({ holiday, onSave, onCancel }) => {
             </label>
           </div>
 
-          <div className="flex justify-end space-x-3 pt-4">
-            <button
+          <div className="flex gap-3 pt-6 border-t border-gray-200">
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
               type="button"
               onClick={onCancel}
-              className="px-4 py-2 border border-gray-300 text-gray-700 font-medium rounded-md hover:bg-gray-50"
+              className="flex-1 px-5 py-2.5 bg-gray-100 text-gray-700 font-semibold rounded-xl hover:bg-gray-200 transition-colors"
             >
               Cancel
-            </button>
-            <button
+            </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
               type="submit"
               disabled={loading}
-              className="px-4 py-2 bg-primary-600 text-white font-medium rounded-md hover:bg-primary-700 disabled:opacity-50"
+              className="flex-1 px-5 py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-amber-500/25 disabled:opacity-50 transition-all"
             >
               {loading ? 'Saving...' : (holiday ? 'Update Holiday' : 'Add Holiday')}
-            </button>
+            </motion.button>
           </div>
         </form>
+        </motion.div>
       </div>
-    </div>
-    </div>,
+    </motion.div>,
     document.body
   );
 };

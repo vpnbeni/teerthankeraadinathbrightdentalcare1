@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import AdminLayout from "../components/common/AdminLayout";
+import StatCard from "../components/common/StatCard";
 import UserList from "../components/users/UserList";
 import UserFilters from "../components/users/UserFilters";
 import UserDetailTabs from "../components/users/UserDetailTabs";
@@ -210,91 +211,52 @@ const UserManagement = () => {
           </div>
         </motion.div>
 
-        {/* Premium Stats Cards - Horizontal Scroll on Mobile */}
-        <div className="flex md:grid overflow-x-auto md:overflow-visible gap-3 md:gap-5 md:grid-cols-2 lg:grid-cols-4 pb-2 md:pb-0 -mx-4 px-4 md:mx-0 md:px-0">
-          <motion.div
+        {/* Stats Cards - Premium Glass Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5">
+          <StatCard
+            value={stats.total}
+            label="Total Users"
+            icon={UsersIcon}
+            iconColor="from-blue-500 to-cyan-500"
+            hoverColor="blue-200"
+            bgGradient="from-blue-50/50 to-cyan-50/50"
+            badge="All"
+            badgeColor="bg-blue-100 text-blue-700"
             variants={itemVariants}
-            className="flex-shrink-0 w-32 md:w-auto md:flex-1 group relative bg-white/80 backdrop-blur-xl border border-gray-200/50 rounded-2xl md:rounded-3xl p-4 md:p-7 shadow-lg shadow-gray-200/50 hover:shadow-xl hover:shadow-blue-200/30 transition-all duration-300"
-          >
-            <div className="absolute inset-0 bg-gradient-to-br from-blue-50/50 to-cyan-50/50 rounded-2xl md:rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-            <div className="relative">
-              <div className="flex flex-col md:flex-row items-center md:items-start md:justify-between gap-2 md:gap-0 mb-3 md:mb-6">
-                <div className="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl md:rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/25">
-                  <UsersIcon className="w-5 h-5 md:w-6 md:h-6 text-white" />
-                </div>
-                <div className="px-2 py-0.5 md:px-3 md:py-1 bg-blue-100 text-blue-700 text-[10px] md:text-xs font-semibold rounded-full">
-                  All
-                </div>
-              </div>
-              <div className="text-3xl md:text-5xl font-bold text-gray-900 mb-1 md:mb-2 tracking-tight text-center md:text-left">
-                {stats.total}
-              </div>
-              <p className="text-gray-600 font-medium text-[10px] md:text-sm text-center md:text-left">Total Users</p>
-            </div>
-          </motion.div>
-
-          <motion.div
+          />
+          <StatCard
+            value={stats.active}
+            label="Active"
+            icon={CheckCircleIcon}
+            iconColor="from-green-500 to-emerald-500"
+            hoverColor="green-200"
+            bgGradient="from-green-50/50 to-emerald-50/50"
+            badge="Active"
+            badgeColor="bg-green-100 text-green-700"
             variants={itemVariants}
-            className="flex-shrink-0 w-32 md:w-auto md:flex-1 group relative bg-white/80 backdrop-blur-xl border border-gray-200/50 rounded-2xl md:rounded-3xl p-4 md:p-7 shadow-lg shadow-gray-200/50 hover:shadow-xl hover:shadow-green-200/30 transition-all duration-300"
-          >
-            <div className="absolute inset-0 bg-gradient-to-br from-green-50/50 to-emerald-50/50 rounded-2xl md:rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-            <div className="relative">
-              <div className="flex flex-col md:flex-row items-center md:items-start md:justify-between gap-2 md:gap-0 mb-3 md:mb-6">
-                <div className="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-br from-green-500 to-emerald-500 rounded-xl md:rounded-2xl flex items-center justify-center shadow-lg shadow-green-500/25">
-                  <CheckCircleIcon className="w-5 h-5 md:w-6 md:h-6 text-white" />
-                </div>
-                <div className="px-2 py-0.5 md:px-3 md:py-1 bg-green-100 text-green-700 text-[10px] md:text-xs font-semibold rounded-full">
-                  Active
-                </div>
-              </div>
-              <div className="text-3xl md:text-5xl font-bold text-gray-900 mb-1 md:mb-2 tracking-tight text-center md:text-left">
-                {stats.active}
-              </div>
-              <p className="text-gray-600 font-medium text-[10px] md:text-sm text-center md:text-left leading-tight">Active</p>
-            </div>
-          </motion.div>
-
-          <motion.div
+          />
+          <StatCard
+            value={stats.expired}
+            label="Expired"
+            icon={XCircleIcon}
+            iconColor="from-amber-500 to-orange-500"
+            hoverColor="amber-200"
+            bgGradient="from-amber-50/50 to-orange-50/50"
+            badge="Expired"
+            badgeColor="bg-amber-100 text-amber-700"
             variants={itemVariants}
-            className="flex-shrink-0 w-32 md:w-auto md:flex-1 group relative bg-white/80 backdrop-blur-xl border border-gray-200/50 rounded-2xl md:rounded-3xl p-4 md:p-7 shadow-lg shadow-gray-200/50 hover:shadow-xl hover:shadow-amber-200/30 transition-all duration-300"
-          >
-            <div className="absolute inset-0 bg-gradient-to-br from-amber-50/50 to-orange-50/50 rounded-2xl md:rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-            <div className="relative">
-              <div className="flex flex-col md:flex-row items-center md:items-start md:justify-between gap-2 md:gap-0 mb-3 md:mb-6">
-                <div className="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-br from-amber-500 to-orange-500 rounded-xl md:rounded-2xl flex items-center justify-center shadow-lg shadow-amber-500/25">
-                  <XCircleIcon className="w-5 h-5 md:w-6 md:h-6 text-white" />
-                </div>
-                <div className="px-2 py-0.5 md:px-3 md:py-1 bg-amber-100 text-amber-700 text-[10px] md:text-xs font-semibold rounded-full">
-                  Expired
-                </div>
-              </div>
-              <div className="text-3xl md:text-5xl font-bold text-gray-900 mb-1 md:mb-2 tracking-tight text-center md:text-left">
-                {stats.expired}
-              </div>
-              <p className="text-gray-600 font-medium text-[10px] md:text-sm text-center md:text-left leading-tight">Expired</p>
-            </div>
-          </motion.div>
-
-          <motion.div
+          />
+          <StatCard
+            value={stats.newToday}
+            label="New Today"
+            icon={SparklesIcon}
+            iconColor="from-purple-500 to-pink-500"
+            hoverColor="purple-200"
+            bgGradient="from-purple-50/50 to-pink-50/50"
+            badge="Today"
+            badgeColor="bg-purple-100 text-purple-700"
             variants={itemVariants}
-            className="flex-shrink-0 w-32 md:w-auto md:flex-1 group relative bg-white/80 backdrop-blur-xl border border-gray-200/50 rounded-2xl md:rounded-3xl p-4 md:p-7 shadow-lg shadow-gray-200/50 hover:shadow-xl hover:shadow-purple-200/30 transition-all duration-300"
-          >
-            <div className="absolute inset-0 bg-gradient-to-br from-purple-50/50 to-pink-50/50 rounded-2xl md:rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-            <div className="relative">
-              <div className="flex flex-col md:flex-row items-center md:items-start md:justify-between gap-2 md:gap-0 mb-3 md:mb-6">
-                <div className="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl md:rounded-2xl flex items-center justify-center shadow-lg shadow-purple-500/25">
-                  <SparklesIcon className="w-5 h-5 md:w-6 md:h-6 text-white" />
-                </div>
-                <div className="px-2 py-0.5 md:px-3 md:py-1 bg-purple-100 text-purple-700 text-[10px] md:text-xs font-semibold rounded-full">
-                  Today
-                </div>
-              </div>
-              <div className="text-3xl md:text-5xl font-bold text-gray-900 mb-1 md:mb-2 tracking-tight text-center md:text-left">
-                {stats.newToday}
-              </div>
-              <p className="text-gray-600 font-medium text-[10px] md:text-sm text-center md:text-left leading-tight">New Today</p>
-            </div>
-          </motion.div>
+          />
         </div>
 
         {/* Filters Section */}

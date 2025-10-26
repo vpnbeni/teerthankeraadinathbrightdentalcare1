@@ -49,7 +49,7 @@ const AppointmentList = ({
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3 md:space-y-4">
       {appointments.map((appointment) => (
         <AppointmentCard
           key={appointment._id}

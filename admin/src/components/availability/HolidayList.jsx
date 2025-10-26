@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { PlusIcon, PencilIcon, TrashIcon, CalendarIcon } from '@heroicons/react/24/outline';
+import { PlusIcon, PencilIcon, TrashIcon, CalendarIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import { toast } from 'react-hot-toast';
 import { availabilityService } from '../../services/availability';
 import HolidayForm from './HolidayForm';
+import { motion } from 'framer-motion';
 
 const HolidayList = () => {
   const [holidays, setHolidays] = useState([]);
@@ -75,89 +76,121 @@ const HolidayList = () => {
           <p>Loading holidays...</p>
         </div>
       ) : holidays.length === 0 ? (
-        <div className="border border-gray-200 rounded-lg p-6">
-          <div className="text-center py-8">
-            <CalendarIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No holidays defined</h3>
-            <p className="text-gray-500 mb-4">
-              Add holidays to block unavailable dates in the appointment system.
-            </p>
-            <button
-              onClick={() => setShowForm(true)}
-              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700"
-            >
-              <PlusIcon className="h-4 w-4 mr-2" />
-              Add Your First Holiday
-            </button>
-          </div>
+        <div className="text-center py-16">
+          <motion.div
+            initial={{ scale: 0, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ type: "spring", stiffness: 200 }}
+            className="w-20 h-20 bg-gradient-to-br from-amber-100 to-orange-100 rounded-2xl flex items-center justify-center mx-auto mb-6"
+          >
+            <CalendarIcon className="h-10 w-10 text-amber-600" />
+          </motion.div>
+          <h3 className="text-xl font-semibold text-gray-900 mb-2">No holidays defined</h3>
+          <p className="text-gray-600 mb-6">
+            Add holidays to block unavailable dates in the appointment system.
+          </p>
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => setShowForm(true)}
+            className="inline-flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-indigo-500/25 transition-all"
+          >
+            <PlusIcon className="h-5 w-5" />
+            Add Your First Holiday
+          </motion.button>
         </div>
       ) : (
-        <div className="grid gap-4">
-          {holidays.map((holiday) => (
-            <div key={holiday._id} className="border border-gray-200 rounded-lg">
-              <div className="px-6 py-4 border-b border-gray-200">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-medium text-gray-900">{holiday.reason}</h3>
-                  <div className="flex items-center gap-2">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                      holiday.isActive 
-                        ? 'bg-green-100 text-green-800' 
-                        : 'bg-gray-100 text-gray-800'
+        <div className="space-y-4">
+          {holidays.map((holiday, index) => (
+            <motion.div
+              key={holiday._id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.05 }}
+              className="group bg-white/80 backdrop-blur-sm border border-gray-200/50 rounded-2xl p-6 hover:shadow-lg hover:shadow-gray-200/50 transition-all duration-300"
+            >
+              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                <div className="flex-1">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center shadow-md ${
+                      holiday.type === 'public_holiday'
+                        ? 'bg-gradient-to-br from-amber-500 to-orange-500 shadow-amber-500/25'
+                        : holiday.type === 'clinic_closed'
+                        ? 'bg-gradient-to-br from-red-500 to-pink-500 shadow-red-500/25'
+                        : 'bg-gradient-to-br from-gray-500 to-gray-600 shadow-gray-500/25'
                     }`}>
-                      {holiday.isActive ? 'Active' : 'Inactive'}
-                    </span>
-                    <button
-                      onClick={() => handleEdit(holiday)}
-                      className="inline-flex items-center px-2 py-1 border border-gray-300 text-sm font-medium rounded text-gray-700 bg-white hover:bg-gray-50"
-                    >
-                      <PencilIcon className="h-3 w-3 mr-1" />
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => handleDelete(holiday._id)}
-                      className="inline-flex items-center px-2 py-1 border border-gray-300 text-sm font-medium rounded text-red-600 bg-white hover:bg-red-50"
-                    >
-                      <TrashIcon className="h-3 w-3 mr-1" />
-                      Delete
-                    </button>
-                  </div>
-                </div>
-              </div>
-              <div className="px-6 py-4">
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <span className="font-medium text-gray-700">Type:</span>
-                    <span className="ml-2 capitalize">{holiday.type?.replace('_', ' ')}</span>
-                  </div>
-                  <div>
-                    <span className="font-medium text-gray-700">Date:</span>
-                    <span className="ml-2">
-                      {new Date(holiday.date).toLocaleDateString()}
-                    </span>
-                  </div>
-                  {holiday.isRecurring && (
-                    <>
-                      <div>
-                        <span className="font-medium text-gray-700">Recurring:</span>
-                        <span className="ml-2 capitalize">{holiday.recurringPattern}</span>
-                      </div>
-                      {holiday.recurringEndDate && (
-                        <div>
-                          <span className="font-medium text-gray-700">Until:</span>
-                          <span className="ml-2">
-                            {new Date(holiday.recurringEndDate).toLocaleDateString()}
+                      <CalendarIcon className="h-5 w-5 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-semibold text-gray-900">{holiday.reason}</h3>
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${
+                          holiday.isActive 
+                            ? 'bg-green-100 text-green-700' 
+                            : 'bg-gray-100 text-gray-700'
+                        }`}>
+                          {holiday.isActive ? 'Active' : 'Inactive'}
+                        </span>
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-indigo-100 text-indigo-700 capitalize">
+                          {holiday.type?.replace('_', ' ')}
+                        </span>
+                        {holiday.isRecurring && (
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-purple-100 text-purple-700 capitalize">
+                            {holiday.recurringPattern}
                           </span>
-                        </div>
-                      )}
-                    </>
-                  )}
-                  <div className="col-span-2">
-                    <span className="font-medium text-gray-700">Reason:</span>
-                    <span className="ml-2">{holiday.reason}</span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-4">
+                    <div>
+                      <p className="text-xs text-gray-500 mb-1">Date</p>
+                      <p className="text-sm font-medium text-gray-900">
+                        {new Date(holiday.date).toLocaleDateString('en-US', { 
+                          month: 'short', 
+                          day: 'numeric', 
+                          year: 'numeric' 
+                        })}
+                      </p>
+                    </div>
+                    {holiday.isRecurring && holiday.recurringEndDate && (
+                      <div>
+                        <p className="text-xs text-gray-500 mb-1">Until</p>
+                        <p className="text-sm font-medium text-gray-900">
+                          {new Date(holiday.recurringEndDate).toLocaleDateString('en-US', { 
+                            month: 'short', 
+                            day: 'numeric', 
+                            year: 'numeric' 
+                          })}
+                        </p>
+                      </div>
+                    )}
                   </div>
                 </div>
+                
+                <div className="flex items-center gap-2 lg:flex-col">
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => handleEdit(holiday)}
+                    className="flex-1 lg:flex-none inline-flex items-center justify-center gap-2 px-4 py-2 bg-indigo-50 text-indigo-700 font-medium rounded-xl hover:bg-indigo-100 transition-colors"
+                  >
+                    <PencilIcon className="h-4 w-4" />
+                    <span className="text-sm">Edit</span>
+                  </motion.button>
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => handleDelete(holiday._id)}
+                    className="flex-1 lg:flex-none inline-flex items-center justify-center gap-2 px-4 py-2 bg-red-50 text-red-700 font-medium rounded-xl hover:bg-red-100 transition-colors"
+                  >
+                    <TrashIcon className="h-4 w-4" />
+                    <span className="text-sm">Delete</span>
+                  </motion.button>
+                </div>
               </div>
-            </div>
+            </motion.div>
           ))}
         </div>
       )}

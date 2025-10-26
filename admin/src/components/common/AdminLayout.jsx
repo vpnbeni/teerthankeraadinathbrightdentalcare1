@@ -157,9 +157,8 @@ const AdminLayout = ({ children }) => {
 
       {/* Mobile sidebar */}
       <div
-        className={`fixed inset-0 z-50 lg:hidden transition-opacity duration-300 ${
-          sidebarOpen ? "opacity-100" : "opacity-0 pointer-events-none"
-        }`}
+        className={`fixed inset-0 z-50 lg:hidden transition-opacity duration-300 ${sidebarOpen ? "opacity-100" : "opacity-0 pointer-events-none"
+          }`}
         role="dialog"
         aria-modal="true"
         aria-label="Navigation menu"
@@ -174,9 +173,8 @@ const AdminLayout = ({ children }) => {
         {/* Sidebar */}
         <div
           ref={sidebarRef}
-          className={`fixed inset-y-0 left-0 flex w-72 flex-col bg-white/95 backdrop-blur-xl shadow-2xl transition-transform duration-300 ${
-            sidebarOpen ? "translate-x-0" : "-translate-x-full"
-          }`}
+          className={`fixed inset-y-0 left-0 flex w-72 flex-col bg-white/95 backdrop-blur-xl shadow-2xl transition-transform duration-300 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"
+            }`}
           onKeyDown={handleSidebarKeyDown}
         >
           {/* Mobile Header */}
@@ -209,18 +207,16 @@ const AdminLayout = ({ children }) => {
                   key={item.name}
                   to={item.href}
                   onClick={closeSidebar}
-                  className={`group flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary/20 mobile-tap-target ${
-                    isActive
-                      ? "bg-gradient-to-r from-[#2E676F] via-[#346870] to-[#4a8a95] text-white shadow-lg shadow-[#346870]/25"
-                      : "text-gray-700 hover:bg-gray-100/80 hover:text-gray-900"
-                  }`}
+                  className={`group flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary/20 mobile-tap-target ${isActive
+                    ? "bg-gradient-to-r from-[#2E676F] via-[#346870] to-[#4a8a95] text-white shadow-lg shadow-[#346870]/25"
+                    : "text-gray-700 hover:bg-gray-100/80 hover:text-gray-900"
+                    }`}
                   aria-current={isActive ? "page" : undefined}
                 >
-                  <div className={`relative w-9 h-9 flex items-center justify-center rounded-lg transition-all ${
-                    isActive
-                      ? "bg-white/10"
-                      : "bg-gray-100 group-hover:bg-gray-200"
-                  }`}>
+                  <div className={`relative w-9 h-9 flex items-center justify-center rounded-lg transition-all ${isActive
+                    ? "bg-white/10"
+                    : "bg-gray-100 group-hover:bg-gray-200"
+                    }`}>
                     <item.icon
                       className={`h-5 w-5 ${isActive ? "text-white" : "text-gray-600 group-hover:text-gray-900"}`}
                       aria-hidden="true"
@@ -244,11 +240,23 @@ const AdminLayout = ({ children }) => {
 
           {/* Mobile User Section */}
           <div className="border-t border-gray-200/50 p-4 bg-gradient-to-t from-gray-50/50 to-transparent">
-            <div className="p-3 mb-3 bg-white/60 backdrop-blur-sm rounded-2xl border border-gray-200/50">
-              <p className="text-sm font-semibold text-gray-900 truncate">
-                {user?.name || "Admin"}
-              </p>
-              <p className="text-xs text-gray-600 truncate capitalize">{user?.role || "Administrator"}</p>
+            <div className="flex items-center gap-2 mb-3">
+              <div className="flex justify-between items-center w-full  p-3 bg-white/60 backdrop-blur-sm rounded-2xl border border-gray-200/50">
+                <div className="">
+                  <p className="text-sm font-semibold text-gray-900 truncate">
+                    {user?.name || "Admin"}
+                  </p>
+                  <p className="text-xs text-gray-600 truncate capitalize">{user?.role || "Administrator"}</p>
+                </div>
+                <Link
+                  to="/settings"
+                  className="flex w-[45.78px] h-[45.78px] items-center justify-center rounded-xl bg-white/60 backdrop-blur-sm border border-gray-200/50 shadow-sm hover:shadow-md hover:bg-white/80 text-gray-600 hover:text-gray-900 transition-all duration-200"
+                  aria-label="System Settings"
+                  onClick={closeSidebar}
+                >
+                  <CogIcon className="h-[24px] w-[24px]" />
+                </Link>
+              </div>
             </div>
             <button
               onClick={handleLogout}
@@ -289,18 +297,16 @@ const AdminLayout = ({ children }) => {
                 <Link
                   key={item.name}
                   to={item.href}
-                  className={`group flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary/20 ${
-                    isActive
-                      ? "bg-gradient-to-r from-[#2E676F] via-[#346870] to-[#4a8a95] text-white shadow-lg shadow-[#346870]/25"
-                      : "text-gray-700 hover:bg-gray-100/80 hover:text-gray-900"
-                  }`}
+                  className={`group flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary/20 ${isActive
+                    ? "bg-gradient-to-r from-[#2E676F] via-[#346870] to-[#4a8a95] text-white shadow-lg shadow-[#346870]/25"
+                    : "text-gray-700 hover:bg-gray-100/80 hover:text-gray-900"
+                    }`}
                   aria-current={isActive ? "page" : undefined}
                 >
-                  <div className={`relative w-9 h-9 flex items-center justify-center rounded-lg transition-all ${
-                    isActive
-                      ? "bg-white/10"
-                      : "bg-gray-100 group-hover:bg-gray-200"
-                  }`}>
+                  <div className={`relative w-9 h-9 flex items-center justify-center rounded-lg transition-all ${isActive
+                    ? "bg-white/10"
+                    : "bg-gray-100 group-hover:bg-gray-200"
+                    }`}>
                     <item.icon
                       className={`h-5 w-5 ${isActive ? "text-white" : "text-gray-600 group-hover:text-gray-900"}`}
                       aria-hidden="true"
@@ -327,11 +333,22 @@ const AdminLayout = ({ children }) => {
 
           {/* User Section */}
           <div className="border-t border-gray-200/50 p-4 bg-gradient-to-t from-gray-50/50 to-transparent">
-            <div className="p-3 mb-3 bg-white/60 backdrop-blur-sm rounded-2xl border border-gray-200/50 hover:bg-white/80 hover:shadow-md transition-all duration-200">
-              <p className="text-sm font-semibold text-gray-900 truncate">
-                {user?.name || "Admin"}
-              </p>
-              <p className="text-xs text-gray-600 truncate capitalize">{user?.role || "Administrator"}</p>
+            <div className="flex items-center gap-2 mb-3">
+              <div className="flex w-full items-start justify-between p-3 bg-white/60 backdrop-blur-sm rounded-2xl border border-gray-200/50 hover:bg-white/80 hover:shadow-md transition-all duration-200 ">
+                <div className="">
+                  <p className="text-sm font-semibold text-gray-900 truncate">
+                    {user?.name || "Admin"}
+                  </p>
+                  <p className="text-xs text-gray-600 truncate capitalize">{user?.role || "Administrator"}</p>
+                </div>
+                <Link
+                  to="/settings"
+                  className="flex w-[45.78px] h-[45.78px] items-center justify-center rounded-xl bg-white/60 backdrop-blur-sm border border-gray-200/50 shadow-sm hover:shadow-md hover:bg-white/80 text-gray-600 hover:text-gray-900 transition-all duration-200"
+                  aria-label="System Settings"
+                >
+                  <CogIcon className="h-[24px] w-[24px]" />
+                </Link>
+              </div>
             </div>
             <button
               onClick={handleLogout}
@@ -382,15 +399,6 @@ const AdminLayout = ({ children }) => {
               {/* Notification Bell */}
               <NotificationBell />
 
-              {/* Settings Icon */}
-              <Link
-                to="/settings"
-                className="hidden lg:flex w-10 h-10 items-center justify-center rounded-xl bg-white/60 backdrop-blur-sm border border-gray-200/50 shadow-sm hover:shadow-md hover:bg-white/80 text-gray-600 hover:text-gray-900 transition-all duration-200"
-                aria-label="System Settings"
-              >
-                <CogIcon className="h-5 w-5" />
-              </Link>
-
               {/* Desktop User Info Card */}
               <button
                 onClick={() => navigate("/dashboard")}
@@ -430,13 +438,13 @@ const AdminLayout = ({ children }) => {
         {/* Page content */}
         <main
           id="main-content"
-          className="p-4 lg:p-8"
+          className="p-3 md:p-4 lg:p-8"
           role="main"
           tabIndex="-1"
         >
           <div className="max-w-7xl mx-auto">
             {/* Breadcrumb Navigation */}
-            <div className="mb-6">
+            <div className="mb-3 md:mb-6">
               <Breadcrumb />
             </div>
 

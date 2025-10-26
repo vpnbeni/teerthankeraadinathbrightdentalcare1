@@ -9,6 +9,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { toast } from "react-hot-toast";
 import { availabilityService } from "../../services/availability";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function TemplateForm({ template, onSave, onCancel }) {
   const [formData, setFormData] = useState({
@@ -225,26 +226,44 @@ export default function TemplateForm({ template, onSave, onCancel }) {
   }
 
   return createPortal(
-    <div className="fixed inset-0 z-[1000] bg-gray-600/50 overflow-y-auto">
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-[1000] bg-gray-900/50 backdrop-blur-sm overflow-y-auto"
+    >
       <div className="min-h-full flex items-start justify-center p-4">
-        <div className="relative mt-6 w-full max-w-2xl p-5 border shadow-lg rounded-md bg-white">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-medium text-gray-900">
-              {template ? "Edit Template" : "Create New Template"}
-            </h3>
-            <button
+        <motion.div
+          initial={{ scale: 0.95, opacity: 0, y: 20 }}
+          animate={{ scale: 1, opacity: 1, y: 0 }}
+          exit={{ scale: 0.95, opacity: 0, y: 20 }}
+          className="relative mt-6 w-full max-w-2xl p-6 md:p-8 border border-gray-200 shadow-2xl rounded-3xl bg-white"
+        >
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/25">
+                <ClockIcon className="h-5 w-5 text-white" />
+              </div>
+              <div>
+                <h3 className="text-xl font-semibold text-gray-900">
+                  {template ? "Edit Template" : "Create New Template"}
+                </h3>
+                <p className="text-sm text-gray-600 mt-0.5">
+                  {template
+                    ? "Update the availability template settings."
+                    : "Create a new availability template with custom working hours and break times."}
+                </p>
+              </div>
+            </div>
+            <motion.button
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
               onClick={onCancel}
-              className="text-gray-400 hover:text-gray-600"
+              className="text-gray-400 hover:text-gray-600 p-2 hover:bg-gray-100 rounded-xl transition-colors"
             >
               <XMarkIcon className="h-6 w-6" />
-            </button>
+            </motion.button>
           </div>
-
-          <p className="text-sm text-gray-600 mb-6">
-            {template
-              ? "Update the availability template settings."
-              : "Create a new availability template with custom working hours and break times."}
-          </p>
 
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Basic Information */}
@@ -342,10 +361,12 @@ export default function TemplateForm({ template, onSave, onCancel }) {
             </div>
 
             {/* Working Hours */}
-            <div className="border border-gray-200 rounded-lg p-4">
+            <div className="bg-gradient-to-br from-indigo-50/50 to-purple-50/50 border border-indigo-100 rounded-2xl p-5">
               <div className="flex items-center gap-2 mb-4">
-                <ClockIcon className="h-5 w-5 text-gray-500" />
-                <h4 className="text-lg font-medium text-gray-900">
+                <div className="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center">
+                  <ClockIcon className="h-4 w-4 text-white" />
+                </div>
+                <h4 className="text-lg font-semibold text-gray-900">
                   Working Hours
                 </h4>
               </div>
@@ -403,32 +424,44 @@ export default function TemplateForm({ template, onSave, onCancel }) {
             </div>
 
             {/* Break Times */}
-            <div className="border border-gray-200 rounded-lg p-4">
+            <div className="bg-gradient-to-br from-amber-50/50 to-orange-50/50 border border-amber-100 rounded-2xl p-5">
               <div className="flex items-center justify-between mb-4">
-                <h4 className="text-lg font-medium text-gray-900">
-                  Break Times
-                </h4>
-                <button
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 bg-gradient-to-br from-amber-500 to-orange-500 rounded-lg flex items-center justify-center">
+                    <ClockIcon className="h-4 w-4 text-white" />
+                  </div>
+                  <h4 className="text-lg font-semibold text-gray-900">
+                    Break Times
+                  </h4>
+                </div>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                   type="button"
                   onClick={addBreakTime}
-                  className="inline-flex items-center px-3 py-1.5 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+                  className="inline-flex items-center gap-1.5 px-3 py-2 bg-white border border-amber-200 text-sm font-semibold rounded-xl text-amber-700 hover:bg-amber-50 transition-colors shadow-sm"
                 >
-                  <PlusIcon className="h-4 w-4 mr-1" />
+                  <PlusIcon className="h-4 w-4" />
                   Add Break
-                </button>
+                </motion.button>
               </div>
 
               {formData.breakTimes.length === 0 ? (
-                <p className="text-gray-500 text-center py-4">
-                  No break times added. Click "Add Break" to add break periods.
-                </p>
+                <div className="text-center py-8 bg-white/50 rounded-xl border border-dashed border-amber-200">
+                  <ClockIcon className="h-10 w-10 text-amber-400 mx-auto mb-2" />
+                  <p className="text-gray-600 text-sm">
+                    No break times added. Click "Add Break" to add break periods.
+                  </p>
+                </div>
               ) : (
-                <div className="space-y-4">
+                <div className="space-y-3">
                   {formData.breakTimes.map((breakTime, index) => (
-                    <div
-                      key={index}
-                      className="flex items-end gap-4 p-3 border rounded-lg bg-gray-50"
-                    >
+                    <div key={index}>
+                      <motion.div
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        className="flex items-end gap-3 p-4 border border-amber-200 rounded-xl bg-white/80 backdrop-blur-sm"
+                      >
                       <div className="flex-1">
                         <label className="block text-sm font-medium text-gray-700 mb-1">
                           Start Time
@@ -482,20 +515,18 @@ export default function TemplateForm({ template, onSave, onCancel }) {
                         />
                       </div>
 
-                      <button
-                        type="button"
-                        onClick={() => removeBreakTime(index)}
-                        className="p-2 text-red-600 hover:text-red-800"
-                      >
-                        <TrashIcon className="h-4 w-4" />
-                      </button>
-
+                        <button
+                          type="button"
+                          onClick={() => removeBreakTime(index)}
+                          className="p-2 text-red-600 hover:text-red-800"
+                        >
+                          <TrashIcon className="h-4 w-4" />
+                        </button>
+                      </motion.div>
                       {errors[`break_${index}`] && (
-                        <div className="w-full">
-                          <p className="text-sm text-red-500">
-                            {errors[`break_${index}`]}
-                          </p>
-                        </div>
+                        <p className="text-sm text-red-500 mt-1 px-4">
+                          {errors[`break_${index}`]}
+                        </p>
                       )}
                     </div>
                   ))}
@@ -503,87 +534,109 @@ export default function TemplateForm({ template, onSave, onCancel }) {
               )}
             </div>
 
-            <div className="flex justify-between items-center pt-4">
+            <div className="flex justify-between items-center pt-6 border-t border-gray-200">
               <div>
                 {template && (
-                  <button
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
                     type="button"
                     onClick={() => setShowDeleteModal(true)}
                     disabled={deleting || loading}
-                    className="px-4 py-2 border border-red-200 text-red-700 font-medium rounded-md hover:bg-red-50 disabled:opacity-50"
+                    className="px-5 py-2.5 bg-red-50 border border-red-200 text-red-700 font-semibold rounded-xl hover:bg-red-100 disabled:opacity-50 transition-colors"
                   >
                     {deleting ? "Deleting..." : "Delete Template"}
-                  </button>
+                  </motion.button>
                 )}
               </div>
               <div className="flex gap-3">
-                <button
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
                   type="button"
                   onClick={onCancel}
-                  className="px-4 py-2 border border-gray-300 text-gray-700 font-medium rounded-md hover:bg-gray-50"
+                  className="px-5 py-2.5 bg-gray-100 text-gray-700 font-semibold rounded-xl hover:bg-gray-200 transition-colors"
                 >
                   Cancel
-                </button>
-                <button
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
                   type="submit"
                   disabled={loading || deleting}
-                  className="px-4 py-2 bg-primary-600 text-white font-medium rounded-md hover:bg-primary-700 disabled:opacity-50"
+                  className="px-5 py-2.5 bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-indigo-500/25 disabled:opacity-50 transition-all"
                 >
                   {loading
                     ? "Saving..."
                     : template
                     ? "Update Template"
                     : "Create Template"}
-                </button>
+                </motion.button>
               </div>
             </div>
           </form>
-        </div>
+        </motion.div>
       </div>
 
-      {showDeleteModal && (
-        <div className="fixed inset-0 z-[1100] bg-gray-900/50 overflow-y-auto">
-          <div className="min-h-full flex items-center justify-center p-4">
-            <div className="w-full max-w-md rounded-md bg-white p-5 shadow-lg border">
-              <div className="flex items-start gap-3">
-                <div className="p-2 rounded-full bg-amber-100 text-amber-700">
-                  <ExclamationTriangleIcon className="h-5 w-5" />
+      <AnimatePresence>
+        {showDeleteModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[1100] bg-gray-900/50 backdrop-blur-sm overflow-y-auto"
+          >
+            <div className="min-h-full flex items-center justify-center p-4">
+              <motion.div
+                initial={{ scale: 0.95, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.95, opacity: 0 }}
+                className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl border border-gray-200"
+              >
+                <div className="flex items-start gap-4">
+                  <div className="flex-shrink-0 w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center">
+                    <ExclamationTriangleIcon className="h-6 w-6 text-red-600" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                      Delete Template
+                    </h3>
+                    <p className="text-sm text-gray-600">
+                      Are you sure you want to delete the template "
+                      {template?.templateName || formData.templateName}"? This
+                      action cannot be undone and will affect any dates where this
+                      template is applied.
+                    </p>
+                  </div>
                 </div>
-                <div className="flex-1">
-                  <h3 className="text-lg font-medium text-gray-900">
-                    Delete Template
-                  </h3>
-                  <p className="mt-2 text-sm text-gray-600">
-                    Are you sure you want to delete the template "
-                    {template?.templateName || formData.templateName}"? This
-                    action cannot be undone and will affect any dates where this
-                    template is applied.
-                  </p>
+                <div className="flex gap-3 mt-6">
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    type="button"
+                    onClick={() => setShowDeleteModal(false)}
+                    disabled={deleting}
+                    className="flex-1 px-4 py-2.5 bg-gray-100 text-gray-700 text-sm font-semibold rounded-xl hover:bg-gray-200 disabled:opacity-50 transition-colors"
+                  >
+                    Cancel
+                  </motion.button>
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    type="button"
+                    onClick={handleConfirmDelete}
+                    disabled={deleting}
+                    className="flex-1 px-4 py-2.5 bg-gradient-to-r from-red-500 to-red-600 text-white text-sm font-semibold rounded-xl hover:shadow-lg hover:shadow-red-500/25 disabled:opacity-50 transition-all"
+                  >
+                    {deleting ? "Deleting..." : "Delete"}
+                  </motion.button>
                 </div>
-              </div>
-              <div className="mt-6 flex justify-end gap-3">
-                <button
-                  type="button"
-                  onClick={() => setShowDeleteModal(false)}
-                  disabled={deleting}
-                  className="px-4 py-2 border border-gray-300 text-gray-700 font-medium rounded-md hover:bg-gray-50 disabled:opacity-50"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="button"
-                  onClick={handleConfirmDelete}
-                  disabled={deleting}
-                  className="px-4 py-2 bg-red-600 text-white font-medium rounded-md hover:bg-red-700 disabled:opacity-50"
-                >
-                  {deleting ? "Deleting..." : "Delete"}
-                </button>
-              </div>
+              </motion.div>
             </div>
-          </div>
-        </div>
-      )}
-    </div>,
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>,
     document.body
   );
 }
