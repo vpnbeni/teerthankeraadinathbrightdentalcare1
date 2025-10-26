@@ -16,9 +16,51 @@ export const NotificationProvider = ({ children }) => {
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [socket, setSocket] = useState(null);
+  const [loading, setLoading] = useState(true);
   const { isAuthenticated, user } = useSelector((state) => state.auth);
   const socketRef = React.useRef(null);
   const isConnecting = React.useRef(false);
+
+  // Fetch notifications from API on mount
+  useEffect(() => {
+    const fetchNotifications = async () => {
+      if (!isAuthenticated || !user) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const token = localStorage.getItem("token");
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/notifications`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          const formattedNotifications = data.data.notifications.map((notif) => ({
+            id: notif._id,
+            type: notif.type,
+            title: notif.title,
+            message: notif.message,
+            priority: notif.priority,
+            read: notif.read,
+            timestamp: notif.createdAt,
+            metadata: notif.metadata,
+          }));
+          setNotifications(formattedNotifications);
+          setUnreadCount(data.data.unreadCount);
+        }
+      } catch (error) {
+        console.error("Error fetching notifications:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchNotifications();
+  }, [isAuthenticated, user]);
 
   // Initialize socket connection
   useEffect(() => {
@@ -116,38 +158,87 @@ export const NotificationProvider = ({ children }) => {
     }
   };
 
-  const markAsRead = useCallback((notificationId) => {
-    setNotifications((prev) =>
-      prev.map((notif) =>
-        notif.id === notificationId ? { ...notif, read: true } : notif
-      )
-    );
-    setUnreadCount((prev) => Math.max(0, prev - 1));
+  const markAsRead = useCallback(async (notificationId) => {
+    try {
+      const token = localStorage.getItem("token");
+      await fetch(`${import.meta.env.VITE_API_URL}/notifications/${notificationId}/read`, {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      setNotifications((prev) =>
+        prev.map((notif) =>
+          notif.id === notificationId ? { ...notif, read: true } : notif
+        )
+      );
+      setUnreadCount((prev) => Math.max(0, prev - 1));
+    } catch (error) {
+      console.error("Error marking notification as read:", error);
+    }
   }, []);
 
-  const markAllAsRead = useCallback(() => {
-    setNotifications((prev) =>
-      prev.map((notif) => ({ ...notif, read: true }))
-    );
-    setUnreadCount(0);
+  const markAllAsRead = useCallback(async () => {
+    try {
+      const token = localStorage.getItem("token");
+      await fetch(`${import.meta.env.VITE_API_URL}/notifications/mark-all-read`, {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      setNotifications((prev) =>
+        prev.map((notif) => ({ ...notif, read: true }))
+      );
+      setUnreadCount(0);
+    } catch (error) {
+      console.error("Error marking all notifications as read:", error);
+    }
   }, []);
 
-  const clearNotification = useCallback((notificationId) => {
-    setNotifications((prev) => prev.filter((notif) => notif.id !== notificationId));
-    setUnreadCount((prev) => {
-      const notification = notifications.find((n) => n.id === notificationId);
-      return notification && !notification.read ? Math.max(0, prev - 1) : prev;
-    });
+  const clearNotification = useCallback(async (notificationId) => {
+    try {
+      const token = localStorage.getItem("token");
+      await fetch(`${import.meta.env.VITE_API_URL}/notifications/${notificationId}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      setNotifications((prev) => prev.filter((notif) => notif.id !== notificationId));
+      setUnreadCount((prev) => {
+        const notification = notifications.find((n) => n.id === notificationId);
+        return notification && !notification.read ? Math.max(0, prev - 1) : prev;
+      });
+    } catch (error) {
+      console.error("Error deleting notification:", error);
+    }
   }, [notifications]);
 
-  const clearAllNotifications = useCallback(() => {
-    setNotifications([]);
-    setUnreadCount(0);
+  const clearAllNotifications = useCallback(async () => {
+    try {
+      const token = localStorage.getItem("token");
+      await fetch(`${import.meta.env.VITE_API_URL}/notifications`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      setNotifications([]);
+      setUnreadCount(0);
+    } catch (error) {
+      console.error("Error deleting all notifications:", error);
+    }
   }, []);
 
   const value = {
     notifications,
     unreadCount,
+    loading,
     markAsRead,
     markAllAsRead,
     clearNotification,

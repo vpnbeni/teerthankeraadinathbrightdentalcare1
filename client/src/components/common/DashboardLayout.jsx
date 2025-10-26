@@ -6,6 +6,7 @@ import {
   UserIcon,
   CalendarIcon,
   CreditCardIcon,
+  BellIcon,
   Bars3Icon,
   XMarkIcon,
   ArrowRightOnRectangleIcon,
@@ -13,6 +14,7 @@ import {
 import { logoutUser } from "../../store/authSlice";
 import toast from "react-hot-toast";
 import NotificationBell from "./NotificationBell";
+import { useNotifications } from "../../contexts/NotificationContext";
 
 const DashboardLayout = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -21,11 +23,13 @@ const DashboardLayout = ({ children }) => {
   const dispatch = useDispatch();
   // Get user directly from Redux store instead of using useAuth hook
   const { user } = useSelector((state) => state.auth);
+  const { unreadCount } = useNotifications();
 
- 
+
   const navigation = [
     { name: "Dashboard", href: "/dashboard", icon: HomeIcon },
     { name: "Appointments", href: "/appointments", icon: CalendarIcon },
+    { name: "Notifications", href: "/notifications", icon: BellIcon },
     { name: "Profile", href: "/profile", icon: UserIcon },
     { name: "Payments", href: "/payments", icon: CreditCardIcon },
   ];
@@ -72,6 +76,7 @@ const DashboardLayout = ({ children }) => {
           <nav className="flex-1 px-4 py-6 space-y-1.5 overflow-y-auto">
             {navigation.map((item) => {
               const isActive = location.pathname === item.href;
+              const showBadge = item.name === "Notifications" && unreadCount > 0;
               return (
                 <Link
                   key={item.name}
@@ -82,13 +87,23 @@ const DashboardLayout = ({ children }) => {
                     : "text-gray-700 hover:bg-gray-100/80 hover:text-gray-900"
                     }`}
                 >
-                  <div className={`w-9 h-9 flex items-center justify-center rounded-lg transition-all ${isActive
+                  <div className={`relative w-9 h-9 flex items-center justify-center rounded-lg transition-all ${isActive
                     ? "bg-white/10"
                     : "bg-gray-100 group-hover:bg-gray-200"
                     }`}>
                     <item.icon className={`h-5 w-5 ${isActive ? "text-white" : "text-gray-600 group-hover:text-gray-900"}`} />
+                    {showBadge && (
+                      <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 bg-gradient-to-r from-red-500 to-pink-600 rounded-full flex items-center justify-center text-[10px] font-bold text-white shadow-lg">
+                        {unreadCount > 99 ? "99+" : unreadCount}
+                      </span>
+                    )}
                   </div>
-                  <span>{item.name}</span>
+                  <span className="flex-1">{item.name}</span>
+                  {showBadge && (
+                    <span className="px-2 py-0.5 bg-red-500 text-white text-xs font-bold rounded-full">
+                      {unreadCount > 99 ? "99+" : unreadCount}
+                    </span>
+                  )}
                 </Link>
               );
             })}
@@ -125,6 +140,7 @@ const DashboardLayout = ({ children }) => {
           <nav className="flex-1 px-4 py-6 space-y-1.5 overflow-y-auto">
             {navigation.map((item) => {
               const isActive = location.pathname === item.href;
+              const showBadge = item.name === "Notifications" && unreadCount > 0;
               return (
                 <Link
                   key={item.name}
@@ -134,14 +150,24 @@ const DashboardLayout = ({ children }) => {
                     : "text-gray-700 hover:bg-gray-100/80 hover:text-gray-900"
                     }`}
                 >
-                  <div className={`w-9 h-9 flex items-center justify-center rounded-lg transition-all ${isActive
+                  <div className={`relative w-9 h-9 flex items-center justify-center rounded-lg transition-all ${isActive
                     ? "bg-white/10"
                     : "bg-gray-100 group-hover:bg-gray-200"
                     }`}>
                     <item.icon className={`h-5 w-5 ${isActive ? "text-white" : "text-gray-600 group-hover:text-gray-900"}`} />
+                    {showBadge && (
+                      <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 bg-gradient-to-r from-red-500 to-pink-600 rounded-full flex items-center justify-center text-[10px] font-bold text-white shadow-lg">
+                        {unreadCount > 99 ? "99+" : unreadCount}
+                      </span>
+                    )}
                   </div>
-                  <span>{item.name}</span>
-                  {isActive && (
+                  <span className="flex-1">{item.name}</span>
+                  {showBadge && (
+                    <span className="px-2 py-0.5 bg-red-500 text-white text-xs font-bold rounded-full">
+                      {unreadCount > 99 ? "99+" : unreadCount}
+                    </span>
+                  )}
+                  {isActive && !showBadge && (
                     <div className="ml-auto w-1.5 h-1.5 rounded-full bg-white"></div>
                   )}
                 </Link>

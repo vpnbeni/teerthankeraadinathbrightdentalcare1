@@ -106,10 +106,11 @@ const NotificationBell = () => {
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         onClick={() => setIsOpen(!isOpen)}
-        className="relative p-2.5 bg-white/60 backdrop-blur-sm border border-gray-200/50 rounded-xl shadow-sm hover:shadow-md hover:bg-white/80 transition-all duration-200"
+        className="relative p-2.5 bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md hover:bg-gray-50 transition-all duration-200"
+        aria-label="Notifications"
       >
         <BellIcon className="w-6 h-6 text-gray-700" />
-        
+
         {/* Unread Badge */}
         <AnimatePresence>
           {unreadCount > 0 && (
@@ -126,10 +127,6 @@ const NotificationBell = () => {
           )}
         </AnimatePresence>
 
-        {/* Pulse Animation for New Notifications */}
-        {unreadCount > 0 && (
-          <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full animate-ping opacity-75"></span>
-        )}
       </motion.button>
 
       {/* Notification Dropdown */}
@@ -140,10 +137,10 @@ const NotificationBell = () => {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -10, scale: 0.95 }}
             transition={{ duration: 0.2 }}
-            className="absolute right-0 mt-3 w-96 max-w-[calc(100vw-2rem)] bg-white/95 backdrop-blur-xl border border-gray-200/50 rounded-2xl shadow-2xl shadow-gray-900/10 overflow-hidden z-50"
+            className="fixed sm:absolute left-[2.5%] right-[2.5%] sm:left-auto sm:right-0 top-[72px] sm:top-auto mt-0 sm:mt-3 w-[95%] sm:w-96 max-h-[50vh] sm:max-h-auto bg-white border border-gray-200 rounded-2xl shadow-2xl overflow-hidden z-50"
           >
             {/* Header */}
-            <div className="px-5 py-4 border-b border-gray-200/50 bg-gradient-to-r from-gray-50/50 to-transparent">
+            <div className="px-5 py-4 border-b border-gray-200 bg-gray-50">
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="text-lg font-bold text-gray-900">Notifications</h3>
@@ -165,7 +162,7 @@ const NotificationBell = () => {
             </div>
 
             {/* Notifications List */}
-            <div className="max-h-[480px] overflow-y-auto">
+            <div className="max-h-[calc(50vh-140px)] sm:max-h-[480px] overflow-y-auto">
               {notifications.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-16 px-6">
                   <motion.div
@@ -188,9 +185,8 @@ const NotificationBell = () => {
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: index * 0.05 }}
                       onClick={() => handleNotificationClick(notification)}
-                      className={`relative px-5 py-4 hover:bg-gray-50/50 transition-colors cursor-pointer group ${
-                        !notification.read ? "bg-blue-50/30" : ""
-                      }`}
+                      className={`relative px-5 py-4 hover:bg-gray-50/50 transition-colors cursor-pointer group ${!notification.read ? "bg-blue-50/30" : ""
+                        }`}
                     >
                       <div className="flex gap-3">
                         {/* Icon */}
@@ -251,11 +247,11 @@ const NotificationBell = () => {
 
             {/* Footer */}
             {notifications.length > 0 && (
-              <div className="px-5 py-3 border-t border-gray-200/50 bg-gradient-to-r from-gray-50/50 to-transparent">
+              <div className="px-5 py-3 border-t border-gray-200 bg-gray-50">
                 <button
                   onClick={() => {
-                    // Navigate to notifications page if you have one
                     setIsOpen(false);
+                    window.location.href = "/notifications";
                   }}
                   className="w-full text-center text-xs font-semibold text-gray-600 hover:text-[#346870] transition-colors"
                 >

@@ -9,6 +9,7 @@ import {
   DocumentTextIcon,
   ChartBarIcon,
   ShieldCheckIcon,
+  BellIcon,
   Bars3Icon,
   XMarkIcon,
   ArrowRightOnRectangleIcon,
@@ -28,6 +29,7 @@ import SkipLinks from "../../shared/components/SkipLinks";
 import Breadcrumb from "../../shared/components/Breadcrumb";
 import KeyboardShortcuts from "../../shared/components/KeyboardShortcuts";
 import NotificationBell from "./NotificationBell";
+import { useNotifications } from "../../contexts/NotificationContext";
 import toast from "react-hot-toast";
 
 const AdminLayout = ({ children }) => {
@@ -36,6 +38,7 @@ const AdminLayout = ({ children }) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
+  const { unreadCount } = useNotifications();
 
   // Accessibility hooks
   const { announce, isMobile, isTouch } = useAccessibility();
@@ -54,6 +57,7 @@ const AdminLayout = ({ children }) => {
     { name: "Users", href: "/users", icon: UsersIcon },
     { name: "Appointments", href: "/appointments", icon: CalendarIcon },
     { name: "Availability", href: "/availability", icon: ClockIcon },
+    { name: "Notifications", href: "/notifications", icon: BellIcon },
     { name: "Analytics", href: "/analytics", icon: ChartBarIcon },
     // { name: "Settings", href: "/settings", icon: CogIcon },
   ];
@@ -144,7 +148,7 @@ const AdminLayout = ({ children }) => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/20">
       {/* Skip Links */}
       <SkipLinks />
 
@@ -153,8 +157,8 @@ const AdminLayout = ({ children }) => {
 
       {/* Mobile sidebar */}
       <div
-        className={`fixed inset-0 z-50 lg:hidden ${
-          sidebarOpen ? "block" : "hidden"
+        className={`fixed inset-0 z-50 lg:hidden transition-opacity duration-300 ${
+          sidebarOpen ? "opacity-100" : "opacity-0 pointer-events-none"
         }`}
         role="dialog"
         aria-modal="true"
@@ -162,7 +166,7 @@ const AdminLayout = ({ children }) => {
       >
         {/* Backdrop */}
         <div
-          className="fixed inset-0 bg-gray-600 bg-opacity-75 transition-opacity"
+          className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm"
           onClick={closeSidebar}
           aria-hidden="true"
         />
@@ -170,176 +174,187 @@ const AdminLayout = ({ children }) => {
         {/* Sidebar */}
         <div
           ref={sidebarRef}
-          className="fixed inset-y-0 left-0 flex w-64 flex-col bg-white shadow-xl transform transition-transform"
+          className={`fixed inset-y-0 left-0 flex w-72 flex-col bg-white/95 backdrop-blur-xl shadow-2xl transition-transform duration-300 ${
+            sidebarOpen ? "translate-x-0" : "-translate-x-full"
+          }`}
           onKeyDown={handleSidebarKeyDown}
         >
-          {/* Header */}
-          <div className="flex h-16 items-center justify-between px-4 border-b">
-            <h2 className="text-lg font-semibold text-[#346870]">
-              Admin Dashboard
-            </h2>
+          {/* Mobile Header */}
+          <div className="flex h-20 items-center justify-between px-6 border-b border-gray-200/50">
+            <img
+              src="https://res.cloudinary.com/dvqvxu0b1/image/upload/v1753662373/2_uuolcb.webp"
+              alt="Teerthanker Aadinath Bright Dental Care"
+              className="h-24 w-auto object-cover my-[40px]"
+            />
             <button
               onClick={closeSidebar}
-              className="text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-primary/20 rounded-md p-1"
+              className="w-9 h-9 flex items-center justify-center rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-600 hover:text-gray-900 transition-all"
               aria-label="Close navigation menu"
             >
-              <XMarkIcon className="h-6 w-6" />
+              <XMarkIcon className="h-5 w-5" />
             </button>
           </div>
 
-          {/* Navigation */}
+          {/* Mobile Navigation */}
           <nav
-            className="flex-1 px-4 py-4 space-y-2 overflow-y-auto"
+            className="flex-1 px-4 py-6 space-y-1.5 overflow-y-auto"
             role="navigation"
             aria-label="Main navigation"
           >
             {navigation.map((item) => {
               const isActive = location.pathname === item.href;
+              const showBadge = item.name === "Notifications" && unreadCount > 0;
               return (
                 <Link
                   key={item.name}
                   to={item.href}
                   onClick={closeSidebar}
-                  className={`flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-primary/20 mobile-tap-target ${
+                  className={`group flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary/20 mobile-tap-target ${
                     isActive
-                      ? "bg-[#346870] text-white"
-                      : "text-gray-700 hover:bg-gray-100"
+                      ? "bg-gradient-to-r from-[#2E676F] via-[#346870] to-[#4a8a95] text-white shadow-lg shadow-[#346870]/25"
+                      : "text-gray-700 hover:bg-gray-100/80 hover:text-gray-900"
                   }`}
                   aria-current={isActive ? "page" : undefined}
                 >
-                  <item.icon
-                    className="h-5 w-5 mr-3 flex-shrink-0"
-                    aria-hidden="true"
-                  />
-                  {item.name}
+                  <div className={`relative w-9 h-9 flex items-center justify-center rounded-lg transition-all ${
+                    isActive
+                      ? "bg-white/10"
+                      : "bg-gray-100 group-hover:bg-gray-200"
+                  }`}>
+                    <item.icon
+                      className={`h-5 w-5 ${isActive ? "text-white" : "text-gray-600 group-hover:text-gray-900"}`}
+                      aria-hidden="true"
+                    />
+                    {showBadge && (
+                      <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 bg-gradient-to-r from-red-500 to-pink-600 rounded-full flex items-center justify-center text-[10px] font-bold text-white shadow-lg">
+                        {unreadCount > 99 ? "99+" : unreadCount}
+                      </span>
+                    )}
+                  </div>
+                  <span className="flex-1">{item.name}</span>
+                  {showBadge && (
+                    <span className="px-2 py-0.5 bg-red-500 text-white text-xs font-bold rounded-full">
+                      {unreadCount > 99 ? "99+" : unreadCount}
+                    </span>
+                  )}
                 </Link>
               );
             })}
           </nav>
 
-          {/* User section */}
-          <div className="border-t p-4">
-            <div className="flex items-center mb-4">
-              <div className="flex-shrink-0">
-                <div className="h-8 w-8 bg-[#346870] rounded-full flex items-center justify-center">
-                  <span className="text-white text-sm font-medium">
-                    {user?.name?.charAt(0)?.toUpperCase() || "A"}
-                  </span>
-                </div>
-              </div>
-              <div className="ml-3 min-w-0 flex-1">
-                <p className="text-sm font-medium text-gray-700 truncate">
-                  {user?.name || "Admin"}
-                </p>
-                <p className="text-xs text-gray-500 capitalize truncate">
-                  {user?.role || "Administrator"}
-                </p>
-              </div>
+          {/* Mobile User Section */}
+          <div className="border-t border-gray-200/50 p-4 bg-gradient-to-t from-gray-50/50 to-transparent">
+            <div className="p-3 mb-3 bg-white/60 backdrop-blur-sm rounded-2xl border border-gray-200/50">
+              <p className="text-sm font-semibold text-gray-900 truncate">
+                {user?.name || "Admin"}
+              </p>
+              <p className="text-xs text-gray-600 truncate capitalize">{user?.role || "Administrator"}</p>
             </div>
             <button
               onClick={handleLogout}
-              className="flex items-center w-full px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-primary/20 mobile-tap-target"
+              className="flex items-center justify-center gap-2 w-full px-4 py-3 text-sm font-medium text-gray-700 hover:text-gray-900 bg-gray-100/80 hover:bg-gray-200 rounded-xl transition-all"
               aria-label="Sign out of admin panel"
             >
-              <ArrowRightOnRectangleIcon
-                className="h-5 w-5 mr-3 flex-shrink-0"
-                aria-hidden="true"
-              />
+              <ArrowRightOnRectangleIcon className="h-5 w-5" />
               Logout
             </button>
           </div>
         </div>
       </div>
 
-      {/* Desktop sidebar */}
-      <div className="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-64 lg:flex-col">
-        <div className="flex flex-col flex-grow bg-white border-r shadow-sm">
-          {/* Logo/Header */}
-          <div className="flex h-16 items-center px-4 border-b">
-            <h2 className="text-lg font-semibold text-[#346870] truncate">
-              Admin Dashboard
-            </h2>
+      {/* Desktop sidebar - Premium Glass Design */}
+      <div className="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-72 lg:flex-col">
+        <div className="flex flex-col flex-grow bg-white/80 backdrop-blur-xl border-r border-gray-200/50 shadow-xl">
+          {/* Logo Section */}
+          <div className="flex h-32 justify-center items-center px-4 border-b bg-white">
+            <img
+              src="https://res.cloudinary.com/dvqvxu0b1/image/upload/v1753662373/2_uuolcb.webp"
+              alt="Teerthanker Aadinath Bright Dental Care"
+              className="h-54 pt-6 w-auto object-cover object-center"
+            />
           </div>
 
           {/* Navigation */}
           <nav
             id="sidebar"
-            className="flex-1 px-4 py-4 space-y-2 overflow-y-auto custom-scrollbar"
+            className="flex-1 px-4 py-6 space-y-1.5 overflow-y-auto"
             role="navigation"
             aria-label="Main navigation"
             onKeyDown={handleSidebarKeyDown}
           >
             {navigation.map((item) => {
               const isActive = location.pathname === item.href;
+              const showBadge = item.name === "Notifications" && unreadCount > 0;
               return (
                 <Link
                   key={item.name}
                   to={item.href}
-                  className={`flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-primary/20 ${
+                  className={`group flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary/20 ${
                     isActive
-                      ? "bg-[#346870] text-white shadow-sm"
-                      : "text-gray-700 hover:bg-gray-100"
+                      ? "bg-gradient-to-r from-[#2E676F] via-[#346870] to-[#4a8a95] text-white shadow-lg shadow-[#346870]/25"
+                      : "text-gray-700 hover:bg-gray-100/80 hover:text-gray-900"
                   }`}
                   aria-current={isActive ? "page" : undefined}
                 >
-                  <item.icon
-                    className="h-5 w-5 mr-3 flex-shrink-0"
-                    aria-hidden="true"
-                  />
-                  <span className="truncate">{item.name}</span>
+                  <div className={`relative w-9 h-9 flex items-center justify-center rounded-lg transition-all ${
+                    isActive
+                      ? "bg-white/10"
+                      : "bg-gray-100 group-hover:bg-gray-200"
+                  }`}>
+                    <item.icon
+                      className={`h-5 w-5 ${isActive ? "text-white" : "text-gray-600 group-hover:text-gray-900"}`}
+                      aria-hidden="true"
+                    />
+                    {showBadge && (
+                      <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 bg-gradient-to-r from-red-500 to-pink-600 rounded-full flex items-center justify-center text-[10px] font-bold text-white shadow-lg">
+                        {unreadCount > 99 ? "99+" : unreadCount}
+                      </span>
+                    )}
+                  </div>
+                  <span className="flex-1">{item.name}</span>
+                  {showBadge && (
+                    <span className="px-2 py-0.5 bg-red-500 text-white text-xs font-bold rounded-full">
+                      {unreadCount > 99 ? "99+" : unreadCount}
+                    </span>
+                  )}
+                  {isActive && !showBadge && (
+                    <div className="ml-auto w-1.5 h-1.5 rounded-full bg-white"></div>
+                  )}
                 </Link>
               );
             })}
           </nav>
 
-          {/* User section */}
-          <div className="border-t p-4">
-            <div className="flex items-center mb-4">
-              <div className="flex-shrink-0">
-                <div
-                  className="h-8 w-8 bg-[#346870] rounded-full flex items-center justify-center"
-                  role="img"
-                  aria-label={`${user?.name || "Admin"} avatar`}
-                >
-                  <span className="text-white text-sm font-medium">
-                    {user?.name?.charAt(0)?.toUpperCase() || "A"}
-                  </span>
-                </div>
-              </div>
-              <div className="ml-3 min-w-0 flex-1">
-                <p className="text-sm font-medium text-gray-700 truncate">
-                  {user?.name || "Admin"}
-                </p>
-                <p className="text-xs text-gray-500 capitalize truncate">
-                  {user?.role || "Administrator"}
-                </p>
-              </div>
+          {/* User Section */}
+          <div className="border-t border-gray-200/50 p-4 bg-gradient-to-t from-gray-50/50 to-transparent">
+            <div className="p-3 mb-3 bg-white/60 backdrop-blur-sm rounded-2xl border border-gray-200/50 hover:bg-white/80 hover:shadow-md transition-all duration-200">
+              <p className="text-sm font-semibold text-gray-900 truncate">
+                {user?.name || "Admin"}
+              </p>
+              <p className="text-xs text-gray-600 truncate capitalize">{user?.role || "Administrator"}</p>
             </div>
             <button
               onClick={handleLogout}
-              className="flex items-center w-full px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-primary/20"
+              className="flex items-center justify-center gap-2 w-full px-4 py-3 text-sm font-medium text-gray-700 hover:text-gray-900 bg-gray-100/80 hover:bg-gray-200 rounded-xl transition-all"
               aria-label="Sign out of admin panel"
             >
-              <ArrowRightOnRectangleIcon
-                className="h-5 w-5 mr-3 flex-shrink-0"
-                aria-hidden="true"
-              />
-              <span className="truncate">Logout</span>
+              <ArrowRightOnRectangleIcon className="h-5 w-5" />
+              Logout
             </button>
           </div>
         </div>
       </div>
 
       {/* Main content */}
-      <div className="lg:pl-64">
-        {/* Top bar */}
-        <div className="sticky top-0 z-40 bg-white border-b shadow-sm">
-          <div className="flex h-16 items-center justify-between px-4 lg:px-8">
-            {/* Mobile menu button */}
+      <div className="lg:pl-72">
+        {/* Top bar - Premium Glass Navbar */}
+        <div className="sticky top-0 z-40 bg-white/80 backdrop-blur-xl border-b border-gray-200/50 shadow-sm">
+          <div className="flex h-20 items-center justify-between px-4 lg:px-8">
+            {/* Mobile Menu Button */}
             <button
               ref={mobileMenuButtonRef}
               onClick={openSidebar}
-              className="text-gray-400 hover:text-gray-600 lg:hidden focus:outline-none focus:ring-2 focus:ring-primary/20 rounded-md p-1 mobile-tap-target"
+              className="lg:hidden w-10 h-10 flex items-center justify-center rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-600 hover:text-gray-900 transition-all"
               aria-label="Open navigation menu"
               aria-expanded={sidebarOpen}
               aria-controls="mobile-sidebar"
@@ -347,41 +362,67 @@ const AdminLayout = ({ children }) => {
               <Bars3Icon className="h-6 w-6" />
             </button>
 
-            {/* Mobile title */}
-            <h1 className="text-lg font-semibold text-[#346870] lg:hidden truncate">
-              Admin Dashboard
-            </h1>
+            {/* Mobile Logo */}
+            <button
+              onClick={() => navigate("/dashboard")}
+              className="lg:hidden cursor-pointer"
+            >
+              <img
+                src="https://res.cloudinary.com/dvqvxu0b1/image/upload/v1753662373/2_uuolcb.webp"
+                alt="Teerthanker Aadinath Bright Dental Care"
+                className="h-32 w-auto object-contain"
+              />
+            </button>
 
-            {/* Desktop header spacer */}
-            <div className="hidden lg:flex lg:items-center lg:space-x-4 lg:flex-1">
-              <div className="flex-1 min-w-0"></div>
-            </div>
+            {/* Desktop - Empty space to push content right */}
+            <div className="hidden lg:block lg:flex-1"></div>
 
-            {/* Header actions */}
-            <div className="flex items-center space-x-2 lg:space-x-4">
+            {/* Right side content */}
+            <div className="flex items-center gap-3">
               {/* Notification Bell */}
               <NotificationBell />
 
+              {/* Settings Icon */}
               <Link
                 to="/settings"
-                className="text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-primary/20 rounded-md p-1 mobile-tap-target"
+                className="hidden lg:flex w-10 h-10 items-center justify-center rounded-xl bg-white/60 backdrop-blur-sm border border-gray-200/50 shadow-sm hover:shadow-md hover:bg-white/80 text-gray-600 hover:text-gray-900 transition-all duration-200"
                 aria-label="System Settings"
               >
-                <CogIcon className="h-6 w-6" />
+                <CogIcon className="h-5 w-5" />
               </Link>
 
+              {/* Desktop User Info Card */}
+              <button
+                onClick={() => navigate("/dashboard")}
+                className="hidden lg:flex lg:items-center lg:gap-4 bg-white/60 backdrop-blur-sm border border-gray-200/50 rounded-2xl px-4 py-2.5 shadow-sm hover:shadow-md hover:bg-white/80 transition-all duration-200 cursor-pointer"
+              >
+                <div className="text-right">
+                  <p className="text-sm font-semibold text-gray-900">
+                    {user?.name || "Admin"}
+                  </p>
+                  <div className="flex items-center justify-end gap-1.5 mt-0.5">
+                    <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></div>
+                    <p className="text-xs text-gray-600 capitalize">
+                      {user?.role || "Administrator"}
+                    </p>
+                  </div>
+                </div>
+                <div className="h-11 w-11 bg-gradient-to-br from-[#346870] to-[#5fa8b5] rounded-xl flex items-center justify-center overflow-hidden shadow-lg shadow-[#346870]/20">
+                  <ShieldCheckIcon className="h-6 w-6 text-white" />
+                </div>
+              </button>
+
               {/* Mobile user avatar */}
-              <div className="lg:hidden">
-                <div
-                  className="h-8 w-8 bg-[#346870] rounded-full flex items-center justify-center"
-                  role="img"
-                  aria-label={`${user?.name || "Admin"} avatar`}
-                >
-                  <span className="text-white text-sm font-medium">
+              <button
+                onClick={() => navigate("/dashboard")}
+                className="lg:hidden cursor-pointer"
+              >
+                <div className="h-10 w-10 bg-gradient-to-br from-[#346870] to-[#5fa8b5] rounded-xl flex items-center justify-center overflow-hidden shadow-lg shadow-[#346870]/20">
+                  <span className="text-white text-sm font-semibold">
                     {user?.name?.charAt(0)?.toUpperCase() || "A"}
                   </span>
                 </div>
-              </div>
+              </button>
             </div>
           </div>
         </div>
@@ -389,7 +430,7 @@ const AdminLayout = ({ children }) => {
         {/* Page content */}
         <main
           id="main-content"
-          className="p-4 lg:p-8 min-h-screen"
+          className="p-4 lg:p-8"
           role="main"
           tabIndex="-1"
         >

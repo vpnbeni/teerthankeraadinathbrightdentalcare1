@@ -138,7 +138,7 @@ const NotificationBell = () => {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -10, scale: 0.95 }}
             transition={{ duration: 0.2 }}
-            className="absolute right-0 mt-3 w-96 max-w-[calc(100vw-2rem)] bg-white border border-gray-200 rounded-2xl shadow-2xl overflow-hidden z-50"
+            className="fixed sm:absolute left-[2.5%] right-[2.5%] sm:left-auto sm:right-0 top-[64px] sm:top-auto mt-0 sm:mt-3 w-[95%] sm:w-96 max-h-[50vh] sm:max-h-auto bg-white border border-gray-200 rounded-2xl shadow-2xl overflow-hidden z-50"
           >
             {/* Header */}
             <div className="px-5 py-4 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-transparent">
@@ -163,7 +163,7 @@ const NotificationBell = () => {
             </div>
 
             {/* Notifications List */}
-            <div className="max-h-[480px] overflow-y-auto">
+            <div className="max-h-[calc(50vh-140px)] sm:max-h-[480px] overflow-y-auto">
               {notifications.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-16 px-6">
                   <motion.div
@@ -249,6 +249,7 @@ const NotificationBell = () => {
                 <button
                   onClick={() => {
                     setIsOpen(false);
+                    navigate("/notifications");
                   }}
                   className="w-full text-center text-xs font-semibold text-gray-600 hover:text-primary transition-colors"
                 >

@@ -19,6 +19,7 @@ import AppointmentManagement from "./pages/AppointmentManagement";
 import AvailabilityManagement from "./pages/AvailabilityManagement";
 import Analytics from "./pages/Analytics";
 import SystemSettings from "./pages/SystemSettings";
+import Notifications from "./pages/Notifications";
 
 function App() {
   const dispatch = useDispatch();
@@ -117,6 +118,14 @@ function App() {
               element={
                 <ProtectedRoute requiredRole="admin">
                   <SystemSettings />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/notifications"
+              element={
+                <ProtectedRoute requiredRole="admin">
+                  <Notifications />
                 </ProtectedRoute>
               }
             />

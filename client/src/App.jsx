@@ -7,6 +7,7 @@ import Dashboard from "./pages/Dashboard";
 import Profile from "./pages/Profile";
 import Appointments from "./pages/Appointments";
 import Payments from "./pages/Payments";
+import Notifications from "./pages/Notifications";
 import ProtectedRoute from "./components/common/ProtectedRoute";
 // Debug component (development only)
 import ApiTest from "./components/debug/ApiTest";
@@ -133,6 +134,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <Payments />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/notifications"
+              element={
+                <ProtectedRoute>
+                  <Notifications />
                 </ProtectedRoute>
               }
             />

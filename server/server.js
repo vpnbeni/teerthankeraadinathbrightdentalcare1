@@ -16,6 +16,7 @@ import availabilityRoutes from "./src/routes/availability.js";
 import autoCancelRoutes from "./src/routes/autoCancelRoutes.js";
 import sessionLimitsRoutes from "./src/routes/sessionLimits.js";
 import filesRoutes from "./src/routes/files.js";
+import notificationRoutes from "./src/routes/notifications.js";
 import { corsOptions } from "./src/middleware/security.js";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -69,6 +70,7 @@ app.use("/api/availability", availabilityRoutes);
 app.use("/api/admin/auto-cancel", autoCancelRoutes);
 app.use("/api/session-limits", sessionLimitsRoutes);
 app.use("/api/files", filesRoutes);
+app.use("/api/notifications", notificationRoutes);
 
 // Handle 404 - Route not found
 app.use((req, res) => {
