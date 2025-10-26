@@ -138,10 +138,10 @@ const NotificationBell = () => {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -10, scale: 0.95 }}
             transition={{ duration: 0.2 }}
-            className="fixed sm:absolute left-[2.5%] right-[2.5%] sm:left-auto sm:right-0 top-[64px] sm:top-auto mt-0 sm:mt-3 w-[95%] sm:w-96 max-h-[50vh] sm:max-h-auto bg-white border border-gray-200 rounded-2xl shadow-2xl overflow-hidden z-50"
+            className="fixed sm:absolute left-[2.5%] right-[2.5%] sm:left-auto sm:right-0 top-[64px] sm:top-auto mt-0 sm:mt-3 w-[95%] sm:w-96 max-h-[80vh] sm:max-h-[600px] bg-white border border-gray-200 rounded-2xl shadow-2xl overflow-hidden z-50 flex flex-col"
           >
             {/* Header */}
-            <div className="px-5 py-4 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-transparent">
+            <div className="px-5 py-4 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-transparent flex-shrink-0">
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="text-lg font-bold text-gray-900">Notifications</h3>
@@ -163,7 +163,7 @@ const NotificationBell = () => {
             </div>
 
             {/* Notifications List */}
-            <div className="max-h-[calc(50vh-140px)] sm:max-h-[480px] overflow-y-auto">
+            <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent hover:scrollbar-thumb-gray-400">
               {notifications.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-16 px-6">
                   <motion.div
@@ -245,7 +245,7 @@ const NotificationBell = () => {
 
             {/* Footer */}
             {notifications.length > 0 && (
-              <div className="px-5 py-3 border-t border-gray-200 bg-gradient-to-r from-gray-50 to-transparent">
+              <div className="px-5 py-3 border-t border-gray-200 bg-gradient-to-r from-gray-50 to-transparent flex-shrink-0">
                 <button
                   onClick={() => {
                     setIsOpen(false);

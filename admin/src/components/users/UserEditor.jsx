@@ -91,24 +91,24 @@ const UserEditor = ({ user, onClose, onUserUpdated }) => {
         animate={{ scale: 1, opacity: 1, y: 0 }}
         exit={{ scale: 0.95, opacity: 0, y: 20 }}
         transition={{ type: "spring", stiffness: 300, damping: 30 }}
-        className="bg-white/95 backdrop-blur-xl rounded-2xl sm:rounded-3xl w-full max-w-3xl h-[90vh] sm:h-[85vh] flex flex-col overflow-hidden shadow-2xl border border-gray-200/50"
+        className="bg-white/95 backdrop-blur-xl rounded-2xl sm:rounded-3xl w-full max-w-3xl max-h-[95vh] sm:max-h-[90vh] flex flex-col overflow-hidden shadow-2xl border border-gray-200/50"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Premium Header */}
-        <div className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-8">
+        <div className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-4 sm:p-6 md:p-8">
           <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSA2MCAwIEwgMCAwIDAgNjAiIGZpbGw9Im5vbmUiIHN0cm9rZT0icmdiYSgyNTUsIDI1NSwgMjU1LCAwLjAzKSIgc3Ryb2tlLXdpZHRoPSIxIi8+PC9wYXR0ZXJuPjwvZGVmcz48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJ1cmwoI2dyaWQpIi8+PC9zdmc+')] opacity-30"></div>
           <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-[#5fa8b5]/20 to-[#346870]/20 rounded-full blur-3xl"></div>
           
-          <div className="relative flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="w-14 h-14 bg-gradient-to-br from-[#5fa8b5] to-[#346870] rounded-2xl flex items-center justify-center shadow-xl shadow-[#346870]/30">
-                <UserIcon className="w-7 h-7 text-white" />
+          <div className="relative flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0">
+              <div className="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-[#5fa8b5] to-[#346870] rounded-xl sm:rounded-2xl flex items-center justify-center shadow-xl shadow-[#346870]/30 flex-shrink-0">
+                <UserIcon className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
               </div>
-              <div>
-                <h2 className="text-3xl font-bold text-white">
+              <div className="min-w-0 flex-1">
+                <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-white truncate">
                   {user ? "Edit User" : "Create User"}
                 </h2>
-                <p className="text-slate-300 text-sm mt-1">
+                <p className="text-slate-300 text-xs sm:text-sm mt-0.5 sm:mt-1 truncate">
                   {user ? "Update user information" : "Add a new user to the system"}
                 </p>
               </div>
@@ -118,7 +118,7 @@ const UserEditor = ({ user, onClose, onUserUpdated }) => {
               whileTap={{ scale: 0.95 }}
               onClick={onClose}
               disabled={loading}
-              className="w-10 h-10 flex items-center justify-center rounded-xl bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 transition-all disabled:opacity-50"
+              className="w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center rounded-lg sm:rounded-xl bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 transition-all disabled:opacity-50 flex-shrink-0"
             >
               <XMarkIcon className="w-5 h-5" />
             </motion.button>
@@ -126,10 +126,10 @@ const UserEditor = ({ user, onClose, onUserUpdated }) => {
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-4 sm:p-8 space-y-6">
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8 space-y-4 sm:space-y-6">
+          <div className="grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2">
             <div>
-              <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
+              <label className="flex items-center gap-2 text-xs sm:text-sm font-semibold text-gray-700 mb-1.5 sm:mb-2">
                 <UserIcon className="w-4 h-4 text-gray-400" />
                 Full Name *
               </label>
@@ -139,13 +139,13 @@ const UserEditor = ({ user, onClose, onUserUpdated }) => {
                 value={formData.name}
                 onChange={handleChange}
                 required
-                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm bg-white/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-[#346870]/20 focus:border-[#346870] transition-all"
+                className="w-full border border-gray-200 rounded-lg sm:rounded-xl px-3 sm:px-4 py-2.5 sm:py-3 text-sm bg-white/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-[#346870]/20 focus:border-[#346870] transition-all"
                 placeholder="Enter full name"
               />
             </div>
 
             <div>
-              <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
+              <label className="flex items-center gap-2 text-xs sm:text-sm font-semibold text-gray-700 mb-1.5 sm:mb-2">
                 <PhoneIcon className="w-4 h-4 text-gray-400" />
                 Phone Number *
               </label>
@@ -156,13 +156,13 @@ const UserEditor = ({ user, onClose, onUserUpdated }) => {
                 onChange={handleChange}
                 required
                 maxLength={10}
-                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm bg-white/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-[#346870]/20 focus:border-[#346870] transition-all"
+                className="w-full border border-gray-200 rounded-lg sm:rounded-xl px-3 sm:px-4 py-2.5 sm:py-3 text-sm bg-white/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-[#346870]/20 focus:border-[#346870] transition-all"
                 placeholder="Enter 10-digit phone number"
               />
             </div>
 
             <div>
-              <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
+              <label className="flex items-center gap-2 text-xs sm:text-sm font-semibold text-gray-700 mb-1.5 sm:mb-2">
                 <EnvelopeIcon className="w-4 h-4 text-gray-400" />
                 Email Address
               </label>
@@ -171,13 +171,13 @@ const UserEditor = ({ user, onClose, onUserUpdated }) => {
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
-                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm bg-white/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-[#346870]/20 focus:border-[#346870] transition-all"
+                className="w-full border border-gray-200 rounded-lg sm:rounded-xl px-3 sm:px-4 py-2.5 sm:py-3 text-sm bg-white/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-[#346870]/20 focus:border-[#346870] transition-all"
                 placeholder="Enter email address"
               />
             </div>
 
             <div>
-              <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
+              <label className="flex items-center gap-2 text-xs sm:text-sm font-semibold text-gray-700 mb-1.5 sm:mb-2">
                 <UserIcon className="w-4 h-4 text-gray-400" />
                 Gender
               </label>
@@ -185,7 +185,7 @@ const UserEditor = ({ user, onClose, onUserUpdated }) => {
                 name="gender"
                 value={formData.gender}
                 onChange={handleChange}
-                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm bg-white/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-[#346870]/20 focus:border-[#346870] transition-all appearance-none cursor-pointer"
+                className="w-full border border-gray-200 rounded-lg sm:rounded-xl px-3 sm:px-4 py-2.5 sm:py-3 text-sm bg-white/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-[#346870]/20 focus:border-[#346870] transition-all appearance-none cursor-pointer"
                 style={{
                   backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
                   backgroundPosition: "right 0.5rem center",
@@ -202,7 +202,7 @@ const UserEditor = ({ user, onClose, onUserUpdated }) => {
             </div>
 
             <div>
-              <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
+              <label className="flex items-center gap-2 text-xs sm:text-sm font-semibold text-gray-700 mb-1.5 sm:mb-2">
                 <PhoneIcon className="w-4 h-4 text-gray-400" />
                 Alternative Phone
               </label>
@@ -212,14 +212,14 @@ const UserEditor = ({ user, onClose, onUserUpdated }) => {
                 value={formData.alternativePhone}
                 onChange={handleChange}
                 maxLength={10}
-                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm bg-white/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-[#346870]/20 focus:border-[#346870] transition-all"
+                className="w-full border border-gray-200 rounded-lg sm:rounded-xl px-3 sm:px-4 py-2.5 sm:py-3 text-sm bg-white/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-[#346870]/20 focus:border-[#346870] transition-all"
                 placeholder="Enter alternative phone number"
               />
             </div>
           </div>
 
           <div>
-            <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
+            <label className="flex items-center gap-2 text-xs sm:text-sm font-semibold text-gray-700 mb-1.5 sm:mb-2">
               <MapPinIcon className="w-4 h-4 text-gray-400" />
               Address
             </label>
@@ -229,20 +229,20 @@ const UserEditor = ({ user, onClose, onUserUpdated }) => {
               onChange={handleChange}
               rows={3}
               maxLength={500}
-              className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm bg-white/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-[#346870]/20 focus:border-[#346870] transition-all resize-none"
+              className="w-full border border-gray-200 rounded-lg sm:rounded-xl px-3 sm:px-4 py-2.5 sm:py-3 text-sm bg-white/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-[#346870]/20 focus:border-[#346870] transition-all resize-none"
               placeholder="Enter complete address"
             />
           </div>
 
           {/* Form Actions */}
-          <div className="flex items-center justify-end gap-3 pt-6 border-t border-gray-200/50">
+          <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2 sm:gap-3 pt-4 sm:pt-6 border-t border-gray-200/50">
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               type="button"
               onClick={onClose}
               disabled={loading}
-              className="px-6 py-3 border border-gray-200 rounded-xl text-sm font-semibold text-gray-700 bg-white hover:bg-gray-50 transition-all disabled:opacity-50"
+              className="px-4 sm:px-6 py-2.5 sm:py-3 border border-gray-200 rounded-lg sm:rounded-xl text-sm font-semibold text-gray-700 bg-white hover:bg-gray-50 transition-all disabled:opacity-50"
             >
               Cancel
             </motion.button>
@@ -253,7 +253,7 @@ const UserEditor = ({ user, onClose, onUserUpdated }) => {
               disabled={
                 loading || !formData.name.trim() || !formData.phone.trim()
               }
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-semibold text-white bg-gradient-to-r from-[#346870] to-[#5fa8b5] hover:shadow-lg hover:shadow-[#346870]/25 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              className="inline-flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg sm:rounded-xl text-sm font-semibold text-white bg-gradient-to-r from-[#346870] to-[#5fa8b5] hover:shadow-lg hover:shadow-[#346870]/25 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? (
                 <>

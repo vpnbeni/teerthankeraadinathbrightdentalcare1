@@ -32,105 +32,105 @@ const TemplateList = ({ templates = [], onEdit, onDelete, onRefresh }) => {
 
   if (templates.length === 0) {
     return (
-      <div className="text-center py-16">
+      <div className="text-center py-8 md:py-16">
         <motion.div
           initial={{ scale: 0, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ type: "spring", stiffness: 200 }}
-          className="w-20 h-20 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-2xl flex items-center justify-center mx-auto mb-6"
+          className="w-14 h-14 md:w-20 md:h-20 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-xl md:rounded-2xl flex items-center justify-center mx-auto mb-4 md:mb-6"
         >
-          <CalendarIcon className="h-10 w-10 text-indigo-600" />
+          <CalendarIcon className="h-7 w-7 md:h-10 md:w-10 text-indigo-600" />
         </motion.div>
-        <h3 className="text-xl font-semibold text-gray-900 mb-2">No templates found</h3>
-        <p className="text-gray-600 mb-4">Create your first availability template to get started.</p>
+        <h3 className="text-base md:text-xl font-semibold text-gray-900 mb-1 md:mb-2">No templates found</h3>
+        <p className="text-gray-600 text-xs md:text-sm mb-4">Create your first availability template to get started.</p>
       </div>
     );
   }
 
   return (
     <>
-      <div className="space-y-6">
+      <div className="space-y-4 md:space-y-6">
         {/* Summary Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
           <motion.div
             whileHover={{ y: -2 }}
-            className="group bg-gradient-to-br from-indigo-50 to-purple-50 rounded-2xl p-5 border border-indigo-100/50 hover:shadow-lg hover:shadow-indigo-200/30 transition-all"
+            className="group bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl md:rounded-2xl p-3 md:p-5 border border-indigo-100/50 hover:shadow-lg hover:shadow-indigo-200/30 transition-all"
           >
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-indigo-700 mb-1">Total Templates</p>
-                <p className="text-3xl font-bold text-indigo-900">{templates.length}</p>
+                <p className="text-xs md:text-sm font-medium text-indigo-700 mb-0.5 md:mb-1">Total Templates</p>
+                <p className="text-2xl md:text-3xl font-bold text-indigo-900">{templates.length}</p>
               </div>
-              <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/25">
-                <CalendarIcon className="h-6 w-6 text-white" />
+              <div className="w-9 h-9 md:w-12 md:h-12 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg md:rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/25">
+                <CalendarIcon className="h-5 w-5 md:h-6 md:w-6 text-white" />
               </div>
             </div>
           </motion.div>
           
           <motion.div
             whileHover={{ y: -2 }}
-            className="group bg-gradient-to-br from-amber-50 to-yellow-50 rounded-2xl p-5 border border-amber-100/50 hover:shadow-lg hover:shadow-amber-200/30 transition-all"
+            className="group bg-gradient-to-br from-amber-50 to-yellow-50 rounded-xl md:rounded-2xl p-3 md:p-5 border border-amber-100/50 hover:shadow-lg hover:shadow-amber-200/30 transition-all"
           >
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-amber-700 mb-1">Default Template</p>
-                <p className="text-3xl font-bold text-amber-900">{templates.filter(t => t.isDefault).length}</p>
+                <p className="text-xs md:text-sm font-medium text-amber-700 mb-0.5 md:mb-1">Default Template</p>
+                <p className="text-2xl md:text-3xl font-bold text-amber-900">{templates.filter(t => t.isDefault).length}</p>
               </div>
-              <div className="w-12 h-12 bg-gradient-to-br from-amber-500 to-yellow-500 rounded-xl flex items-center justify-center shadow-lg shadow-amber-500/25">
-                <StarIcon className="h-6 w-6 text-white" />
+              <div className="w-9 h-9 md:w-12 md:h-12 bg-gradient-to-br from-amber-500 to-yellow-500 rounded-lg md:rounded-xl flex items-center justify-center shadow-lg shadow-amber-500/25">
+                <StarIcon className="h-5 w-5 md:h-6 md:w-6 text-white" />
               </div>
             </div>
           </motion.div>
           
           <motion.div
             whileHover={{ y: -2 }}
-            className="group bg-gradient-to-br from-cyan-50 to-blue-50 rounded-2xl p-5 border border-cyan-100/50 hover:shadow-lg hover:shadow-cyan-200/30 transition-all"
+            className="group bg-gradient-to-br from-cyan-50 to-blue-50 rounded-xl md:rounded-2xl p-3 md:p-5 border border-cyan-100/50 hover:shadow-lg hover:shadow-cyan-200/30 transition-all"
           >
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-cyan-700 mb-1">Custom Templates</p>
-                <p className="text-3xl font-bold text-cyan-900">{templates.filter(t => !t.isDefault).length}</p>
+                <p className="text-xs md:text-sm font-medium text-cyan-700 mb-0.5 md:mb-1">Custom Templates</p>
+                <p className="text-2xl md:text-3xl font-bold text-cyan-900">{templates.filter(t => !t.isDefault).length}</p>
               </div>
-              <div className="w-12 h-12 bg-gradient-to-br from-cyan-500 to-blue-500 rounded-xl flex items-center justify-center shadow-lg shadow-cyan-500/25">
-                <ClockIcon className="h-6 w-6 text-white" />
+              <div className="w-9 h-9 md:w-12 md:h-12 bg-gradient-to-br from-cyan-500 to-blue-500 rounded-lg md:rounded-xl flex items-center justify-center shadow-lg shadow-cyan-500/25">
+                <ClockIcon className="h-5 w-5 md:h-6 md:w-6 text-white" />
               </div>
             </div>
           </motion.div>
         </div>
 
         {/* Templates Cards */}
-        <div className="space-y-4">
+        <div className="space-y-3 md:space-y-4">
           {templates.map((template, index) => (
             <motion.div
               key={template._id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.05 }}
-              className="group bg-white/80 backdrop-blur-sm border border-gray-200/50 rounded-2xl p-6 hover:shadow-lg hover:shadow-gray-200/50 transition-all duration-300"
+              className="group bg-white/80 backdrop-blur-sm border border-gray-200/50 rounded-xl md:rounded-2xl p-4 md:p-6 hover:shadow-lg hover:shadow-gray-200/50 transition-all duration-300"
             >
-              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 md:gap-4">
                 <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center shadow-md ${
+                  <div className="flex items-center gap-2 md:gap-3 mb-2 md:mb-3">
+                    <div className={`w-9 h-9 md:w-10 md:h-10 rounded-lg md:rounded-xl flex items-center justify-center shadow-md ${
                       template.isDefault 
                         ? 'bg-gradient-to-br from-amber-500 to-yellow-500 shadow-amber-500/25' 
                         : 'bg-gradient-to-br from-indigo-500 to-purple-600 shadow-indigo-500/25'
                     }`}>
                       {template.isDefault ? (
-                        <StarIconSolid className="h-5 w-5 text-white" />
+                        <StarIconSolid className="h-4 w-4 md:h-5 md:w-5 text-white" />
                       ) : (
-                        <CogIcon className="h-5 w-5 text-white" />
+                        <CogIcon className="h-4 w-4 md:h-5 md:w-5 text-white" />
                       )}
                     </div>
                     <div>
-                      <h3 className="text-lg font-semibold text-gray-900">{template.templateName}</h3>
-                      <div className="flex items-center gap-2 mt-1">
+                      <h3 className="text-base md:text-lg font-semibold text-gray-900">{template.templateName}</h3>
+                      <div className="flex items-center gap-1.5 md:gap-2 mt-0.5 md:mt-1">
                         {template.isDefault && (
-                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-700">
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] md:text-xs font-semibold bg-amber-100 text-amber-700">
                             Default
                           </span>
                         )}
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${
+                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] md:text-xs font-semibold ${
                           template.isActive 
                             ? 'bg-green-100 text-green-700' 
                             : 'bg-gray-100 text-gray-700'
@@ -141,40 +141,40 @@ const TemplateList = ({ templates = [], onEdit, onDelete, onRefresh }) => {
                     </div>
                   </div>
                   
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
-                    <div className="flex items-center gap-2">
-                      <ClockIcon className="h-4 w-4 text-gray-400" />
-                      <div>
-                        <p className="text-xs text-gray-500">Working Hours</p>
-                        <p className="text-sm font-medium text-gray-900">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mt-3 md:mt-4">
+                    <div className="flex items-center gap-1.5 md:gap-2">
+                      <ClockIcon className="h-3.5 w-3.5 md:h-4 md:w-4 text-gray-400 flex-shrink-0" />
+                      <div className="min-w-0">
+                        <p className="text-[10px] md:text-xs text-gray-500">Working Hours</p>
+                        <p className="text-xs md:text-sm font-medium text-gray-900 truncate">
                           {formatTimeSlot(template.workingHours.start, template.workingHours.end)}
                         </p>
                       </div>
                     </div>
                     
-                    <div className="flex items-center gap-2">
-                      <CalendarIcon className="h-4 w-4 text-gray-400" />
-                      <div>
-                        <p className="text-xs text-gray-500">Slot Duration</p>
-                        <p className="text-sm font-medium text-gray-900">{template.slotDuration} min</p>
+                    <div className="flex items-center gap-1.5 md:gap-2">
+                      <CalendarIcon className="h-3.5 w-3.5 md:h-4 md:w-4 text-gray-400 flex-shrink-0" />
+                      <div className="min-w-0">
+                        <p className="text-[10px] md:text-xs text-gray-500">Slot Duration</p>
+                        <p className="text-xs md:text-sm font-medium text-gray-900">{template.slotDuration} min</p>
                       </div>
                     </div>
                     
-                    <div className="flex items-center gap-2">
-                      <ClockIcon className="h-4 w-4 text-gray-400" />
-                      <div>
-                        <p className="text-xs text-gray-500">Break Times</p>
-                        <p className="text-sm font-medium text-gray-900 truncate">
+                    <div className="flex items-center gap-1.5 md:gap-2">
+                      <ClockIcon className="h-3.5 w-3.5 md:h-4 md:w-4 text-gray-400 flex-shrink-0" />
+                      <div className="min-w-0">
+                        <p className="text-[10px] md:text-xs text-gray-500">Break Times</p>
+                        <p className="text-xs md:text-sm font-medium text-gray-900 truncate">
                           {template.breakTimes?.length || 0} break(s)
                         </p>
                       </div>
                     </div>
                     
-                    <div className="flex items-center gap-2">
-                      <CalendarIcon className="h-4 w-4 text-gray-400" />
-                      <div>
-                        <p className="text-xs text-gray-500">Created</p>
-                        <p className="text-sm font-medium text-gray-900">
+                    <div className="flex items-center gap-1.5 md:gap-2">
+                      <CalendarIcon className="h-3.5 w-3.5 md:h-4 md:w-4 text-gray-400 flex-shrink-0" />
+                      <div className="min-w-0">
+                        <p className="text-[10px] md:text-xs text-gray-500">Created</p>
+                        <p className="text-xs md:text-sm font-medium text-gray-900 truncate">
                           {format(new Date(template.createdAt), 'MMM dd, yyyy')}
                         </p>
                       </div>
@@ -187,20 +187,20 @@ const TemplateList = ({ templates = [], onEdit, onDelete, onRefresh }) => {
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     onClick={() => onEdit(template)}
-                    className="flex-1 lg:flex-none inline-flex items-center justify-center gap-2 px-4 py-2 bg-indigo-50 text-indigo-700 font-medium rounded-xl hover:bg-indigo-100 transition-colors"
+                    className="flex-1 lg:flex-none inline-flex items-center justify-center gap-1.5 md:gap-2 px-3 md:px-4 py-1.5 md:py-2 bg-indigo-50 text-indigo-700 font-medium text-xs md:text-sm rounded-lg md:rounded-xl hover:bg-indigo-100 transition-colors"
                   >
-                    <PencilIcon className="h-4 w-4" />
-                    <span className="text-sm">Edit</span>
+                    <PencilIcon className="h-3.5 w-3.5 md:h-4 md:w-4" />
+                    <span>Edit</span>
                   </motion.button>
                   {!template.isDefault && (
                     <motion.button
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
                       onClick={() => handleDeleteClick(template)}
-                      className="flex-1 lg:flex-none inline-flex items-center justify-center gap-2 px-4 py-2 bg-red-50 text-red-700 font-medium rounded-xl hover:bg-red-100 transition-colors"
+                      className="flex-1 lg:flex-none inline-flex items-center justify-center gap-1.5 md:gap-2 px-3 md:px-4 py-1.5 md:py-2 bg-red-50 text-red-700 font-medium text-xs md:text-sm rounded-lg md:rounded-xl hover:bg-red-100 transition-colors"
                     >
-                      <TrashIcon className="h-4 w-4" />
-                      <span className="text-sm">Delete</span>
+                      <TrashIcon className="h-3.5 w-3.5 md:h-4 md:w-4" />
+                      <span>Delete</span>
                     </motion.button>
                   )}
                 </div>

@@ -38,7 +38,7 @@ class PaymentService {
     }
   }
 
-  async createOrder(userId, planId) {
+  async createOrder(userId, planId, isUpgrade = false) {
     try {
       // Get plan details
       const plan = await Plan.findById(planId);
@@ -54,9 +54,23 @@ class PaymentService {
         throw new PaymentError("User not found", "USER_NOT_FOUND", 404);
       }
 
+      // Calculate amount based on upgrade or new subscription
+      let amount = plan.price;
+      let currentPlan = null;
+      
+      if (isUpgrade && user.subscription?.planId) {
+        currentPlan = await Plan.findById(user.subscription.planId);
+        if (currentPlan) {
+          // For upgrades, charge the full price (sessions will be added)
+          // You can modify this to charge only the difference if needed
+          amount = plan.price;
+          console.log(`Upgrade from ${currentPlan.name} to ${plan.name}`);
+        }
+      }
+
       // Create Razorpay order
       const orderOptions = {
-        amount: plan.price * 100, // Amount in paise
+        amount: amount * 100, // Amount in paise
         currency: "INR",
         receipt: `ord_${userId.toString().slice(-8)}_${Date.now()
           .toString()
@@ -67,6 +81,8 @@ class PaymentService {
           planName: plan.name,
           userPhone: user.phone,
           userName: user.name,
+          isUpgrade: isUpgrade.toString(),
+          currentPlanId: currentPlan?._id?.toString() || "none",
         },
       };
       console.log("orderOptions", orderOptions);
@@ -102,11 +118,13 @@ class PaymentService {
         const payment = await Payment.create({
           userId,
           planId,
-          amount: plan.price,
+          amount: amount,
           currency: "INR",
           status: "pending",
           razorpayOrderId: razorpayOrder.id,
-          description: `Subscription payment for ${plan.name}`,
+          description: isUpgrade 
+            ? `Plan upgrade to ${plan.name}` 
+            : `Subscription payment for ${plan.name}`,
         });
         console.log("payment", payment);
 
@@ -118,12 +136,14 @@ class PaymentService {
             name: plan.name,
             duration: plan.duration,
             price: plan.price,
+            sessions: plan.sessions,
           },
           userDetails: {
             name: user.name,
             phone: user.phone,
             email: user.email,
           },
+          isUpgrade,
         };
         ``;
       } catch (dbError) {
@@ -191,6 +211,7 @@ class PaymentService {
         razorpayPaymentId,
         razorpaySignature,
         paymentMethod,
+        isUpgrade = false,
       } = paymentData;
 
       // Verify signature
@@ -238,28 +259,66 @@ class PaymentService {
       const user = payment.userId;
       const plan = payment.planId;
 
-      const startDate = new Date();
-      const endDate = new Date(
-        startDate.getTime() + plan.duration * 30 * 24 * 60 * 60 * 1000
-      );
+      let startDate, endDate, totalSessions, sessionsRemaining;
+
+      if (isUpgrade && user.subscription?.planId) {
+        // Upgrade: Add sessions to existing subscription
+        console.log(`Processing upgrade for user ${user._id}`);
+        
+        // Update dates based on new plan duration
+        const now = new Date();
+        if (user.subscription.endDate > now && user.subscription.status === "active") {
+          // Keep existing start date, extend end date by new plan duration
+          startDate = user.subscription.startDate;
+          endDate = new Date(
+            now.getTime() + plan.duration * 30 * 24 * 60 * 60 * 1000
+          );
+        } else {
+          // If expired, start fresh with new dates
+          startDate = new Date();
+          endDate = new Date(
+            startDate.getTime() + plan.duration * 30 * 24 * 60 * 60 * 1000
+          );
+        }
+
+        // Add new plan sessions to existing sessions
+        totalSessions = (user.subscription.totalSessions || 0) + plan.sessions;
+        sessionsRemaining = (user.subscription.sessionsRemaining || 0) + plan.sessions;
+        
+        console.log(`Added ${plan.sessions} sessions. New total: ${sessionsRemaining}`);
+        console.log(`Extended subscription end date to: ${endDate}`);
+      } else {
+        // New subscription
+        startDate = new Date();
+        endDate = new Date(
+          startDate.getTime() + plan.duration * 30 * 24 * 60 * 60 * 1000
+        );
+        totalSessions = plan.sessions;
+        sessionsRemaining = plan.sessions;
+      }
 
       user.subscription = {
         planId: plan._id,
         startDate,
         endDate,
-        totalSessions: plan.sessions,
-        sessionsRemaining: plan.sessions,
+        totalSessions,
+        sessionsRemaining,
         status: "active",
+        paymentId: payment._id,
       };
 
       await user.save();
 
       // Send payment confirmation email
       if (user.email) {
+        const emailSubject = isUpgrade 
+          ? `Plan Upgrade Confirmation - ${plan.name}`
+          : `Subscription Confirmation - ${plan.name}`;
+        
         await emailService.sendPaymentConfirmationEmail(
           user.email,
           user.name,
-          "",
+          emailSubject,
           plan.name,
           payment.amount,
           razorpayOrderId
@@ -279,7 +338,10 @@ class PaymentService {
           planName: plan.name,
           startDate,
           endDate,
+          totalSessions,
+          sessionsRemaining,
           status: "active",
+          isUpgrade,
         },
       };
     } catch (error) {

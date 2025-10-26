@@ -860,6 +860,37 @@ export const rescheduleAppointment = async (req, res) => {
       );
     }
 
+    // Send WebSocket notifications
+    try {
+      // Notify the user about reschedule
+      console.log(`📤 Sending reschedule notification to user: ${updatedAppointment.userId._id}`);
+      sendNotificationToUser(updatedAppointment.userId._id.toString(), {
+        type: "appointment_rescheduled",
+        title: "Appointment Rescheduled",
+        message: `Your appointment has been rescheduled from ${new Date(originalDate).toLocaleDateString("en-IN", { month: "short", day: "numeric", year: "numeric" })} at ${originalTimeSlot} to ${new Date(updatedAppointment.date).toLocaleDateString("en-IN", { month: "short", day: "numeric", year: "numeric" })} at ${updatedAppointment.timeSlot}${reason ? `. Reason: ${reason}` : "."}`,
+        appointmentId: updatedAppointment._id.toString(),
+        icon: "calendar",
+        priority: "high",
+      });
+      console.log(`✅ User reschedule notification sent successfully`);
+
+      // Notify admins about the reschedule
+      console.log(`📤 Sending reschedule notification to admins`);
+      sendNotificationToAdmins({
+        type: "appointment_rescheduled",
+        title: "Appointment Rescheduled",
+        message: `${updatedAppointment.userId.name}'s appointment rescheduled from ${new Date(originalDate).toLocaleDateString("en-IN", { month: "short", day: "numeric" })} at ${originalTimeSlot} to ${new Date(updatedAppointment.date).toLocaleDateString("en-IN", { month: "short", day: "numeric" })} at ${updatedAppointment.timeSlot}`,
+        appointmentId: updatedAppointment._id.toString(),
+        userId: updatedAppointment.userId._id.toString(),
+        userName: updatedAppointment.userId.name,
+        icon: "calendar",
+        priority: "medium",
+      });
+      console.log(`✅ Admin reschedule notification sent successfully`);
+    } catch (error) {
+      console.error("WebSocket notification failed (non-blocking):", error.message);
+    }
+
     res.status(200).json({
       success: true,
       data: {
@@ -1654,6 +1685,39 @@ export const addFollowUp = async (req, res) => {
         });
     }
 
+    // Send WebSocket notifications
+    try {
+      // Notify the user about follow-up
+      console.log(`📤 Sending follow-up notification to user: ${appointment.userId._id}`);
+      sendNotificationToUser(appointment.userId._id.toString(), {
+        type: "followup_scheduled",
+        title: "Follow-up Appointment Scheduled",
+        message: `A follow-up appointment has been scheduled for ${new Date(date).toLocaleDateString("en-IN", { month: "short", day: "numeric", year: "numeric" })} at ${timeSlot}${notes ? `. Note: ${notes}` : "."}`,
+        appointmentId: appointment._id.toString(),
+        followUpId: newFollowUp._id.toString(),
+        icon: "calendar",
+        priority: "high",
+      });
+      console.log(`✅ User follow-up notification sent successfully`);
+
+      // Notify admins about the follow-up
+      console.log(`📤 Sending follow-up notification to admins`);
+      sendNotificationToAdmins({
+        type: "followup_scheduled",
+        title: "Follow-up Scheduled",
+        message: `Follow-up scheduled for ${appointment.userId.name} on ${new Date(date).toLocaleDateString("en-IN", { month: "short", day: "numeric" })} at ${timeSlot}`,
+        appointmentId: appointment._id.toString(),
+        followUpId: newFollowUp._id.toString(),
+        userId: appointment.userId._id.toString(),
+        userName: appointment.userId.name,
+        icon: "calendar",
+        priority: "medium",
+      });
+      console.log(`✅ Admin follow-up notification sent successfully`);
+    } catch (error) {
+      console.error("WebSocket notification failed (non-blocking):", error.message);
+    }
+
     res.status(201).json({
       success: true,
       data: newFollowUp,
@@ -1730,6 +1794,52 @@ export const updateFollowUpStatus = async (req, res) => {
         console.error(`Failed to send follow-up ${status} email:`, error);
         // Don't fail the operation if email fails
       }
+    }
+
+    // Send WebSocket notifications for status updates
+    try {
+      if (status === "completed") {
+        // Notify user about follow-up completion
+        console.log(`📤 Sending follow-up completion notification to user: ${appointment.userId._id}`);
+        sendNotificationToUser(appointment.userId._id.toString(), {
+          type: "followup_completed",
+          title: "Follow-up Completed",
+          message: `Your follow-up appointment on ${new Date(updatedFollowUp.date).toLocaleDateString("en-IN", { month: "short", day: "numeric", year: "numeric" })} at ${updatedFollowUp.timeSlot} has been completed.`,
+          appointmentId: appointment._id.toString(),
+          followUpId: followupId,
+          icon: "check-circle",
+          priority: "medium",
+        });
+        console.log(`✅ User follow-up completion notification sent successfully`);
+      } else if (status === "cancelled") {
+        // Notify user about follow-up cancellation
+        console.log(`📤 Sending follow-up cancellation notification to user: ${appointment.userId._id}`);
+        sendNotificationToUser(appointment.userId._id.toString(), {
+          type: "followup_cancelled",
+          title: "Follow-up Cancelled",
+          message: `Your follow-up appointment scheduled for ${new Date(updatedFollowUp.date).toLocaleDateString("en-IN", { month: "short", day: "numeric", year: "numeric" })} at ${updatedFollowUp.timeSlot} has been cancelled${cancellationReason ? `: ${cancellationReason}` : "."}`,
+          appointmentId: appointment._id.toString(),
+          followUpId: followupId,
+          icon: "calendar",
+          priority: "high",
+        });
+        console.log(`✅ User follow-up cancellation notification sent successfully`);
+      } else if (status === "confirmed") {
+        // Notify user about follow-up confirmation
+        console.log(`📤 Sending follow-up confirmation notification to user: ${appointment.userId._id}`);
+        sendNotificationToUser(appointment.userId._id.toString(), {
+          type: "followup_confirmed",
+          title: "Follow-up Confirmed",
+          message: `Your follow-up appointment for ${new Date(updatedFollowUp.date).toLocaleDateString("en-IN", { month: "short", day: "numeric", year: "numeric" })} at ${updatedFollowUp.timeSlot} has been confirmed.`,
+          appointmentId: appointment._id.toString(),
+          followUpId: followupId,
+          icon: "check-circle",
+          priority: "medium",
+        });
+        console.log(`✅ User follow-up confirmation notification sent successfully`);
+      }
+    } catch (error) {
+      console.error("WebSocket notification failed (non-blocking):", error.message);
     }
 
     res.status(200).json({

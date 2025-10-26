@@ -126,9 +126,11 @@ const SubscriptionStatus = ({ subscription, plan, onUpgrade }) => {
     }
   };
 
-  // Calculate total sessions from plan details or use fallback
+  // Calculate total sessions from subscription or plan details
   const getTotalSessions = () => {
-    return plan?.sessions || 0;
+    // Use subscription.totalSessions if available (handles upgrades correctly)
+    // Otherwise fall back to plan.sessions for new subscriptions
+    return subscription.totalSessions || plan?.sessions || 0;
   };
 
   const calculateProgress = () => {
@@ -404,22 +406,44 @@ const SubscriptionStatus = ({ subscription, plan, onUpgrade }) => {
         </motion.div>
       )}
 
-      {/* Upgrade Option */}
-      {/* {subscription.status === "active" && !isExpiringSoon() && (
-        <div className="card">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="font-medium text-gray-800">Want More Sessions?</h3>
-              <p className="text-gray-600 text-sm mt-1">
-                Upgrade your plan to get more sessions and additional benefits.
-              </p>
+      {/* Upgrade Option - Show if active and not expiring soon */}
+      {subscription.status === "active" && !isExpiringSoon() && (
+        <motion.div 
+          className="relative overflow-hidden bg-gradient-to-r from-purple-50 via-pink-50 to-purple-50 border border-purple-200/50 rounded-3xl p-6 shadow-sm"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+        >
+          <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-purple-200/20 to-pink-200/20 rounded-full blur-3xl -mr-32 -mt-32"></div>
+          
+          <div className="relative flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="flex items-start gap-4 flex-1">
+              <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center shadow-lg shadow-purple-500/20">
+                <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+              </div>
+              <div className="flex-1 min-w-0">
+                <h4 className="font-bold text-purple-900 text-base mb-1">Want More Sessions?</h4>
+                <p className="text-purple-700 text-sm leading-relaxed">
+                  Upgrade your plan to get more sessions and unlock additional premium benefits for comprehensive dental care.
+                </p>
+              </div>
             </div>
-            <button onClick={onUpgrade} className="btn-primary px-6 py-2">
+            <motion.button
+              onClick={onUpgrade}
+              className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white text-sm font-semibold rounded-xl hover:from-purple-700 hover:to-pink-700 transition-all shadow-lg shadow-purple-500/25 hover:shadow-xl hover:shadow-purple-500/30 whitespace-nowrap"
+              whileHover={{ y: -2, scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+              </svg>
               Upgrade Plan
-            </button>
+            </motion.button>
           </div>
-        </div>
-      )} */}
+        </motion.div>
+      )}
     </motion.div>
   );
 };

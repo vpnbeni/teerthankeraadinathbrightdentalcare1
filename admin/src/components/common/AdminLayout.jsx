@@ -12,7 +12,7 @@ import {
   BellIcon,
   Bars3Icon,
   XMarkIcon,
-  ArrowRightOnRectangleIcon,
+  ArrowRightStartOnRectangleIcon,
   CogIcon,
 } from "@heroicons/react/24/outline";
 import { logoutAdmin } from "../../store/authSlice";
@@ -263,7 +263,7 @@ const AdminLayout = ({ children }) => {
               className="flex items-center justify-center gap-2 w-full px-4 py-3 text-sm font-medium text-gray-700 hover:text-gray-900 bg-gray-100/80 hover:bg-gray-200 rounded-xl transition-all"
               aria-label="Sign out of admin panel"
             >
-              <ArrowRightOnRectangleIcon className="h-5 w-5" />
+              <ArrowRightStartOnRectangleIcon className="h-5 w-5" />
               Logout
             </button>
           </div>
@@ -355,7 +355,7 @@ const AdminLayout = ({ children }) => {
               className="flex items-center justify-center gap-2 w-full px-4 py-3 text-sm font-medium text-gray-700 hover:text-gray-900 bg-gray-100/80 hover:bg-gray-200 rounded-xl transition-all"
               aria-label="Sign out of admin panel"
             >
-              <ArrowRightOnRectangleIcon className="h-5 w-5" />
+              <ArrowRightStartOnRectangleIcon className="h-5 w-5" />
               Logout
             </button>
           </div>

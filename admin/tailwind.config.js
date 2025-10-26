@@ -141,6 +141,33 @@ export default {
             top: "6px",
           },
         },
+        ".scrollbar-thin": {
+          scrollbarWidth: "thin",
+          scrollbarColor: "rgb(209 213 219) transparent",
+        },
+        ".scrollbar-thin::-webkit-scrollbar": {
+          width: "6px",
+          height: "6px",
+        },
+        ".scrollbar-thin::-webkit-scrollbar-track": {
+          backgroundColor: "transparent",
+        },
+        ".scrollbar-thin::-webkit-scrollbar-thumb": {
+          backgroundColor: "rgb(209 213 219)",
+          borderRadius: "3px",
+        },
+        ".scrollbar-thin::-webkit-scrollbar-thumb:hover": {
+          backgroundColor: "rgb(156 163 175)",
+        },
+        ".scrollbar-thumb-gray-300::-webkit-scrollbar-thumb": {
+          backgroundColor: "rgb(209 213 219)",
+        },
+        ".scrollbar-thumb-gray-400:hover::-webkit-scrollbar-thumb:hover": {
+          backgroundColor: "rgb(156 163 175)",
+        },
+        ".scrollbar-track-transparent::-webkit-scrollbar-track": {
+          backgroundColor: "transparent",
+        },
       };
       addUtilities(newUtilities);
     },

@@ -208,7 +208,6 @@ const ResponsiveTable = ({
               <th
                 key={index}
                 scope="col"
-                role="columnheader"
                 className={`px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider admin-focus mobile-tap-target ${
                   sortable && column.sortable !== false
                     ? "cursor-pointer hover:bg-gray-100"

@@ -1,5 +1,6 @@
 import React from "react";
 import { LoadingSpinner } from "../../shared/components";
+import { motion } from "framer-motion";
 import {
   ArrowTrendingUpIcon as TrendingUpIcon,
   ArrowTrendingDownIcon as TrendingDownIcon,
@@ -7,6 +8,7 @@ import {
   CurrencyDollarIcon,
   CalendarIcon,
   ChartBarIcon,
+  SparklesIcon,
 } from "@heroicons/react/24/outline";
 
 const AnalyticsDashboard = ({ data, paymentData, bookingData, dateRange }) => {
@@ -43,189 +45,188 @@ const AnalyticsDashboard = ({ data, paymentData, bookingData, dateRange }) => {
   const metrics = calculateMetrics();
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 md:space-y-8">
       {/* Enhanced Key Metrics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
         {/* Total Revenue */}
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
-          <div className="flex items-center justify-between">
+        <motion.div
+          whileHover={{ y: -4, scale: 1.02 }}
+          transition={{ type: "spring", stiffness: 300, damping: 20 }}
+          className="group relative bg-white/80 backdrop-blur-xl border border-gray-200/50 rounded-xl md:rounded-2xl p-5 md:p-6 shadow-lg shadow-gray-200/50 hover:shadow-xl hover:shadow-green-200/40 transition-all duration-300"
+        >
+          <div className="absolute inset-0 bg-gradient-to-br from-green-50/50 to-emerald-50/50 rounded-xl md:rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+          <div className="relative">
+            <div className="flex items-center justify-between mb-4">
+              <div className="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-br from-green-500 to-emerald-500 rounded-xl md:rounded-2xl flex items-center justify-center shadow-lg shadow-green-500/25">
+                <CurrencyDollarIcon className="h-5 w-5 md:h-6 md:w-6 text-white" />
+              </div>
+              <div className="px-2 py-1 bg-green-100 text-green-700 text-xs font-semibold rounded-full">
+                Revenue
+              </div>
+            </div>
             <div>
-              <p className="text-sm font-medium text-gray-600">Total Revenue</p>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-xs md:text-sm font-medium text-gray-600 mb-1">Total Revenue</p>
+              <p className="text-2xl md:text-3xl font-bold text-gray-900 tracking-tight">
                 {formatCurrency(metrics.totalRevenue)}
               </p>
             </div>
-            <div className="p-3 bg-green-100 rounded-full">
-              <CurrencyDollarIcon className="h-6 w-6 text-green-600" />
+            <div className="mt-4 flex items-center gap-1">
+              {metrics.revenueGrowth >= 0 ? (
+                <TrendingUpIcon className="h-4 w-4 text-green-500" />
+              ) : (
+                <TrendingDownIcon className="h-4 w-4 text-red-500" />
+              )}
+              <span
+                className={`text-sm font-semibold ${
+                  metrics.revenueGrowth >= 0 ? "text-green-600" : "text-red-600"
+                }`}
+              >
+                {metrics.revenueGrowth >= 0 ? "+" : ""}
+                {formatPercentage(metrics.revenueGrowth)}
+              </span>
+              <span className="text-xs text-gray-500 ml-1">vs last period</span>
             </div>
           </div>
-          <div className="mt-4 flex items-center">
-            {metrics.revenueGrowth >= 0 ? (
-              <TrendingUpIcon className="h-4 w-4 text-green-500 mr-1" />
-            ) : (
-              <TrendingDownIcon className="h-4 w-4 text-red-500 mr-1" />
-            )}
-            <span
-              className={`text-sm font-medium ${
-                metrics.revenueGrowth >= 0 ? "text-green-600" : "text-red-600"
-              }`}
-            >
-              {metrics.revenueGrowth >= 0 ? "+" : ""}
-              {formatPercentage(metrics.revenueGrowth)}
-            </span>
-            <span className="text-sm text-gray-500 ml-2">vs last period</span>
-          </div>
-        </div>
+        </motion.div>
 
         {/* Total Patients */}
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
-          <div className="flex items-center justify-between">
+        <motion.div
+          whileHover={{ y: -4, scale: 1.02 }}
+          transition={{ type: "spring", stiffness: 300, damping: 20 }}
+          className="group relative bg-white/80 backdrop-blur-xl border border-gray-200/50 rounded-xl md:rounded-2xl p-5 md:p-6 shadow-lg shadow-gray-200/50 hover:shadow-xl hover:shadow-blue-200/40 transition-all duration-300"
+        >
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-50/50 to-cyan-50/50 rounded-xl md:rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+          <div className="relative">
+            <div className="flex items-center justify-between mb-4">
+              <div className="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl md:rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/25">
+                <UsersIcon className="h-5 w-5 md:h-6 md:w-6 text-white" />
+              </div>
+              <div className="px-2 py-1 bg-blue-100 text-blue-700 text-xs font-semibold rounded-full">
+                Patients
+              </div>
+            </div>
             <div>
-              <p className="text-sm font-medium text-gray-600">
-                Total Patients
-              </p>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-xs md:text-sm font-medium text-gray-600 mb-1">Total Patients</p>
+              <p className="text-2xl md:text-3xl font-bold text-gray-900 tracking-tight">
                 {metrics.totalPatients}
               </p>
             </div>
-            <div className="p-3 bg-blue-100 rounded-full">
-              <UsersIcon className="h-6 w-6 text-blue-600" />
+            <div className="mt-4 flex items-center gap-1">
+              {metrics.patientGrowth >= 0 ? (
+                <TrendingUpIcon className="h-4 w-4 text-green-500" />
+              ) : (
+                <TrendingDownIcon className="h-4 w-4 text-red-500" />
+              )}
+              <span
+                className={`text-sm font-semibold ${
+                  metrics.patientGrowth >= 0 ? "text-green-600" : "text-red-600"
+                }`}
+              >
+                {metrics.patientGrowth >= 0 ? "+" : ""}
+                {formatPercentage(metrics.patientGrowth)}
+              </span>
+              <span className="text-xs text-gray-500 ml-1">vs last period</span>
             </div>
           </div>
-          <div className="mt-4 flex items-center">
-            {metrics.patientGrowth >= 0 ? (
-              <TrendingUpIcon className="h-4 w-4 text-green-500 mr-1" />
-            ) : (
-              <TrendingDownIcon className="h-4 w-4 text-red-500 mr-1" />
-            )}
-            <span
-              className={`text-sm font-medium ${
-                metrics.patientGrowth >= 0 ? "text-green-600" : "text-red-600"
-              }`}
-            >
-              {metrics.patientGrowth >= 0 ? "+" : ""}
-              {formatPercentage(metrics.patientGrowth)}
-            </span>
-            <span className="text-sm text-gray-500 ml-2">vs last period</span>
-          </div>
-        </div>
+        </motion.div>
 
         {/* Total Appointments */}
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
-          <div className="flex items-center justify-between">
+        <motion.div
+          whileHover={{ y: -4, scale: 1.02 }}
+          transition={{ type: "spring", stiffness: 300, damping: 20 }}
+          className="group relative bg-white/80 backdrop-blur-xl border border-gray-200/50 rounded-xl md:rounded-2xl p-5 md:p-6 shadow-lg shadow-gray-200/50 hover:shadow-xl hover:shadow-purple-200/40 transition-all duration-300"
+        >
+          <div className="absolute inset-0 bg-gradient-to-br from-purple-50/50 to-pink-50/50 rounded-xl md:rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+          <div className="relative">
+            <div className="flex items-center justify-between mb-4">
+              <div className="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl md:rounded-2xl flex items-center justify-center shadow-lg shadow-purple-500/25">
+                <CalendarIcon className="h-5 w-5 md:h-6 md:w-6 text-white" />
+              </div>
+              <div className="px-2 py-1 bg-purple-100 text-purple-700 text-xs font-semibold rounded-full">
+                Bookings
+              </div>
+            </div>
             <div>
-              <p className="text-sm font-medium text-gray-600">
-                Total Appointments
-              </p>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-xs md:text-sm font-medium text-gray-600 mb-1">Total Appointments</p>
+              <p className="text-2xl md:text-3xl font-bold text-gray-900 tracking-tight">
                 {metrics.totalAppointments}
               </p>
             </div>
-            <div className="p-3 bg-purple-100 rounded-full">
-              <CalendarIcon className="h-6 w-6 text-purple-600" />
+            <div className="mt-4 flex items-center gap-1">
+              {metrics.appointmentGrowth >= 0 ? (
+                <TrendingUpIcon className="h-4 w-4 text-green-500" />
+              ) : (
+                <TrendingDownIcon className="h-4 w-4 text-red-500" />
+              )}
+              <span
+                className={`text-sm font-semibold ${
+                  metrics.appointmentGrowth >= 0
+                    ? "text-green-600"
+                    : "text-red-600"
+                }`}
+              >
+                {metrics.appointmentGrowth >= 0 ? "+" : ""}
+                {formatPercentage(metrics.appointmentGrowth)}
+              </span>
+              <span className="text-xs text-gray-500 ml-1">vs last period</span>
             </div>
           </div>
-          <div className="mt-4 flex items-center">
-            {metrics.appointmentGrowth >= 0 ? (
-              <TrendingUpIcon className="h-4 w-4 text-green-500 mr-1" />
-            ) : (
-              <TrendingDownIcon className="h-4 w-4 text-red-500 mr-1" />
-            )}
-            <span
-              className={`text-sm font-medium ${
-                metrics.appointmentGrowth >= 0
-                  ? "text-green-600"
-                  : "text-red-600"
-              }`}
-            >
-              {metrics.appointmentGrowth >= 0 ? "+" : ""}
-              {formatPercentage(metrics.appointmentGrowth)}
-            </span>
-            <span className="text-sm text-gray-500 ml-2">vs last period</span>
-          </div>
-        </div>
+        </motion.div>
 
         {/* Active Subscriptions */}
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
-          <div className="flex items-center justify-between">
+        <motion.div
+          whileHover={{ y: -4, scale: 1.02 }}
+          transition={{ type: "spring", stiffness: 300, damping: 20 }}
+          className="group relative bg-white/80 backdrop-blur-xl border border-gray-200/50 rounded-xl md:rounded-2xl p-5 md:p-6 shadow-lg shadow-gray-200/50 hover:shadow-xl hover:shadow-amber-200/40 transition-all duration-300"
+        >
+          <div className="absolute inset-0 bg-gradient-to-br from-amber-50/50 to-orange-50/50 rounded-xl md:rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+          <div className="relative">
+            <div className="flex items-center justify-between mb-4">
+              <div className="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-br from-amber-500 to-orange-500 rounded-xl md:rounded-2xl flex items-center justify-center shadow-lg shadow-amber-500/25">
+                <ChartBarIcon className="h-5 w-5 md:h-6 md:w-6 text-white" />
+              </div>
+              <div className="px-2 py-1 bg-amber-100 text-amber-700 text-xs font-semibold rounded-full">
+                Active
+              </div>
+            </div>
             <div>
-              <p className="text-sm font-medium text-gray-600">
-                Active Subscriptions
-              </p>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-xs md:text-sm font-medium text-gray-600 mb-1">Active Subscriptions</p>
+              <p className="text-2xl md:text-3xl font-bold text-gray-900 tracking-tight">
                 {metrics.activeSubscriptions}
               </p>
             </div>
-            <div className="p-3 bg-orange-100 rounded-full">
-              <ChartBarIcon className="h-6 w-6 text-orange-600" />
+            <div className="mt-4">
+              <span className="text-xs text-gray-500">Currently active</span>
             </div>
           </div>
-          <div className="mt-4">
-            <span className="text-sm text-gray-500">Currently active</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Secondary Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
-          <div className="text-center">
-            <p className="text-sm font-medium text-gray-600">
-              Today's Appointments
-            </p>
-            <p className="text-xl font-bold text-blue-600">
-              {metrics.todayAppointments}
-            </p>
-          </div>
-        </div>
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
-          <div className="text-center">
-            <p className="text-sm font-medium text-gray-600">
-              Upcoming Appointments
-            </p>
-            <p className="text-xl font-bold text-purple-600">
-              {metrics.upcomingAppointments}
-            </p>
-          </div>
-        </div>
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
-          <div className="text-center">
-            <p className="text-sm font-medium text-gray-600">
-              Avg Revenue per Patient
-            </p>
-            <p className="text-xl font-bold text-[#346870]">
-              {formatCurrency(metrics.averageRevenuePerPatient)}
-            </p>
-          </div>
-        </div>
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
-          <div className="text-center">
-            <p className="text-sm font-medium text-gray-600">Completion Rate</p>
-            <p className="text-xl font-bold text-green-600">
-              {formatPercentage(metrics.appointmentShowRate)}
-            </p>
-          </div>
-        </div>
+        </motion.div>
       </div>
 
       {/* Quick Overview Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
         {/* Revenue Overview */}
-        <div className="bg-white p-6 rounded-lg shadow border">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">
-            Revenue Overview
-          </h3>
-          <div className="space-y-4">
-            <div className="flex justify-between items-center">
-              <span className="text-gray-600">Total Revenue</span>
-              <span className="font-semibold">
+        <motion.div
+          whileHover={{ y: -2 }}
+          className="bg-white/80 backdrop-blur-xl border border-gray-200/50 rounded-xl md:rounded-2xl p-5 md:p-6 shadow-lg shadow-gray-200/50 hover:shadow-xl transition-all"
+        >
+          <div className="flex items-center gap-3 mb-4 md:mb-6">
+            <div className="w-1 md:w-1.5 h-6 md:h-8 bg-gradient-to-b from-green-500 to-emerald-500 rounded-full"></div>
+            <h3 className="text-base md:text-lg font-bold text-gray-900 tracking-tight">
+              Revenue Overview
+            </h3>
+            <SparklesIcon className="h-4 w-4 md:h-5 md:w-5 text-green-500 ml-auto" />
+          </div>
+          <div className="space-y-3 md:space-y-4">
+            <div className="flex justify-between items-center p-3 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg">
+              <span className="text-sm text-gray-700 font-medium">Total Revenue</span>
+              <span className="font-bold text-green-600">
                 {formatCurrency(metrics.totalRevenue)}
               </span>
             </div>
-            <div className="flex justify-between items-center">
-              <span className="text-gray-600">Growth Rate</span>
+            <div className="flex justify-between items-center p-3 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-lg">
+              <span className="text-sm text-gray-700 font-medium">Growth Rate</span>
               <span
-                className={`font-semibold ${
+                className={`font-bold ${
                   metrics.revenueGrowth >= 0 ? "text-green-600" : "text-red-600"
                 }`}
               >
@@ -233,45 +234,52 @@ const AnalyticsDashboard = ({ data, paymentData, bookingData, dateRange }) => {
                 {formatPercentage(metrics.revenueGrowth)}
               </span>
             </div>
-            <div className="flex justify-between items-center">
-              <span className="text-gray-600">Avg per Patient</span>
-              <span className="font-semibold">
+            <div className="flex justify-between items-center p-3 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg">
+              <span className="text-sm text-gray-700 font-medium">Avg per Patient</span>
+              <span className="font-bold text-[#346870]">
                 {formatCurrency(metrics.averageRevenuePerPatient)}
               </span>
             </div>
           </div>
-        </div>
+        </motion.div>
 
         {/* Appointment Overview */}
-        <div className="bg-white p-6 rounded-lg shadow border">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">
-            Appointment Overview
-          </h3>
-          <div className="space-y-4">
-            <div className="flex justify-between items-center">
-              <span className="text-gray-600">Total Appointments</span>
-              <span className="font-semibold">{metrics.totalAppointments}</span>
+        <motion.div
+          whileHover={{ y: -2 }}
+          className="bg-white/80 backdrop-blur-xl border border-gray-200/50 rounded-xl md:rounded-2xl p-5 md:p-6 shadow-lg shadow-gray-200/50 hover:shadow-xl transition-all"
+        >
+          <div className="flex items-center gap-3 mb-4 md:mb-6">
+            <div className="w-1 md:w-1.5 h-6 md:h-8 bg-gradient-to-b from-purple-500 to-pink-500 rounded-full"></div>
+            <h3 className="text-base md:text-lg font-bold text-gray-900 tracking-tight">
+              Appointment Overview
+            </h3>
+            <SparklesIcon className="h-4 w-4 md:h-5 md:w-5 text-purple-500 ml-auto" />
+          </div>
+          <div className="space-y-3 md:space-y-4">
+            <div className="flex justify-between items-center p-3 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg">
+              <span className="text-sm text-gray-700 font-medium">Total Appointments</span>
+              <span className="font-bold text-purple-600">{metrics.totalAppointments}</span>
             </div>
-            <div className="flex justify-between items-center">
-              <span className="text-gray-600">Today's Appointments</span>
-              <span className="font-semibold text-blue-600">
+            <div className="flex justify-between items-center p-3 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-lg">
+              <span className="text-sm text-gray-700 font-medium">Today's Appointments</span>
+              <span className="font-bold text-blue-600">
                 {metrics.todayAppointments}
               </span>
             </div>
-            <div className="flex justify-between items-center">
-              <span className="text-gray-600">Upcoming</span>
-              <span className="font-semibold text-purple-600">
+            <div className="flex justify-between items-center p-3 bg-gradient-to-r from-amber-50 to-orange-50 rounded-lg">
+              <span className="text-sm text-gray-700 font-medium">Upcoming</span>
+              <span className="font-bold text-amber-600">
                 {metrics.upcomingAppointments}
               </span>
             </div>
-            <div className="flex justify-between items-center">
-              <span className="text-gray-600">Completion Rate</span>
-              <span className="font-semibold text-green-600">
+            <div className="flex justify-between items-center p-3 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg">
+              <span className="text-sm text-gray-700 font-medium">Completion Rate</span>
+              <span className="font-bold text-green-600">
                 {formatPercentage(metrics.appointmentShowRate)}
               </span>
             </div>
           </div>
-        </div>
+        </motion.div>
       </div>
     </div>
   );

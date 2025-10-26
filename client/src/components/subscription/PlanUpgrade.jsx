@@ -80,22 +80,54 @@ const PlanUpgrade = ({ currentPlan, onUpgradeSuccess }) => {
   };
 
   const calculateUpgradePrice = (newPlan) => {
-    if (!currentPlan) {
-      // New subscription - full price
-      return newPlan.price;
-    }
-    // Upgrade - price difference
-    const priceDifference = newPlan.price - currentPlan.price;
-    return Math.max(0, priceDifference);
+    // Always show full price for both new subscriptions and upgrades
+    // Sessions will be added to existing subscription
+    return newPlan.price;
   };
 
-  const handlePlanSelect = (plan) => {
+  const handlePlanSelect = async (plan) => {
     console.log(
       "Selected Plan:",
       plan ? JSON.stringify(plan, null, 2) : "plan is null"
     );
     setSelectedPlan(plan);
     setShowPayment(true);
+    
+    // Immediately initiate payment
+    try {
+      setLoading(true);
+      const paymentService = (await import("../../services/payments")).default;
+      
+      const isUpgrade = !!currentPlan;
+      const result = await paymentService.initializePayment(
+        plan._id,
+        {
+          name: user.name,
+          email: user.email,
+          phone: user.phone,
+        },
+        isUpgrade
+      );
+      
+      // Payment successful
+      setShowPayment(false);
+      onUpgradeSuccess(result);
+    } catch (error) {
+      console.error("Payment error:", error);
+      setShowPayment(false);
+      
+      if (error.message === "PAYMENT_CANCELLED") {
+        setError("Payment was cancelled. Please try again when ready.");
+      } else {
+        const errorMessage =
+          typeof error === "string"
+            ? error
+            : error?.message || "An unexpected error occurred during payment.";
+        setError(errorMessage);
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handlePaymentSuccess = (paymentData) => {

@@ -2,11 +2,11 @@ import { paymentService } from "../services/paymentService.js";
 
 
 export const createPaymentOrder = async (req, res) => {
-  const { planId } = req.body;
+  const { planId, isUpgrade = false } = req.body;
   const userId = req.user._id;
 
   try {
-    const orderData = await paymentService.createOrder(userId, planId);
+    const orderData = await paymentService.createOrder(userId, planId, isUpgrade);
 
     res.status(200).json({
       success: true,
@@ -29,6 +29,7 @@ export const verifyPayment = async (req, res) => {
       razorpayPaymentId,
       razorpaySignature,
       paymentMethod,
+      isUpgrade = false,
     } = req.body;
 
     const result = await paymentService.processSuccessfulPayment({
@@ -36,6 +37,7 @@ export const verifyPayment = async (req, res) => {
       razorpayPaymentId,
       razorpaySignature,
       paymentMethod,
+      isUpgrade,
     });
 
     res.status(200).json({

@@ -14,6 +14,8 @@ import {
   Line,
 } from "recharts";
 import { LoadingSpinner } from "../../shared/components";
+import { motion } from "framer-motion";
+import { SparklesIcon } from "@heroicons/react/24/outline";
 
 const BookingChart = ({ data, dateRange, loading }) => {
   if (loading) {
@@ -43,52 +45,71 @@ const BookingChart = ({ data, dateRange, loading }) => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 md:space-y-8">
       {/* Overview Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className="bg-white p-6 rounded-lg shadow border">
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-5">
+        <motion.div
+          whileHover={{ y: -4, scale: 1.02 }}
+          className="bg-gradient-to-br from-teal-50 to-teal-100/50 backdrop-blur-xl border border-teal-200/50 rounded-xl md:rounded-2xl p-4 md:p-6 shadow-lg hover:shadow-xl transition-all"
+        >
+          <h3 className="text-xs md:text-sm font-semibold text-teal-700 mb-2">
             Total Appointments
           </h3>
-          <p className="text-3xl font-bold text-[#346870]">
+          <p className="text-2xl md:text-3xl font-bold text-[#346870] tracking-tight">
             {overview.totalAppointments || 0}
           </p>
-          <p className="text-sm text-gray-500 mt-1">In selected period</p>
-        </div>
-        <div className="bg-white p-6 rounded-lg shadow border">
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">
+          <p className="text-[10px] md:text-xs text-teal-600 mt-1">In selected period</p>
+        </motion.div>
+        <motion.div
+          whileHover={{ y: -4, scale: 1.02 }}
+          className="bg-gradient-to-br from-green-50 to-green-100/50 backdrop-blur-xl border border-green-200/50 rounded-xl md:rounded-2xl p-4 md:p-6 shadow-lg hover:shadow-xl transition-all"
+        >
+          <h3 className="text-xs md:text-sm font-semibold text-green-700 mb-2">
             Completion Rate
           </h3>
-          <p className="text-3xl font-bold text-green-600">
+          <p className="text-2xl md:text-3xl font-bold text-green-600 tracking-tight">
             {overview.completionRate || 0}%
           </p>
-          <p className="text-sm text-gray-500 mt-1">Appointments completed</p>
-        </div>
-        <div className="bg-white p-6 rounded-lg shadow border">
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">
+          <p className="text-[10px] md:text-xs text-green-600 mt-1">Appointments completed</p>
+        </motion.div>
+        <motion.div
+          whileHover={{ y: -4, scale: 1.02 }}
+          className="bg-gradient-to-br from-red-50 to-red-100/50 backdrop-blur-xl border border-red-200/50 rounded-xl md:rounded-2xl p-4 md:p-6 shadow-lg hover:shadow-xl transition-all"
+        >
+          <h3 className="text-xs md:text-sm font-semibold text-red-700 mb-2">
             Cancellation Rate
           </h3>
-          <p className="text-3xl font-bold text-red-600">
+          <p className="text-2xl md:text-3xl font-bold text-red-600 tracking-tight">
             {overview.cancellationRate || 0}%
           </p>
-          <p className="text-sm text-gray-500 mt-1">Appointments cancelled</p>
-        </div>
-        <div className="bg-white p-6 rounded-lg shadow border">
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">
+          <p className="text-[10px] md:text-xs text-red-600 mt-1">Appointments cancelled</p>
+        </motion.div>
+        <motion.div
+          whileHover={{ y: -4, scale: 1.02 }}
+          className="bg-gradient-to-br from-blue-50 to-blue-100/50 backdrop-blur-xl border border-blue-200/50 rounded-xl md:rounded-2xl p-4 md:p-6 shadow-lg hover:shadow-xl transition-all"
+        >
+          <h3 className="text-xs md:text-sm font-semibold text-blue-700 mb-2">
             Avg Per Day
           </h3>
-          <p className="text-3xl font-bold text-blue-600">
+          <p className="text-2xl md:text-3xl font-bold text-blue-600 tracking-tight">
             {overview.avgAppointmentsPerDay || 0}
           </p>
-          <p className="text-sm text-gray-500 mt-1">Daily average</p>
-        </div>
+          <p className="text-[10px] md:text-xs text-blue-600 mt-1">Daily average</p>
+        </motion.div>
       </div>
 
       {/* Daily Trends Chart */}
-      <div className="bg-white p-6 rounded-lg shadow border">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">
-          Daily Appointment Trends
-        </h3>
+      <motion.div
+        whileHover={{ y: -2 }}
+        className="bg-white/80 backdrop-blur-xl border border-gray-200/50 rounded-xl md:rounded-2xl p-5 md:p-6 shadow-lg shadow-gray-200/50 hover:shadow-xl transition-all"
+      >
+        <div className="flex items-center gap-3 mb-4 md:mb-6">
+          <div className="w-1 md:w-1.5 h-6 md:h-8 bg-gradient-to-b from-[#346870] to-[#5fa8b5] rounded-full"></div>
+          <h3 className="text-base md:text-lg font-bold text-gray-900 tracking-tight">
+            Daily Appointment Trends
+          </h3>
+          <SparklesIcon className="h-4 w-4 md:h-5 md:w-5 text-[#346870] ml-auto" />
+        </div>
         <div className="h-80">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={dailyTrends}>
@@ -135,14 +156,20 @@ const BookingChart = ({ data, dateRange, loading }) => {
             </LineChart>
           </ResponsiveContainer>
         </div>
-      </div>
+      </motion.div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
         {/* Status Distribution Pie Chart */}
-        <div className="bg-white p-6 rounded-lg shadow border">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">
-            Appointment Status Distribution
-          </h3>
+        <motion.div
+          whileHover={{ y: -2 }}
+          className="bg-white/80 backdrop-blur-xl border border-gray-200/50 rounded-xl md:rounded-2xl p-5 md:p-6 shadow-lg shadow-gray-200/50 hover:shadow-xl transition-all"
+        >
+          <div className="flex items-center gap-3 mb-4 md:mb-6">
+            <div className="w-1 md:w-1.5 h-6 md:h-8 bg-gradient-to-b from-purple-500 to-pink-500 rounded-full"></div>
+            <h3 className="text-base md:text-lg font-bold text-gray-900 tracking-tight">
+              Status Distribution
+            </h3>
+          </div>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
@@ -172,13 +199,19 @@ const BookingChart = ({ data, dateRange, loading }) => {
               </PieChart>
             </ResponsiveContainer>
           </div>
-        </div>
+        </motion.div>
 
         {/* Time Slot Popularity Bar Chart */}
-        <div className="bg-white p-6 rounded-lg shadow border">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">
-            Popular Time Slots
-          </h3>
+        <motion.div
+          whileHover={{ y: -2 }}
+          className="bg-white/80 backdrop-blur-xl border border-gray-200/50 rounded-xl md:rounded-2xl p-5 md:p-6 shadow-lg shadow-gray-200/50 hover:shadow-xl transition-all"
+        >
+          <div className="flex items-center gap-3 mb-4 md:mb-6">
+            <div className="w-1 md:w-1.5 h-6 md:h-8 bg-gradient-to-b from-blue-500 to-cyan-500 rounded-full"></div>
+            <h3 className="text-base md:text-lg font-bold text-gray-900 tracking-tight">
+              Popular Time Slots
+            </h3>
+          </div>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={timeSlotPopularity.slice(0, 8)}>
@@ -190,14 +223,20 @@ const BookingChart = ({ data, dateRange, loading }) => {
               </BarChart>
             </ResponsiveContainer>
           </div>
-        </div>
+        </motion.div>
       </div>
 
       {/* Detailed Stats Table */}
-      <div className="bg-white p-6 rounded-lg shadow border">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">
-          Appointment Status Breakdown
-        </h3>
+      <motion.div
+        whileHover={{ y: -2 }}
+        className="bg-white/80 backdrop-blur-xl border border-gray-200/50 rounded-xl md:rounded-2xl p-5 md:p-6 shadow-lg shadow-gray-200/50 hover:shadow-xl transition-all"
+      >
+        <div className="flex items-center gap-3 mb-4 md:mb-6">
+          <div className="w-1 md:w-1.5 h-6 md:h-8 bg-gradient-to-b from-amber-500 to-orange-500 rounded-full"></div>
+          <h3 className="text-base md:text-lg font-bold text-gray-900 tracking-tight">
+            Appointment Status Breakdown
+          </h3>
+        </div>
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
@@ -251,7 +290,7 @@ const BookingChart = ({ data, dateRange, loading }) => {
             </tbody>
           </table>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 };

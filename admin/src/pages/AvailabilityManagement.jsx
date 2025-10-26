@@ -278,44 +278,44 @@ const AvailabilityManagement = () => {
         {/* Premium Tab Navigation */}
         <motion.div
           variants={itemVariants}
-          className="bg-white/80 backdrop-blur-xl border border-gray-200/50 rounded-3xl shadow-lg shadow-gray-200/50 p-2"
+          className="bg-white/80 backdrop-blur-xl border border-gray-200/50 rounded-xl md:rounded-2xl lg:rounded-3xl shadow-lg shadow-gray-200/50 p-1.5 md:p-2"
         >
-          <nav className="flex flex-wrap gap-2">
+          <nav className="flex flex-wrap gap-1.5 md:gap-2">
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={() => setActiveTab("templates")}
-              className={`flex-1 min-w-[140px] inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-2xl font-semibold text-sm transition-all ${activeTab === "templates"
+              className={`flex-1 min-w-[100px] md:min-w-[140px] inline-flex items-center justify-center gap-1.5 md:gap-2 px-3 md:px-6 py-2 md:py-3.5 rounded-xl md:rounded-2xl font-semibold text-xs md:text-sm transition-all ${activeTab === "templates"
                 ? "bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-lg shadow-indigo-500/25"
                 : "text-gray-600 hover:bg-gray-100/80"
                 }`}
             >
-              <CogIcon className="h-5 w-5" />
-              Templates
+              <CogIcon className="h-4 w-4 md:h-5 md:w-5" />
+              <span className="hidden sm:inline">Templates</span>
             </motion.button>
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={() => setActiveTab("holidays")}
-              className={`flex-1 min-w-[140px] inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-2xl font-semibold text-sm transition-all ${activeTab === "holidays"
+              className={`flex-1 min-w-[100px] md:min-w-[140px] inline-flex items-center justify-center gap-1.5 md:gap-2 px-3 md:px-6 py-2 md:py-3.5 rounded-xl md:rounded-2xl font-semibold text-xs md:text-sm transition-all ${activeTab === "holidays"
                 ? "bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-lg shadow-indigo-500/25"
                 : "text-gray-600 hover:bg-gray-100/80"
                 }`}
             >
-              <CalendarIcon className="h-5 w-5" />
-              Holidays
+              <CalendarIcon className="h-4 w-4 md:h-5 md:w-5" />
+              <span className="hidden sm:inline">Holidays</span>
             </motion.button>
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={() => setActiveTab("calendar")}
-              className={`flex-1 min-w-[140px] inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-2xl font-semibold text-sm transition-all ${activeTab === "calendar"
+              className={`flex-1 min-w-[100px] md:min-w-[140px] inline-flex items-center justify-center gap-1.5 md:gap-2 px-3 md:px-6 py-2 md:py-3.5 rounded-xl md:rounded-2xl font-semibold text-xs md:text-sm transition-all ${activeTab === "calendar"
                 ? "bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-lg shadow-indigo-500/25"
                 : "text-gray-600 hover:bg-gray-100/80"
                 }`}
             >
-              <ClockIcon className="h-5 w-5" />
-              Calendar View
+              <ClockIcon className="h-4 w-4 md:h-5 md:w-5" />
+              <span className="hidden sm:inline">Calendar</span>
             </motion.button>
           </nav>
         </motion.div>
@@ -323,15 +323,15 @@ const AvailabilityManagement = () => {
         {loading ? (
           <motion.div
             variants={itemVariants}
-            className="bg-white/80 backdrop-blur-xl border border-gray-200/50 rounded-3xl shadow-lg shadow-gray-200/50 p-12"
+            className="bg-white/80 backdrop-blur-xl border border-gray-200/50 rounded-2xl md:rounded-3xl shadow-lg shadow-gray-200/50 p-6 md:p-8 lg:p-12"
           >
-            <div className="flex items-center justify-center h-64">
+            <div className="flex items-center justify-center h-48 md:h-64">
               <div className="text-center">
                 <LoadingSpinner
                   size="large"
                   ariaLabel="Loading availability data"
                 />
-                <p className="text-gray-600 font-medium mt-4">
+                <p className="text-gray-600 font-medium text-xs md:text-sm mt-3 md:mt-4">
                   Loading availability data...
                 </p>
               </div>
@@ -347,17 +347,17 @@ const AvailabilityManagement = () => {
                 initial="hidden"
                 animate="visible"
                 exit="hidden"
-                className="bg-white/80 backdrop-blur-xl border border-gray-200/50 rounded-3xl shadow-lg shadow-gray-200/50 overflow-hidden"
+                className="bg-white/80 backdrop-blur-xl border border-gray-200/50 rounded-2xl md:rounded-3xl shadow-lg shadow-gray-200/50 overflow-hidden"
               >
-                <div className="p-8 border-b border-gray-200/50">
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-1.5 h-8 bg-gradient-to-b from-indigo-500 to-purple-600 rounded-full"></div>
+                <div className="p-4 md:p-6 lg:p-8 border-b border-gray-200/50">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 md:gap-4">
+                    <div className="flex items-center gap-2 md:gap-3">
+                      <div className="w-1 md:w-1.5 h-6 md:h-8 bg-gradient-to-b from-indigo-500 to-purple-600 rounded-full"></div>
                       <div>
-                        <h2 className="text-2xl font-bold text-gray-900 tracking-tight">
+                        <h2 className="text-lg md:text-xl lg:text-2xl font-bold text-gray-900 tracking-tight">
                           Availability Templates
                         </h2>
-                        <p className="text-gray-600 mt-1">
+                        <p className="text-gray-600 text-xs md:text-sm mt-0.5 md:mt-1">
                           Create and manage time slot templates for different scenarios
                         </p>
                       </div>
@@ -366,14 +366,14 @@ const AvailabilityManagement = () => {
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                       onClick={handleCreateTemplate}
-                      className="inline-flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-indigo-500/25 transition-all"
+                      className="inline-flex items-center gap-1.5 md:gap-2 px-3 md:px-4 lg:px-5 py-2 md:py-2.5 lg:py-3 bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-semibold text-xs md:text-sm rounded-lg md:rounded-xl hover:shadow-lg hover:shadow-indigo-500/25 transition-all"
                     >
-                      <PlusIcon className="h-5 w-5" />
+                      <PlusIcon className="h-4 w-4 md:h-5 md:w-5" />
                       New Template
                     </motion.button>
                   </div>
                 </div>
-                <div className="p-8">
+                <div className="p-4 md:p-6 lg:p-8">
                   <TemplateList
                     templates={templates}
                     onEdit={handleEditTemplate}
@@ -392,17 +392,17 @@ const AvailabilityManagement = () => {
                 initial="hidden"
                 animate="visible"
                 exit="hidden"
-                className="bg-white/80 backdrop-blur-xl border border-gray-200/50 rounded-3xl shadow-lg shadow-gray-200/50 overflow-hidden"
+                className="bg-white/80 backdrop-blur-xl border border-gray-200/50 rounded-2xl md:rounded-3xl shadow-lg shadow-gray-200/50 overflow-hidden"
               >
-                <div className="p-8 border-b border-gray-200/50">
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-1.5 h-8 bg-gradient-to-b from-indigo-500 to-purple-600 rounded-full"></div>
+                <div className="p-4 md:p-6 lg:p-8 border-b border-gray-200/50">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 md:gap-4">
+                    <div className="flex items-center gap-2 md:gap-3">
+                      <div className="w-1 md:w-1.5 h-6 md:h-8 bg-gradient-to-b from-indigo-500 to-purple-600 rounded-full"></div>
                       <div>
-                        <h2 className="text-2xl font-bold text-gray-900 tracking-tight">
+                        <h2 className="text-lg md:text-xl lg:text-2xl font-bold text-gray-900 tracking-tight">
                           Holidays & Unavailable Dates
                         </h2>
-                        <p className="text-gray-600 mt-1">
+                        <p className="text-gray-600 text-xs md:text-sm mt-0.5 md:mt-1">
                           Manage dates when appointments are not available
                         </p>
                       </div>
@@ -411,14 +411,14 @@ const AvailabilityManagement = () => {
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                       onClick={handleCreateHoliday}
-                      className="inline-flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-indigo-500/25 transition-all"
+                      className="inline-flex items-center gap-1.5 md:gap-2 px-3 md:px-4 lg:px-5 py-2 md:py-2.5 lg:py-3 bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-semibold text-xs md:text-sm rounded-lg md:rounded-xl hover:shadow-lg hover:shadow-indigo-500/25 transition-all"
                     >
-                      <PlusIcon className="h-5 w-5" />
+                      <PlusIcon className="h-4 w-4 md:h-5 md:w-5" />
                       Add Holiday
                     </motion.button>
                   </div>
                 </div>
-                <div className="p-8">
+                <div className="p-4 md:p-6 lg:p-8">
                   <HolidayList
                     holidays={holidays}
                     onEdit={handleEditHoliday}
@@ -437,22 +437,22 @@ const AvailabilityManagement = () => {
                 initial="hidden"
                 animate="visible"
                 exit="hidden"
-                className="bg-white/80 backdrop-blur-xl border border-gray-200/50 rounded-3xl shadow-lg shadow-gray-200/50 overflow-hidden"
+                className="bg-white/80 backdrop-blur-xl border border-gray-200/50 rounded-2xl md:rounded-3xl shadow-lg shadow-gray-200/50 overflow-hidden"
               >
-                <div className="p-8 border-b border-gray-200/50">
-                  <div className="flex items-center gap-3">
-                    <div className="w-1.5 h-8 bg-gradient-to-b from-indigo-500 to-purple-600 rounded-full"></div>
+                <div className="p-4 md:p-6 lg:p-8 border-b border-gray-200/50">
+                  <div className="flex items-center gap-2 md:gap-3">
+                    <div className="w-1 md:w-1.5 h-6 md:h-8 bg-gradient-to-b from-indigo-500 to-purple-600 rounded-full"></div>
                     <div>
-                      <h2 className="text-2xl font-bold text-gray-900 tracking-tight">
+                      <h2 className="text-lg md:text-xl lg:text-2xl font-bold text-gray-900 tracking-tight">
                         Availability Calendar
                       </h2>
-                      <p className="text-gray-600 mt-1">
+                      <p className="text-gray-600 text-xs md:text-sm mt-0.5 md:mt-1">
                         View and manage availability across dates with template applications
                       </p>
                     </div>
                   </div>
                 </div>
-                <div className="p-8">
+                <div className="p-4 md:p-6 lg:p-8">
                   <OptimizedAvailabilityCalendar
                     templates={templates}
                     holidays={holidays}

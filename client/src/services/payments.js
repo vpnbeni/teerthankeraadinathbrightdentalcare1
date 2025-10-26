@@ -29,10 +29,10 @@ const loadRazorpayScript = () => {
 };
 
 const paymentService = {
-  createOrder: async (planId) => {
+  createOrder: async (planId, isUpgrade = false) => {
     try {
-      debugLog("Creating payment order", { planId });
-      const response = await api.post("/payments/create-order", { planId });
+      debugLog("Creating payment order", { planId, isUpgrade });
+      const response = await api.post("/payments/create-order", { planId, isUpgrade });
       debugLog("Order created successfully", response.data);
       return response.data;
     } catch (error) {
@@ -53,13 +53,13 @@ const paymentService = {
     }
   },
 
-  initializePayment: async (planId, userData) => {
+  initializePayment: async (planId, userData, isUpgrade = false) => {
     try {
       // Load Razorpay script if not already loaded
       await loadRazorpayScript();
 
       // Create order
-      const { data } = await paymentService.createOrder(planId);
+      const { data } = await paymentService.createOrder(planId, isUpgrade);
       const { order, key, planDetails } = data;
 
       return new Promise((resolve, reject) => {
@@ -68,7 +68,9 @@ const paymentService = {
           amount: order.amount,
           currency: order.currency,
           name: "Teerthanker Dental Care",
-          description: `${planDetails.name} - ${planDetails.sessions} sessions`,
+          description: isUpgrade 
+            ? `Upgrade to ${planDetails.name} - ${planDetails.sessions} sessions`
+            : `${planDetails.name} - ${planDetails.sessions} sessions`,
           order_id: order.id,
           prefill: {
             name: userData.name,
@@ -83,6 +85,7 @@ const paymentService = {
                 razorpayPaymentId: response.razorpay_payment_id,
                 razorpaySignature: response.razorpay_signature,
                 paymentMethod: "card", // Or detect from response
+                isUpgrade,
               };
 
               const result = await paymentService.verifyPayment(
