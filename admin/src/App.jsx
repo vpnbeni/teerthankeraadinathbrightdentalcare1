@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { checkAuthStatus } from "./store/authSlice";
 import { LoadingSpinner, ErrorBoundary } from "./shared/components";
 import { setupGlobalErrorHandler, AccessibilityProvider } from "./shared/hooks";
+import { NotificationProvider } from "./contexts/NotificationContext";
 import AccessibilityTester from "./shared/components/AccessibilityTester";
 import "./shared/styles/accessibility.css";
 
@@ -41,20 +42,21 @@ function App() {
 
   return (
     <AccessibilityProvider>
-      <ErrorBoundary>
-        <div className="min-h-screen bg-gray-50">
-          {/* Skip Links for keyboard navigation */}
-          <div className="sr-only">
-            <a href="#main-content" className="skip-link">
-              Skip to main content
-            </a>
-            <a href="#navigation" className="skip-link">
-              Skip to navigation
-            </a>
-            <a href="#sidebar" className="skip-link">
-              Skip to sidebar
-            </a>
-          </div>
+      <NotificationProvider>
+        <ErrorBoundary>
+          <div className="min-h-screen bg-gray-50">
+            {/* Skip Links for keyboard navigation */}
+            <div className="sr-only">
+              <a href="#main-content" className="skip-link">
+                Skip to main content
+              </a>
+              <a href="#navigation" className="skip-link">
+                Skip to navigation
+              </a>
+              <a href="#sidebar" className="skip-link">
+                Skip to sidebar
+              </a>
+            </div>
 
           <Routes>
             {/* Public Routes */}
@@ -141,9 +143,10 @@ function App() {
             />
           </Routes>
 
-          {/* Toast notifications are handled by react-hot-toast Toaster in main.jsx */}
-        </div>
-      </ErrorBoundary>
+            {/* Toast notifications are handled by react-hot-toast Toaster in main.jsx */}
+          </div>
+        </ErrorBoundary>
+      </NotificationProvider>
     </AccessibilityProvider>
   );
 }

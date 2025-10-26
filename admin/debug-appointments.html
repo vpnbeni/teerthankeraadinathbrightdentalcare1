@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Appointments API</title>
+</head>
+<body>
+    <h1>Appointments API Debugger</h1>
+    <div id="results"></div>
+    
+    <script>
+        const resultsDiv = document.getElementById('results');
+        
+        function log(message, data = null) {
+            const p = document.createElement('p');
+            p.innerHTML = `<strong>${message}</strong>`;
+            if (data) {
+                const pre = document.createElement('pre');
+                pre.textContent = JSON.stringify(data, null, 2);
+                p.appendChild(pre);
+            }
+            resultsDiv.appendChild(p);
+        }
+        
+        async function debugAppointments() {
+            // Check for admin token
+            const adminToken = localStorage.getItem('adminToken');
+            log('Admin Token:', adminToken ? 'EXISTS' : 'MISSING');
+            
+            if (!adminToken) {
+                log('ERROR: No admin token found. Please login first.');
+                return;
+            }
+            
+            // Try calling the admin endpoint
+            try {
+                log('Calling /api/appointments/admin/all...');
+                const response = await fetch('http://localhost:5000/api/appointments/admin/all', {
+                    headers: {
+                        'Authorization': `Bearer ${adminToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                log('Response Status:', response.status);
+                const data = await response.json();
+                log('Response Data:', data);
+                
+                if (data.success && data.data.appointments) {
+                    log(`SUCCESS: Found ${data.data.appointments.length} appointments`);
+                } else {
+                    log('ERROR: Unexpected response format');
+                }
+            } catch (error) {
+                log('ERROR:', error.message);
+            }
+            
+            // Try calling the regular endpoint
+            try {
+                log('Calling /api/appointments...');
+                const response = await fetch('http://localhost:5000/api/appointments', {
+                    headers: {
+                        'Authorization': `Bearer ${adminToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                log('Response Status:', response.status);
+                const data = await response.json();
+                log('Response Data:', data);
+            } catch (error) {
+                log('ERROR:', error.message);
+            }
+        }
+        
+        debugAppointments();
+    </script>
+</body>
+</html>

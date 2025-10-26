@@ -4,6 +4,7 @@ import emailService from "../services/emailService.js";
 import smsService from "../services/smsService.js";
 import AvailabilityService from "../services/availabilityService.js";
 import { config } from "../config/environment.js";
+import { sendNotificationToUser, sendNotificationToAdmins } from "../services/socketService.js";
 
 const availabilityService = new AvailabilityService();
 
@@ -176,6 +177,37 @@ export const createAppointment = async (req, res) => {
 
     console.log("🎉 SUCCESS: Appointment created successfully");
     console.log("Appointment ID:", appointment._id);
+
+    // Send WebSocket notifications
+    try {
+      // Notify the user
+      console.log(`📤 Sending appointment scheduled notification to user: ${req.user._id}`);
+      sendNotificationToUser(req.user._id.toString(), {
+        type: "appointment_created",
+        title: "Appointment Scheduled",
+        message: `Your appointment has been scheduled for ${new Date(populatedAppointment.date).toLocaleDateString("en-IN", { month: "short", day: "numeric", year: "numeric" })} at ${populatedAppointment.timeSlot}. Pending admin approval.`,
+        appointmentId: appointment._id.toString(),
+        icon: "calendar",
+        priority: "medium",
+      });
+      console.log(`✅ User notification sent successfully`);
+
+      // Notify admins
+      console.log(`📤 Sending new appointment notification to admins`);
+      sendNotificationToAdmins({
+        type: "new_appointment",
+        title: "New Appointment Booked",
+        message: `${populatedAppointment.userId.name} booked an appointment for ${new Date(populatedAppointment.date).toLocaleDateString("en-IN", { month: "short", day: "numeric" })} at ${populatedAppointment.timeSlot}`,
+        appointmentId: appointment._id.toString(),
+        userId: req.user._id.toString(),
+        userName: populatedAppointment.userId.name,
+        icon: "calendar",
+        priority: "high",
+      });
+      console.log(`✅ Admin notification sent successfully`);
+    } catch (error) {
+      console.error("WebSocket notification failed (non-blocking):", error.message);
+    }
 
     res.status(201).json({
       success: true,
@@ -456,6 +488,24 @@ export const cancelAppointment = async (req, res) => {
 
     // Cancel the appointment with reason and user info
     await appointment.cancel(reason, req.user._id);
+
+    // Send WebSocket notification to admins (not the user)
+    try {
+      console.log(`📤 Sending cancellation notification to admins`);
+      sendNotificationToAdmins({
+        type: "appointment_cancelled_by_user",
+        title: "Appointment Cancelled by User",
+        message: `${appointment.userId.name} cancelled their appointment scheduled for ${new Date(appointment.date).toLocaleDateString("en-IN", { month: "short", day: "numeric" })} at ${appointment.timeSlot}${reason ? `: ${reason}` : "."}`,
+        appointmentId: appointment._id.toString(),
+        userId: req.user._id.toString(),
+        userName: appointment.userId.name,
+        icon: "calendar",
+        priority: "medium",
+      });
+      console.log(`✅ Cancellation notification sent to admins`);
+    } catch (error) {
+      console.error("WebSocket notification failed (non-blocking):", error.message);
+    }
 
     const updatedAppointment = await Appointment.findById(appointmentId)
       .populate("userId", "name phone email")
@@ -906,6 +956,20 @@ export const confirmAppointment = async (req, res) => {
         });
     }
 
+    // Send WebSocket notification to user about confirmation
+    try {
+      sendNotificationToUser(updatedAppointment.userId._id.toString(), {
+        type: "appointment_confirmed",
+        title: "Appointment Confirmed by Admin",
+        message: `Your appointment for ${new Date(updatedAppointment.date).toLocaleDateString("en-IN", { month: "short", day: "numeric", year: "numeric" })} at ${updatedAppointment.timeSlot} has been confirmed!`,
+        appointmentId: updatedAppointment._id.toString(),
+        icon: "check-circle",
+        priority: "high",
+      });
+    } catch (error) {
+      console.error("Failed to send confirmation notification:", error);
+    }
+
     res.status(200).json({
       success: true,
       data: {
@@ -1054,6 +1118,24 @@ export const adminCancelAppointment = async (req, res) => {
       }
     }
 
+    // Send WebSocket notification to the user (not admin)
+    if (notifyPatient) {
+      try {
+        console.log(`📤 Sending cancellation notification to user: ${appointment.userId._id}`);
+        sendNotificationToUser(appointment.userId._id.toString(), {
+          type: "appointment_cancelled",
+          title: "Appointment Cancelled",
+          message: `Your appointment scheduled for ${new Date(appointment.date).toLocaleDateString("en-IN", { month: "short", day: "numeric", year: "numeric" })} at ${appointment.timeSlot} has been cancelled${reason ? `: ${reason}` : "."}`,
+          appointmentId: appointment._id.toString(),
+          icon: "calendar",
+          priority: "high",
+        });
+        console.log(`✅ Cancellation notification sent to user`);
+      } catch (error) {
+        console.error("WebSocket notification failed (non-blocking):", error.message);
+      }
+    }
+
     const updatedAppointment = await Appointment.findById(appointmentId)
       .populate("userId", "name phone email")
       .populate("cancellationDetails.cancelledBy", "name email");
@@ -1145,6 +1227,25 @@ export const bulkCancelAppointments = async (req, res) => {
           } catch (error) {
             console.error(
               `Email notification failed for appointment ${appointmentId}:`,
+              error.message
+            );
+          }
+        }
+
+        // Send WebSocket notification to the user (not admin)
+        if (notifyPatients) {
+          try {
+            sendNotificationToUser(appointment.userId._id.toString(), {
+              type: "appointment_cancelled",
+              title: "Appointment Cancelled",
+              message: `Your appointment scheduled for ${new Date(appointment.date).toLocaleDateString("en-IN", { month: "short", day: "numeric", year: "numeric" })} at ${appointment.timeSlot} has been cancelled${reason ? `: ${reason}` : "."}`,
+              appointmentId: appointment._id.toString(),
+              icon: "calendar",
+              priority: "high",
+            });
+          } catch (error) {
+            console.error(
+              `WebSocket notification failed for appointment ${appointmentId}:`,
               error.message
             );
           }

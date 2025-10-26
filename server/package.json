@@ -46,6 +46,7 @@
     "prom-client": "^15.1.0",
     "razorpay": "^2.9.2",
     "response-time": "^2.3.2",
+    "socket.io": "^4.8.1",
     "twilio": "^5.8.0",
     "winston": "^3.11.0",
     "winston-daily-rotate-file": "^4.7.1",

@@ -128,11 +128,7 @@ api.interceptors.response.use(
     if (process.env.NODE_ENV === "development" && response.config.metadata) {
       const endTime = new Date();
       const duration = endTime - response.config.metadata.startTime;
-      console.log(
-        `API Request: ${response.config.method?.toUpperCase()} ${
-          response.config.url
-        } - ${duration}ms`
-      );
+      
     }
 
     // Show success message if provided by the API

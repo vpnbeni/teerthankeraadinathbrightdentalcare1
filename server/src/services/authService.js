@@ -13,8 +13,8 @@ class AuthService {
   /**
    * Generate JWT token for user
    */
-  generateToken(userId) {
-    return jwt.sign({ id: userId }, config.JWT_SECRET, {
+  generateToken(userId, role = "user") {
+    return jwt.sign({ id: userId, role }, config.JWT_SECRET, {
       expiresIn: config.JWT_EXPIRE,
     });
   }
@@ -230,7 +230,7 @@ class AuthService {
     }
 
     // Generate token
-    const token = this.generateToken(user._id);
+    const token = this.generateToken(user._id, user.role);
 
     return {
       user: {
@@ -280,7 +280,7 @@ class AuthService {
     }
 
     // Generate token
-    const token = this.generateToken(user._id);
+    const token = this.generateToken(user._id, user.role);
 
     return {
       user: {
@@ -325,7 +325,7 @@ class AuthService {
     }
 
     // Generate token
-    const token = this.generateToken(user._id);
+    const token = this.generateToken(user._id, user.role);
 
     return {
       user: {
@@ -471,7 +471,7 @@ class AuthService {
         throw new Error("User not found or not verified");
       }
 
-      const newToken = this.generateToken(user._id);
+      const newToken = this.generateToken(user._id, user.role);
       const newRefreshToken = this.generateRefreshToken(user._id);
 
       return {
@@ -535,7 +535,7 @@ class AuthService {
       }
 
       // Generate token
-      const token = this.generateToken(user._id);
+      const token = this.generateToken(user._id, user.role);
 
       // Update last login
       user.lastLogin = new Date();

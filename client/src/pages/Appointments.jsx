@@ -26,6 +26,19 @@ const Appointments = () => {
     fetchAppointments();
   }, []);
 
+  // Refetch appointments when window regains focus
+  useEffect(() => {
+    const handleFocus = () => {
+      fetchAppointments();
+    };
+
+    window.addEventListener("focus", handleFocus);
+
+    return () => {
+      window.removeEventListener("focus", handleFocus);
+    };
+  }, []);
+
   const fetchAppointments = async () => {
     try {
       setLoading(true);

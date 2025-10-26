@@ -39,13 +39,11 @@ const ProtectedRoute = ({ children }) => {
           }
           
           const profileData = await dispatch(fetchUserProfile()).unwrap();
-          console.log("ProtectedRoute - Profile data fetched:", profileData);
+          // console.log("ProtectedRoute - Profile data fetched:", profileData);
           
           // Also update the auth store with the full profile data to keep both stores in sync
           if (profileData && profileData.data) {
             const userData = profileData.data.user || profileData.data;
-            console.log("ProtectedRoute - Updating auth store with user data:", userData);
-            console.log("ProtectedRoute - Profile photo in user data:", userData.profilePhoto);
             dispatch(updateUser(userData));
           }
         } catch (error) {

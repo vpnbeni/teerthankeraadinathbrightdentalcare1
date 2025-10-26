@@ -24,7 +24,7 @@ const ProtectedRoute = ({ children, requiredRole = null }) => {
   }
 
   if (!isAuthenticated) {
-    console.log("ProtectedRoute - Not authenticated, redirecting to login");
+    // console.log("ProtectedRoute - Not authenticated, redirecting to login");
     return <Navigate to="/login" replace />;
   }
 
@@ -37,10 +37,10 @@ const ProtectedRoute = ({ children, requiredRole = null }) => {
   }
 
   if (requiredRole && user?.role !== requiredRole) {
-    console.log("ProtectedRoute - Role mismatch:", {
-      userRole: user?.role,
-      requiredRole,
-    });
+    // console.log("ProtectedRoute - Role mismatch:", {
+    //   userRole: user?.role,
+    //   requiredRole,
+    // });
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
@@ -58,7 +58,7 @@ const ProtectedRoute = ({ children, requiredRole = null }) => {
     );
   }
 
-  console.log("ProtectedRoute - Access granted");
+  // console.log("ProtectedRoute - Access granted");
   return children;
 };
 

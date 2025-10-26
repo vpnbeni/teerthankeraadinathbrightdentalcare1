@@ -27,6 +27,7 @@ import {
 import SkipLinks from "../../shared/components/SkipLinks";
 import Breadcrumb from "../../shared/components/Breadcrumb";
 import KeyboardShortcuts from "../../shared/components/KeyboardShortcuts";
+import NotificationBell from "./NotificationBell";
 import toast from "react-hot-toast";
 
 const AdminLayout = ({ children }) => {
@@ -358,6 +359,9 @@ const AdminLayout = ({ children }) => {
 
             {/* Header actions */}
             <div className="flex items-center space-x-2 lg:space-x-4">
+              {/* Notification Bell */}
+              <NotificationBell />
+
               <Link
                 to="/settings"
                 className="text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-primary/20 rounded-md p-1 mobile-tap-target"

@@ -12,6 +12,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { logoutUser } from "../../store/authSlice";
 import toast from "react-hot-toast";
+import NotificationBell from "./NotificationBell";
 
 const DashboardLayout = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -21,10 +22,7 @@ const DashboardLayout = ({ children }) => {
   // Get user directly from Redux store instead of using useAuth hook
   const { user } = useSelector((state) => state.auth);
 
-  // Debug: Log user data to check if profilePhoto is present
-  console.log("DashboardLayout - User data:", user);
-  console.log("DashboardLayout - Profile photo:", user?.profilePhoto);
-
+ 
   const navigation = [
     { name: "Dashboard", href: "/dashboard", icon: HomeIcon },
     { name: "Appointments", href: "/appointments", icon: CalendarIcon },
@@ -98,28 +96,11 @@ const DashboardLayout = ({ children }) => {
 
           {/* Mobile User Section */}
           <div className="border-t border-gray-200/50 p-4 bg-gradient-to-t from-gray-50/50 to-transparent">
-            <div className="flex items-center gap-3 p-3 mb-3 bg-white/60 backdrop-blur-sm rounded-2xl border border-gray-200/50">
-              <div className="flex-shrink-0">
-                <div className="h-11 w-11 bg-gradient-to-br from-[#346870] to-[#5fa8b5] rounded-xl flex items-center justify-center overflow-hidden shadow-lg shadow-[#346870]/20">
-                  {user?.profilePhoto ? (
-                    <img
-                      src={user.profilePhoto}
-                      alt={user.name}
-                      className="h-full w-full object-cover"
-                    />
-                  ) : (
-                    <span className="text-white text-base font-semibold">
-                      {user?.name?.charAt(0)?.toUpperCase() || "U"}
-                    </span>
-                  )}
-                </div>
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-gray-900 truncate">
-                  {user?.name || "User"}
-                </p>
-                <p className="text-xs text-gray-600 truncate">{user?.phone}</p>
-              </div>
+            <div className="p-3 mb-3 bg-white/60 backdrop-blur-sm rounded-2xl border border-gray-200/50">
+              <p className="text-sm font-semibold text-gray-900 truncate">
+                {user?.name || "User"}
+              </p>
+              <p className="text-xs text-gray-600 truncate">{user?.phone}</p>
             </div>
             <button
               onClick={handleLogout}
@@ -170,28 +151,11 @@ const DashboardLayout = ({ children }) => {
 
           {/* User Section */}
           <div className="border-t border-gray-200/50 p-4 bg-gradient-to-t from-gray-50/50 to-transparent">
-            <div className="flex items-center gap-3 p-3 mb-3 bg-white/60 backdrop-blur-sm rounded-2xl border border-gray-200/50 hover:bg-white/80 hover:shadow-md transition-all duration-200">
-              <div className="flex-shrink-0">
-                <div className="h-11 w-11 bg-gradient-to-br from-[#346870] to-[#5fa8b5] rounded-xl flex items-center justify-center overflow-hidden shadow-lg shadow-[#346870]/20">
-                  {user?.profilePhoto ? (
-                    <img
-                      src={user.profilePhoto}
-                      alt={user.name}
-                      className="h-full w-full object-cover"
-                    />
-                  ) : (
-                    <span className="text-white text-base font-semibold">
-                      {user?.name?.charAt(0)?.toUpperCase() || "U"}
-                    </span>
-                  )}
-                </div>
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-gray-900 truncate">
-                  {user?.name || "User"}
-                </p>
-                <p className="text-xs text-gray-600 truncate">{user?.phone}</p>
-              </div>
+            <div className="p-3 mb-3 bg-white/60 backdrop-blur-sm rounded-2xl border border-gray-200/50 hover:bg-white/80 hover:shadow-md transition-all duration-200">
+              <p className="text-sm font-semibold text-gray-900 truncate">
+                {user?.name || "User"}
+              </p>
+              <p className="text-xs text-gray-600 truncate">{user?.phone}</p>
             </div>
             <button
               onClick={handleLogout}
@@ -218,19 +182,30 @@ const DashboardLayout = ({ children }) => {
             </button>
 
             {/* Mobile Logo */}
-            <img
-              src="https://res.cloudinary.com/dvqvxu0b1/image/upload/v1753662373/2_uuolcb.webp"
-              alt="Teerthanker Aadinath Bright Dental Care"
-              className="h-32 w-auto object-contain lg:hidden"
-            />
+            <button
+              onClick={() => navigate("/dashboard")}
+              className="lg:hidden cursor-pointer"
+            >
+              <img
+                src="https://res.cloudinary.com/dvqvxu0b1/image/upload/v1753662373/2_uuolcb.webp"
+                alt="Teerthanker Aadinath Bright Dental Care"
+                className="h-32 w-auto object-contain"
+              />
+            </button>
 
             {/* Desktop - Empty space to push content right */}
             <div className="hidden lg:block lg:flex-1"></div>
 
             {/* Right side content */}
             <div className="flex items-center gap-3">
+              {/* Notification Bell */}
+              <NotificationBell />
+
               {/* Desktop User Info Card */}
-              <div className="hidden lg:flex lg:items-center lg:gap-4 bg-white/60 backdrop-blur-sm border border-gray-200/50 rounded-2xl px-4 py-2.5 shadow-sm hover:shadow-md hover:bg-white/80 transition-all duration-200">
+              <button
+                onClick={() => navigate("/profile")}
+                className="hidden lg:flex lg:items-center lg:gap-4 bg-white/60 backdrop-blur-sm border border-gray-200/50 rounded-2xl px-4 py-2.5 shadow-sm hover:shadow-md hover:bg-white/80 transition-all duration-200 cursor-pointer"
+              >
                 <div className="text-right">
                   <p className="text-sm font-semibold text-gray-900">
                     {user?.name || "User"}
@@ -262,10 +237,13 @@ const DashboardLayout = ({ children }) => {
                     <UserIcon className="h-6 w-6 text-white" />
                   )}
                 </div>
-              </div>
+              </button>
 
               {/* Mobile user avatar */}
-              <div className="lg:hidden">
+              <button
+                onClick={() => navigate("/profile")}
+                className="lg:hidden cursor-pointer"
+              >
                 <div className="h-10 w-10 bg-gradient-to-br from-[#346870] to-[#5fa8b5] rounded-xl flex items-center justify-center overflow-hidden shadow-lg shadow-[#346870]/20">
                   {user?.profilePhoto ? (
                     <img
@@ -279,7 +257,7 @@ const DashboardLayout = ({ children }) => {
                     </span>
                   )}
                 </div>
-              </div>
+              </button>
             </div>
           </div>
         </div>

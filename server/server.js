@@ -146,7 +146,7 @@ const startServer = async () => {
 
     // Start server after successful database connection
     const PORT = config.PORT || 5000;
-    app.listen(PORT, () => {
+    const server = app.listen(PORT, () => {
       console.log(`🚀 Server running on port ${PORT}`);
       console.log(
         `📋 Auto-cancellation service: ${
@@ -159,6 +159,10 @@ const startServer = async () => {
         }`
       );
     });
+
+    // Initialize Socket.IO
+    const { initializeSocket } = await import("./src/services/socketService.js");
+    initializeSocket(server);
   } catch (error) {
     console.error("Failed to start server:", error);
     process.exit(1);

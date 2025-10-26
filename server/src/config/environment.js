@@ -127,8 +127,8 @@ const config = {
   SMS_PROVIDER: process.env.SMS_PROVIDER || "msg91",
 
   // Admin Configuration
-  ADMIN_PHONE: process.env.ADMIN_PHONE || "+917351114255",
-  ADMIN_PHONE_TWO: process.env.ADMIN_PHONE_TWO || "+919899826025",
+  ADMIN_PHONE: process.env.ADMIN_PHONE,
+  ADMIN_PHONE_TWO: process.env.ADMIN_PHONE_TWO,
 
   CLOUDINARY: {
     CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME,
@@ -156,9 +156,9 @@ const config = {
     ],
     production: [
       process.env.CLIENT_URL ||
-        "https://teerthankeraadinathbrightdentalcare-ten.vercel.app",
+      "https://teerthankeraadinathbrightdentalcare-ten.vercel.app",
       process.env.ADMIN_URL ||
-        "https://teerthankeraadinathbrightdentalcare-ten.vercel.app",
+      "https://teerthankeraadinathbrightdentalcare-ten.vercel.app",
       process.env.PROD_CLIENT_URL || "https://client.teerthankerdentalcare.com",
       process.env.PROD_ADMIN_URL || "https://admin.teerthankerdentalcare.com",
       "https://teerthankeraadinathbrightdentalcare.vercel.app",

@@ -22,6 +22,7 @@ import { checkAuthStatus } from "./store/authSlice";
 import PWAInstallPrompt from "./components/PWAInstallPrompt";
 import PWAUpdatePrompt from "./components/PWAUpdatePrompt";
 import OfflineIndicator from "./components/OfflineIndicator";
+import { NotificationProvider } from "./contexts/NotificationContext";
 import "./shared/styles/accessibility.css";
 
 // Safety wrapper to prevent object rendering
@@ -76,13 +77,14 @@ function App() {
 
   return (
     <AccessibilityProvider>
-      <ErrorBoundary>
-        <div className="min-h-screen bg-gray-50">
-          {/* Offline Indicator */}
-          <OfflineIndicator />
-          
-          {/* Skip Links for keyboard navigation */}
-          <SkipLinks />
+      <NotificationProvider>
+        <ErrorBoundary>
+          <div className="min-h-screen bg-gray-50">
+            {/* Offline Indicator */}
+            <OfflineIndicator />
+            
+            {/* Skip Links for keyboard navigation */}
+            <SkipLinks />
 
           <Routes>
             {/* Public Routes */}
@@ -147,11 +149,12 @@ function App() {
           {/* Global Toast Container */}
           <ToastContainer />
           
-          {/* PWA Components */}
-          <PWAInstallPrompt />
-          <PWAUpdatePrompt />
-        </div>
-      </ErrorBoundary>
+            {/* PWA Components */}
+            <PWAInstallPrompt />
+            <PWAUpdatePrompt />
+          </div>
+        </ErrorBoundary>
+      </NotificationProvider>
     </AccessibilityProvider>
   );
 }

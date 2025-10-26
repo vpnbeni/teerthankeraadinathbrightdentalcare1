@@ -21,9 +21,14 @@ const appointmentService = {
   // Get all appointments (Admin only)
   getAllAppointments: async (params = {}) => {
     try {
+      console.log("Fetching appointments with params:", params);
+      console.log("Admin token:", localStorage.getItem("adminToken"));
       const response = await api.get("/appointments/admin/all", { params });
+      console.log("Appointments response:", response);
       return response.data;
     } catch (error) {
+      console.error("Appointments fetch error:", error);
+      console.error("Error response:", error.response);
       throw new Error(
         error.response?.data?.message || "Failed to fetch appointments"
       );

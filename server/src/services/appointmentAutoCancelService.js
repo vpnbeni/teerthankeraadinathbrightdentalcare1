@@ -303,6 +303,27 @@ class AppointmentAutoCancelService {
         }
       }
 
+      // Send WebSocket notification to the user
+      if (this.config.NOTIFY_PATIENTS) {
+        try {
+          const { sendNotificationToUser } = await import("./socketService.js");
+          sendNotificationToUser(appointment.userId._id.toString(), {
+            type: "appointment_cancelled",
+            title: "Appointment Auto-Cancelled",
+            message: `Your appointment scheduled for ${new Date(appointment.date).toLocaleDateString("en-IN", { month: "short", day: "numeric", year: "numeric" })} at ${appointment.timeSlot} was automatically cancelled as the scheduled time has passed.${sessionRestored ? " Your session has been restored." : ""}`,
+            appointmentId: appointment._id.toString(),
+            icon: "calendar",
+            priority: "high",
+          });
+          logger.info(`WebSocket notification sent to user ${appointment.userId._id}`);
+        } catch (error) {
+          logger.error(
+            `Failed to send WebSocket notification for appointment ${appointment._id}:`,
+            error.message
+          );
+        }
+      }
+
       // Send admin notification (optional - could be configured)
       try {
         await this.notifyAdminOfAutoCancellation(appointment, sessionRestored);
@@ -336,8 +357,18 @@ class AppointmentAutoCancelService {
    */
   async notifyAdminOfAutoCancellation(appointment, sessionRestored) {
     try {
-      // This could be enhanced to send to specific admin emails
-      // For now, we'll just log it as an audit event
+      // Send WebSocket notification to admins
+      const { sendNotificationToAdmins } = await import("./socketService.js");
+      sendNotificationToAdmins({
+        type: "appointment_auto_cancelled",
+        title: "Appointment Auto-Cancelled",
+        message: `${appointment.userId.name}'s appointment for ${new Date(appointment.date).toLocaleDateString("en-IN", { month: "short", day: "numeric" })} at ${appointment.timeSlot} was automatically cancelled (time passed).${sessionRestored ? " Session restored." : ""}`,
+        appointmentId: appointment._id.toString(),
+        userId: appointment.userId._id.toString(),
+        userName: appointment.userId.name,
+        icon: "calendar",
+        priority: "low",
+      });
 
       const message = `
 Appointment Auto-Cancellation Notification

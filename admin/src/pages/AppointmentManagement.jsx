@@ -49,7 +49,6 @@ const AppointmentManagement = () => {
       };
 
       const response = await appointmentService.getAllAppointments(params);
-      console.log("API Response:", response);
       if (response.success) {
         setAppointments(response.data.appointments || []);
         setTotalAppointments(response.data.pagination?.totalAppointments || 0);
@@ -69,7 +68,6 @@ const AppointmentManagement = () => {
   const fetchStatistics = async () => {
     try {
       const response = await appointmentService.getAppointmentStatistics();
-      console.log("Statistics API Response:", response);
       if (response.success) {
         setStatistics(response.data);
       }
@@ -90,6 +88,20 @@ const AppointmentManagement = () => {
       fetchAppointments(1, filters);
     }
   }, [viewMode]);
+
+  // Refetch appointments when window regains focus
+  useEffect(() => {
+    const handleFocus = () => {
+      fetchAppointments(currentPage, filters);
+      fetchStatistics();
+    };
+
+    window.addEventListener("focus", handleFocus);
+
+    return () => {
+      window.removeEventListener("focus", handleFocus);
+    };
+  }, [currentPage, filters]);
 
   const handleFilterChange = (newFilters) => {
     setFilters(newFilters);
@@ -203,22 +215,20 @@ const AppointmentManagement = () => {
                 <div className="inline-flex rounded-xl bg-gray-100 p-1">
                   <button
                     onClick={() => handleViewModeChange("calendar")}
-                    className={`inline-flex items-center px-4 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 ${
-                      viewMode === "calendar"
+                    className={`inline-flex items-center px-4 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 ${viewMode === "calendar"
                         ? "bg-white text-primary-700 shadow-sm"
                         : "text-gray-600 hover:text-gray-900"
-                    }`}
+                      }`}
                   >
                     <CalendarIcon className="h-4 w-4 mr-2" />
                     Calendar
                   </button>
                   <button
                     onClick={() => handleViewModeChange("list")}
-                    className={`inline-flex items-center px-4 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 ${
-                      viewMode === "list"
+                    className={`inline-flex items-center px-4 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 ${viewMode === "list"
                         ? "bg-white text-primary-700 shadow-sm"
                         : "text-gray-600 hover:text-gray-900"
-                    }`}
+                      }`}
                   >
                     <ListBulletIcon className="h-4 w-4 mr-2" />
                     List
@@ -228,11 +238,10 @@ const AppointmentManagement = () => {
                 {/* Filters Button */}
                 <button
                   onClick={() => setShowFilters(!showFilters)}
-                  className={`inline-flex items-center px-4 py-2.5 text-sm font-medium rounded-xl border transition-all duration-200 ${
-                    showFilters
+                  className={`inline-flex items-center px-4 py-2.5 text-sm font-medium rounded-xl border transition-all duration-200 ${showFilters
                       ? "bg-primary-50 border-primary-200 text-primary-700"
                       : "bg-white border-gray-200 text-gray-700 hover:bg-gray-50"
-                  }`}
+                    }`}
                 >
                   <FunnelIcon className="h-4 w-4 mr-2" />
                   Filters
