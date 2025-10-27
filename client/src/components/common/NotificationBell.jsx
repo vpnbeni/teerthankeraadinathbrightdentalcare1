@@ -88,7 +88,7 @@ const NotificationBell = () => {
     if (!notification.read) {
       markAsRead(notification.id);
     }
-    
+
     // Navigate to appointments if it's an appointment notification
     if (notification.type === "new_appointment" || notification.type === "appointment_created") {
       setIsOpen(false);
@@ -186,9 +186,8 @@ const NotificationBell = () => {
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: index * 0.05 }}
                       onClick={() => handleNotificationClick(notification)}
-                      className={`relative px-5 py-4 hover:bg-gray-50 transition-colors cursor-pointer group ${
-                        !notification.read ? "bg-blue-50/30" : ""
-                      }`}
+                      className={`relative px-5 py-4 hover:bg-gray-50 transition-colors cursor-pointer group ${!notification.read ? "bg-blue-50/30" : ""
+                        }`}
                     >
                       <div className="flex gap-3">
                         {/* Icon */}
