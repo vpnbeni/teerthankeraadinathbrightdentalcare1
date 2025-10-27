@@ -21,6 +21,9 @@ import Analytics from "./pages/Analytics";
 import SystemSettings from "./pages/SystemSettings";
 import Notifications from "./pages/Notifications";
 
+// 🧪 DEVELOPMENT ONLY: Set to true to test the new logo loader
+const FORCE_LOADING_FOR_TESTING = false;
+
 function App() {
   const dispatch = useDispatch();
   const { isAuthenticated, loading, user } = useSelector((state) => state.auth);
@@ -31,11 +34,24 @@ function App() {
   }, [dispatch]);
 
   // Show loading spinner while checking authentication status
-  if (loading) {
+  // 🧪 DEVELOPMENT: Force loading to test the new logo loader
+  if (loading || FORCE_LOADING_FOR_TESTING) {
     return (
       <AccessibilityProvider>
         <div className="min-h-screen flex items-center justify-center bg-gray-50">
-          <LoadingSpinner size="large" ariaLabel="Loading application" />
+          <LoadingSpinner
+            variant="logo-wave"
+            size="large"
+            ariaLabel="Loading application"
+          />
+          {/* Development hint */}
+          {FORCE_LOADING_FOR_TESTING && (
+            <div className="fixed bottom-4 right-4 bg-yellow-100 border border-yellow-400 text-yellow-800 px-4 py-2 rounded-lg shadow-lg text-sm">
+              <strong>🧪 DEV MODE:</strong> Infinite loading enabled
+              <br />
+              <span className="text-xs">Set FORCE_LOADING_FOR_TESTING = false to disable</span>
+            </div>
+          )}
         </div>
       </AccessibilityProvider>
     );
@@ -59,98 +75,98 @@ function App() {
               </a>
             </div>
 
-          <Routes>
-            {/* Public Routes */}
-            <Route
-              path="/login"
-              element={
-                isAuthenticated ? (
-                  <Navigate to="/dashboard" replace />
-                ) : (
-                  <LoginPage />
-                )
-              }
-            />
+            <Routes>
+              {/* Public Routes */}
+              <Route
+                path="/login"
+                element={
+                  isAuthenticated ? (
+                    <Navigate to="/dashboard" replace />
+                  ) : (
+                    <LoginPage />
+                  )
+                }
+              />
 
-            {/* Protected Admin Routes */}
-            <Route
-              path="/dashboard"
-              element={
-                <ProtectedRoute requiredRole="admin">
-                  <AdminDashboard />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/users"
-              element={
-                <ProtectedRoute requiredRole="admin">
-                  <UserManagement />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/appointments"
-              element={
-                <ProtectedRoute requiredRole="admin">
-                  <AppointmentManagement />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/availability"
-              element={
-                <ProtectedRoute requiredRole="admin">
-                  <AvailabilityManagement />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/analytics"
-              element={
-                <ProtectedRoute requiredRole="admin">
-                  <Analytics />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/settings"
-              element={
-                <ProtectedRoute requiredRole="admin">
-                  <SystemSettings />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/notifications"
-              element={
-                <ProtectedRoute requiredRole="admin">
-                  <Notifications />
-                </ProtectedRoute>
-              }
-            />
+              {/* Protected Admin Routes */}
+              <Route
+                path="/dashboard"
+                element={
+                  <ProtectedRoute requiredRole="admin">
+                    <AdminDashboard />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/users"
+                element={
+                  <ProtectedRoute requiredRole="admin">
+                    <UserManagement />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/appointments"
+                element={
+                  <ProtectedRoute requiredRole="admin">
+                    <AppointmentManagement />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/availability"
+                element={
+                  <ProtectedRoute requiredRole="admin">
+                    <AvailabilityManagement />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/analytics"
+                element={
+                  <ProtectedRoute requiredRole="admin">
+                    <Analytics />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/settings"
+                element={
+                  <ProtectedRoute requiredRole="admin">
+                    <SystemSettings />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/notifications"
+                element={
+                  <ProtectedRoute requiredRole="admin">
+                    <Notifications />
+                  </ProtectedRoute>
+                }
+              />
 
-            {/* Default Redirects */}
-            <Route
-              path="/"
-              element={
-                <Navigate
-                  to={isAuthenticated ? "/dashboard" : "/login"}
-                  replace
-                />
-              }
-            />
-            {/* Catch-all route to handle removed or unknown routes */}
-            <Route
-              path="*"
-              element={
-                <Navigate
-                  to={isAuthenticated ? "/dashboard" : "/login"}
-                  replace
-                />
-              }
-            />
-          </Routes>
+              {/* Default Redirects */}
+              <Route
+                path="/"
+                element={
+                  <Navigate
+                    to={isAuthenticated ? "/dashboard" : "/login"}
+                    replace
+                  />
+                }
+              />
+              {/* Catch-all route to handle removed or unknown routes */}
+              <Route
+                path="*"
+                element={
+                  <Navigate
+                    to={isAuthenticated ? "/dashboard" : "/login"}
+                    replace
+                  />
+                }
+              />
+            </Routes>
 
             {/* Toast notifications are handled by react-hot-toast Toaster in main.jsx */}
           </div>

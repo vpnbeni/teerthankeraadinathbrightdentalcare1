@@ -7,12 +7,14 @@ import EmailTemplateEditor from "../components/settings/EmailTemplateEditor";
 import BusinessRulesConfig from "../components/settings/BusinessRulesConfig";
 import TimeSlotDefaults from "../components/settings/TimeSlotDefaults";
 import AdminNotificationConfig from "../components/settings/AdminNotificationConfig";
+import PasswordChange from "../components/settings/PasswordChange";
 import {
   EnvelopeIcon,
   Cog6ToothIcon,
   ClockIcon,
   DocumentTextIcon,
   BellIcon,
+  ShieldCheckIcon,
 } from "@heroicons/react/24/outline";
 
 const SystemSettings = () => {
@@ -53,6 +55,13 @@ const SystemSettings = () => {
       icon: BellIcon,
       component: AdminNotificationConfig,
       description: "Configure admin notification email for appointment alerts",
+    },
+    {
+      id: "security",
+      name: "Security",
+      icon: ShieldCheckIcon,
+      component: PasswordChange,
+      description: "Change your password and manage security settings",
     },
   ];
 
@@ -210,6 +219,10 @@ const SystemSettings = () => {
                   <li>
                     <strong>Admin Notifications:</strong> Set up email notifications
                     for appointment bookings and other admin alerts
+                  </li>
+                  <li>
+                    <strong>Security:</strong> Change your password and manage
+                    account security settings
                   </li>
                 </ul>
               </div>

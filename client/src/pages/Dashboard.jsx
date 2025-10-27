@@ -8,6 +8,7 @@ import { getTimeBasedGreeting, getTimeBasedMessage } from "../shared/utils";
 import { fetchAppointments } from "../store/appointmentSlice";
 import { updateUser } from "../store/authSlice";
 import authService from "../services/auth";
+import plansService from "../services/plans";
 import { motion } from "framer-motion";
 
 const Dashboard = () => {
@@ -17,6 +18,7 @@ const Dashboard = () => {
   const [currentGreeting, setCurrentGreeting] = useState("");
   const [currentMessage, setCurrentMessage] = useState("");
   const [recentActivity, setRecentActivity] = useState([]);
+  const [plan, setPlan] = useState(null);
 
   // Fetch profile and appointments when component mounts
   useEffect(() => {
@@ -41,6 +43,20 @@ const Dashboard = () => {
     
     fetchData();
   }, [dispatch, user?.id]); // Use user.id to avoid infinite re-renders
+
+  // Fetch plan details when subscription changes
+  useEffect(() => {
+    if (user?.subscription?.planId) {
+      plansService
+        .getPlan(user.subscription.planId)
+        .then((response) => {
+          setPlan(response.data.data);
+        })
+        .catch((error) => {
+          console.error("Failed to fetch plan details", error);
+        });
+    }
+  }, [user?.subscription?.planId]);
 
   // Generate recent activity from appointments
   useEffect(() => {
@@ -97,6 +113,26 @@ const Dashboard = () => {
     return () => clearInterval(interval);
   }, [user?.name]);
 
+  // Calculate total sessions from subscription or plan details
+  const getTotalSessions = () => {
+    // Use subscription.totalSessions if available (handles upgrades correctly)
+    // Otherwise fall back to plan.sessions for new subscriptions
+    return user?.subscription?.totalSessions || plan?.sessions || 0;
+  };
+
+  const getSessionsUsed = () => {
+    const totalSessions = getTotalSessions();
+    const sessionsRemaining = user?.subscription?.sessionsRemaining || 0;
+    return totalSessions - sessionsRemaining;
+  };
+
+  const calculateProgress = () => {
+    const totalSessions = getTotalSessions();
+    const sessionsRemaining = user?.subscription?.sessionsRemaining || 0;
+    const used = totalSessions - sessionsRemaining;
+    return totalSessions > 0 ? (used / totalSessions) * 100 : 0;
+  };
+
   const getSubscriptionStatus = () => {
     if (!user?.subscription) return "No active subscription";
     return user.subscription.status === "active"
@@ -106,9 +142,8 @@ const Dashboard = () => {
 
   const getSubscriptionPlanName = () => {
     if (!user?.subscription) return "No Active Plan";
-    // For now, return a generic plan name since planId is just an ID
-    // You might want to fetch plan details separately if needed
-    return user.subscription.status === "active" ? "Active Plan" : "Inactive Plan";
+    // Use plan name if available, otherwise return generic name
+    return plan?.name || (user.subscription.status === "active" ? "Active Plan" : "Inactive Plan");
   };
 
   const formatDate = (dateString) => {
@@ -246,7 +281,25 @@ const Dashboard = () => {
               </div>
               <p className="text-gray-600 font-medium text-sm mb-4">Sessions Remaining</p>
               <div className="pt-4 border-t border-gray-100">
-                <SessionLimitIndicator showDetails={false} darkMode={false} />
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center text-xs">
+                    <span className="text-gray-500">Progress</span>
+                    <span className="font-semibold text-gray-700">
+                      {getSessionsUsed()} of {getTotalSessions()} used
+                    </span>
+                  </div>
+                  <div className="relative w-full h-2 bg-gray-100 rounded-full overflow-hidden">
+                    <div
+                      className="absolute inset-y-0 left-0 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full transition-all duration-500"
+                      style={{ width: `${calculateProgress()}%` }}
+                    />
+                  </div>
+                  <div className="flex items-center justify-end">
+                    <span className="text-xs font-semibold text-gray-600">
+                      {Math.round(calculateProgress())}%
+                    </span>
+                  </div>
+                </div>
               </div>
             </div>
           </motion.div>

@@ -216,40 +216,40 @@ const Notifications = () => {
         {/* Stats Cards - Premium Glass Cards */}
         <motion.div
           variants={itemVariants}
-          className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-5"
+          className="grid grid-cols-3 md:grid-cols-3 gap-2 md:gap-5"
         >
-          <div className="bg-white/80 backdrop-blur-sm border border-gray-200/50 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600 mb-1">Total</p>
-                <p className="text-3xl font-bold text-gray-900">{notifications.length}</p>
+          <div className="bg-white/80 backdrop-blur-sm border border-gray-200/50 rounded-lg md:rounded-2xl p-3 md:p-6 shadow-lg hover:shadow-xl transition-shadow">
+            <div className="flex flex-col md:flex-row items-start md:items-center md:justify-between gap-2">
+              <div className="w-full md:w-auto">
+                <p className="text-[10px] md:text-sm font-medium text-gray-600 mb-0.5 md:mb-1">Total</p>
+                <p className="text-lg md:text-3xl font-bold text-gray-900">{notifications.length}</p>
               </div>
-              <div className="w-14 h-14 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
-                <BellIcon className="w-7 h-7 text-white" />
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white/80 backdrop-blur-sm border border-gray-200/50 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600 mb-1">Unread</p>
-                <p className="text-3xl font-bold text-rose-600">{unreadCount}</p>
-              </div>
-              <div className="w-14 h-14 bg-gradient-to-br from-rose-500 to-pink-600 rounded-2xl flex items-center justify-center shadow-lg">
-                <SparklesIcon className="w-7 h-7 text-white" />
+              <div className="w-8 h-8 md:w-14 md:h-14 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg md:rounded-2xl flex items-center justify-center shadow-lg">
+                <BellIcon className="w-4 h-4 md:w-7 md:h-7 text-white" />
               </div>
             </div>
           </div>
 
-          <div className="bg-white/80 backdrop-blur-sm border border-gray-200/50 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600 mb-1">Read</p>
-                <p className="text-3xl font-bold text-emerald-600">{notifications.length - unreadCount}</p>
+          <div className="bg-white/80 backdrop-blur-sm border border-gray-200/50 rounded-lg md:rounded-2xl p-3 md:p-6 shadow-lg hover:shadow-xl transition-shadow">
+            <div className="flex flex-col md:flex-row items-start md:items-center md:justify-between gap-2">
+              <div className="w-full md:w-auto">
+                <p className="text-[10px] md:text-sm font-medium text-gray-600 mb-0.5 md:mb-1">Unread</p>
+                <p className="text-lg md:text-3xl font-bold text-rose-600">{unreadCount}</p>
               </div>
-              <div className="w-14 h-14 bg-gradient-to-br from-emerald-500 to-green-600 rounded-2xl flex items-center justify-center shadow-lg">
-                <CheckCircleIcon className="w-7 h-7 text-white" />
+              <div className="w-8 h-8 md:w-14 md:h-14 bg-gradient-to-br from-rose-500 to-pink-600 rounded-lg md:rounded-2xl flex items-center justify-center shadow-lg">
+                <SparklesIcon className="w-4 h-4 md:w-7 md:h-7 text-white" />
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white/80 backdrop-blur-sm border border-gray-200/50 rounded-lg md:rounded-2xl p-3 md:p-6 shadow-lg hover:shadow-xl transition-shadow">
+            <div className="flex flex-col md:flex-row items-start md:items-center md:justify-between gap-2">
+              <div className="w-full md:w-auto">
+                <p className="text-[10px] md:text-sm font-medium text-gray-600 mb-0.5 md:mb-1">Read</p>
+                <p className="text-lg md:text-3xl font-bold text-emerald-600">{notifications.length - unreadCount}</p>
+              </div>
+              <div className="w-8 h-8 md:w-14 md:h-14 bg-gradient-to-br from-emerald-500 to-green-600 rounded-lg md:rounded-2xl flex items-center justify-center shadow-lg">
+                <CheckCircleIcon className="w-4 h-4 md:w-7 md:h-7 text-white" />
               </div>
             </div>
           </div>
@@ -359,7 +359,7 @@ const Notifications = () => {
                         <span className="text-sm font-medium text-gray-500">{groupNotifications.length}</span>
                       </div>
 
-                      <div className="space-y-3">
+                      <div className="space-y-2 md:space-y-3">
                         {groupNotifications.map((notification, index) => {
                           const Icon = getNotificationIcon(notification.type);
                           const colors = getNotificationColor(notification.type, notification.priority);
@@ -371,37 +371,37 @@ const Notifications = () => {
                               animate={{ opacity: 1, x: 0 }}
                               transition={{ delay: index * 0.05 }}
                               onClick={() => !notification.read && markAsRead(notification.id)}
-                              className={`group relative bg-white/80 backdrop-blur-sm border rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all cursor-pointer ${
+                              className={`group relative bg-white/80 backdrop-blur-sm border rounded-lg md:rounded-2xl p-3 md:p-6 shadow-lg hover:shadow-xl transition-all cursor-pointer ${
                                 !notification.read ? `${colors.border} ${colors.bg}` : "border-gray-200/50"
                               }`}
                             >
-                              <div className="flex gap-4">
-                                <div className={`flex-shrink-0 w-14 h-14 bg-gradient-to-br ${colors.gradient} rounded-2xl flex items-center justify-center shadow-lg`}>
-                                  <Icon className="w-7 h-7 text-white" />
+                              <div className="flex gap-2 md:gap-4">
+                                <div className={`flex-shrink-0 w-9 h-9 md:w-14 md:h-14 bg-gradient-to-br ${colors.gradient} rounded-lg md:rounded-2xl flex items-center justify-center shadow-lg`}>
+                                  <Icon className="w-4 h-4 md:w-7 md:h-7 text-white" />
                                 </div>
 
                                 <div className="flex-1 min-w-0">
-                                  <div className="flex items-start justify-between gap-4 mb-2">
-                                    <h4 className="text-base font-bold text-gray-900 leading-tight">
+                                  <div className="flex items-start justify-between gap-2 md:gap-4 mb-1 md:mb-2">
+                                    <h4 className="text-xs md:text-base font-bold text-gray-900 leading-tight">
                                       {notification.title}
                                     </h4>
                                     {!notification.read && (
-                                      <div className="flex-shrink-0 w-3 h-3 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full shadow-lg" />
+                                      <div className="flex-shrink-0 w-2 h-2 md:w-3 md:h-3 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full shadow-lg" />
                                     )}
                                   </div>
-                                  <p className="text-sm text-gray-600 leading-relaxed mb-3">
+                                  <p className="text-[11px] md:text-sm text-gray-600 leading-relaxed mb-1.5 md:mb-3 line-clamp-2 md:line-clamp-none">
                                     {notification.message}
                                   </p>
-                                  <div className="flex items-center gap-3 flex-wrap">
-                                    <span className="text-xs font-medium text-gray-500 flex items-center gap-1.5">
-                                      <ClockIcon className="w-4 h-4" />
+                                  <div className="flex items-center gap-1.5 md:gap-3 flex-wrap">
+                                    <span className="text-[10px] md:text-xs font-medium text-gray-500 flex items-center gap-1">
+                                      <ClockIcon className="w-3 h-3 md:w-4 md:h-4" />
                                       {formatTime(notification.timestamp)}
                                     </span>
-                                    <span className="text-xs font-medium text-gray-500">
+                                    <span className="text-[10px] md:text-xs font-medium text-gray-500">
                                       {formatDate(notification.timestamp)}
                                     </span>
                                     {notification.priority === "high" && (
-                                      <span className="px-2.5 py-1 bg-gradient-to-r from-rose-500 to-pink-600 text-white text-xs font-bold rounded-lg shadow-lg">
+                                      <span className="px-1.5 py-0.5 md:px-2.5 md:py-1 bg-gradient-to-r from-rose-500 to-pink-600 text-white text-[9px] md:text-xs font-bold rounded-md md:rounded-lg shadow-lg">
                                         URGENT
                                       </span>
                                     )}
@@ -413,9 +413,9 @@ const Notifications = () => {
                                     e.stopPropagation();
                                     clearNotification(notification.id);
                                   }}
-                                  className="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-xl bg-gray-100 hover:bg-rose-100 text-gray-400 hover:text-rose-600 opacity-0 group-hover:opacity-100 transition-all"
+                                  className="flex-shrink-0 w-7 h-7 md:w-10 md:h-10 flex items-center justify-center rounded-lg md:rounded-xl bg-gray-100 hover:bg-rose-100 text-gray-400 hover:text-rose-600 opacity-0 group-hover:opacity-100 transition-all"
                                 >
-                                  <TrashIcon className="w-5 h-5" />
+                                  <TrashIcon className="w-4 h-4 md:w-5 md:h-5" />
                                 </button>
                               </div>
                             </motion.div>

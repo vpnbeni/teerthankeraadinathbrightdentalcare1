@@ -213,7 +213,7 @@ const AdminLayout = ({ children }) => {
                     }`}
                   aria-current={isActive ? "page" : undefined}
                 >
-                  <div className={`relative w-9 h-9 flex items-center justify-center rounded-lg transition-all ${isActive
+                  <div className={`w-9 h-9 flex items-center justify-center rounded-lg transition-all ${isActive
                     ? "bg-white/10"
                     : "bg-gray-100 group-hover:bg-gray-200"
                     }`}>
@@ -221,11 +221,6 @@ const AdminLayout = ({ children }) => {
                       className={`h-5 w-5 ${isActive ? "text-white" : "text-gray-600 group-hover:text-gray-900"}`}
                       aria-hidden="true"
                     />
-                    {showBadge && (
-                      <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 bg-gradient-to-r from-red-500 to-pink-600 rounded-full flex items-center justify-center text-[10px] font-bold text-white shadow-lg">
-                        {unreadCount > 99 ? "99+" : unreadCount}
-                      </span>
-                    )}
                   </div>
                   <span className="flex-1">{item.name}</span>
                   {showBadge && (
@@ -303,7 +298,7 @@ const AdminLayout = ({ children }) => {
                     }`}
                   aria-current={isActive ? "page" : undefined}
                 >
-                  <div className={`relative w-9 h-9 flex items-center justify-center rounded-lg transition-all ${isActive
+                  <div className={`w-9 h-9 flex items-center justify-center rounded-lg transition-all ${isActive
                     ? "bg-white/10"
                     : "bg-gray-100 group-hover:bg-gray-200"
                     }`}>
@@ -311,11 +306,6 @@ const AdminLayout = ({ children }) => {
                       className={`h-5 w-5 ${isActive ? "text-white" : "text-gray-600 group-hover:text-gray-900"}`}
                       aria-hidden="true"
                     />
-                    {showBadge && (
-                      <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 bg-gradient-to-r from-red-500 to-pink-600 rounded-full flex items-center justify-center text-[10px] font-bold text-white shadow-lg">
-                        {unreadCount > 99 ? "99+" : unreadCount}
-                      </span>
-                    )}
                   </div>
                   <span className="flex-1">{item.name}</span>
                   {showBadge && (

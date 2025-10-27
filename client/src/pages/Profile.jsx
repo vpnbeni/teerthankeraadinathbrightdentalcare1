@@ -3,6 +3,7 @@ import { useSelector, useDispatch } from "react-redux";
 import DashboardLayout from "../components/common/DashboardLayout";
 import DocumentUpload from "../components/profile/DocumentUpload";
 import ProfileEditForm from "../components/profile/ProfileEditForm";
+import PasswordChange from "../components/profile/PasswordChange";
 
 import { LoadingSpinner } from "../shared/components";
 import userService from "../services/user";
@@ -80,6 +81,15 @@ const Profile = () => {
       icon: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+        </svg>
+      )
+    },
+    { 
+      id: "security", 
+      label: "Security", 
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
         </svg>
       )
     },
@@ -291,6 +301,17 @@ const Profile = () => {
               </div>
             )}
 
+            {activeTab === "security" && (
+              <div className="animate-fade-in">
+                <div className="flex items-center space-x-2 md:space-x-3 mb-4 md:mb-6">
+                  <div className="h-8 md:h-10 w-1 bg-gradient-to-b from-[#346870] to-teal-400 rounded-full"></div>
+                  <h3 className="text-lg md:text-2xl font-bold text-gray-800">
+                    Security Settings
+                  </h3>
+                </div>
+                <PasswordChange />
+              </div>
+            )}
 
           </div>
         </div>

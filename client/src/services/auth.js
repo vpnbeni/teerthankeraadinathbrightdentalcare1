@@ -97,6 +97,12 @@ const authService = {
     }
     return response;
   },
+
+  // Change password
+  changePassword: async (passwordData) => {
+    const response = await api.put("/auth/change-password", passwordData);
+    return response;
+  },
 };
 
 /**

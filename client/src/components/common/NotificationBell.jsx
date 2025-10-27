@@ -2,10 +2,12 @@ import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { BellIcon } from "@heroicons/react/24/outline";
 import { useNotifications } from "../../contexts/NotificationContext";
+import { useNavigate } from "react-router-dom";
 
 const NotificationBell = () => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
+  const navigate = useNavigate();
   const { notifications, unreadCount, markAsRead, markAllAsRead, clearNotification } = useNotifications();
 
   // Close dropdown when clicking outside
@@ -27,12 +29,6 @@ const NotificationBell = () => {
         return (
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-          </svg>
-        );
-      case "appointment_confirmed":
-        return (
-          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
         );
       case "appointment_cancelled":
@@ -60,21 +56,16 @@ const NotificationBell = () => {
     if (priority === "high") {
       return "from-red-500 to-pink-600";
     }
-    if (priority === "medium") {
-      return "from-amber-500 to-orange-600";
-    }
     switch (type) {
       case "appointment_created":
       case "new_appointment":
-        return "from-amber-500 to-orange-600";
-      case "appointment_confirmed":
-        return "from-emerald-500 to-green-600";
+        return "from-blue-500 to-indigo-600";
       case "appointment_cancelled":
         return "from-red-500 to-pink-600";
       case "appointment_reminder":
         return "from-amber-500 to-orange-600";
       default:
-        return "from-blue-500 to-indigo-600";
+        return "from-gray-500 to-gray-600";
     }
   };
 
@@ -97,6 +88,12 @@ const NotificationBell = () => {
     if (!notification.read) {
       markAsRead(notification.id);
     }
+    
+    // Navigate to appointments if it's an appointment notification
+    if (notification.type === "new_appointment" || notification.type === "appointment_created") {
+      setIsOpen(false);
+      navigate("/appointments");
+    }
   };
 
   return (
@@ -106,10 +103,10 @@ const NotificationBell = () => {
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         onClick={() => setIsOpen(!isOpen)}
-        className="relative p-2.5 bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md hover:bg-gray-50 transition-all duration-200"
+        className="relative h-12 w-12  bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md hover:bg-gray-50 transition-all duration-200"
         aria-label="Notifications"
       >
-        <BellIcon className="w-6 h-6 text-gray-700" />
+        <BellIcon className="absolute top-[50%] left-[50%] -translate-x-[50%] -translate-y-[50%] w-7 h-7 text-gray-700" />
 
         {/* Unread Badge */}
         <AnimatePresence>
@@ -127,6 +124,10 @@ const NotificationBell = () => {
           )}
         </AnimatePresence>
 
+        {/* Pulse Animation for New Notifications */}
+        {unreadCount > 0 && (
+          <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full animate-ping opacity-75"></span>
+        )}
       </motion.button>
 
       {/* Notification Dropdown */}
@@ -137,10 +138,10 @@ const NotificationBell = () => {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -10, scale: 0.95 }}
             transition={{ duration: 0.2 }}
-            className="fixed sm:absolute left-[2.5%] right-[2.5%] sm:left-auto sm:right-0 top-[72px] sm:top-auto mt-0 sm:mt-3 w-[95%] sm:w-96 max-h-[50vh] sm:max-h-auto bg-white border border-gray-200 rounded-2xl shadow-2xl overflow-hidden z-50"
+            className="fixed sm:absolute left-[2.5%] right-[2.5%] sm:left-auto sm:right-0 top-[64px] sm:top-auto mt-0 sm:mt-3 w-[95%] sm:w-96 max-h-[80vh] sm:max-h-[600px] bg-white border border-gray-200 rounded-2xl shadow-2xl overflow-hidden z-50 flex flex-col"
           >
             {/* Header */}
-            <div className="px-5 py-4 border-b border-gray-200 bg-gray-50">
+            <div className="px-5 py-4 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-transparent flex-shrink-0">
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="text-lg font-bold text-gray-900">Notifications</h3>
@@ -153,7 +154,7 @@ const NotificationBell = () => {
                 {notifications.length > 0 && (
                   <button
                     onClick={markAllAsRead}
-                    className="text-xs font-semibold text-[#346870] hover:text-[#5fa8b5] transition-colors"
+                    className="text-xs font-semibold text-primary hover:text-primary-dark transition-colors"
                   >
                     Mark all read
                   </button>
@@ -162,7 +163,7 @@ const NotificationBell = () => {
             </div>
 
             {/* Notifications List */}
-            <div className="max-h-[calc(50vh-140px)] sm:max-h-[480px] overflow-y-auto">
+            <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent hover:scrollbar-thumb-gray-400">
               {notifications.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-16 px-6">
                   <motion.div
@@ -185,8 +186,9 @@ const NotificationBell = () => {
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: index * 0.05 }}
                       onClick={() => handleNotificationClick(notification)}
-                      className={`relative px-5 py-4 hover:bg-gray-50/50 transition-colors cursor-pointer group ${!notification.read ? "bg-blue-50/30" : ""
-                        }`}
+                      className={`relative px-5 py-4 hover:bg-gray-50 transition-colors cursor-pointer group ${
+                        !notification.read ? "bg-blue-50/30" : ""
+                      }`}
                     >
                       <div className="flex gap-3">
                         {/* Icon */}
@@ -218,11 +220,6 @@ const NotificationBell = () => {
                                 Urgent
                               </span>
                             )}
-                            {notification.priority === "medium" && (
-                              <span className="px-2 py-0.5 bg-amber-100 text-amber-700 text-[9px] font-bold rounded-full uppercase tracking-wide">
-                                Pending
-                              </span>
-                            )}
                           </div>
                         </div>
 
@@ -233,6 +230,7 @@ const NotificationBell = () => {
                             clearNotification(notification.id);
                           }}
                           className="flex-shrink-0 w-7 h-7 flex items-center justify-center rounded-lg bg-gray-100 hover:bg-red-100 text-gray-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-all"
+                          aria-label="Delete notification"
                         >
                           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                             <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -247,13 +245,13 @@ const NotificationBell = () => {
 
             {/* Footer */}
             {notifications.length > 0 && (
-              <div className="px-5 py-3 border-t border-gray-200 bg-gray-50">
+              <div className="px-5 py-3 border-t border-gray-200 bg-gradient-to-r from-gray-50 to-transparent flex-shrink-0">
                 <button
                   onClick={() => {
                     setIsOpen(false);
-                    window.location.href = "/notifications";
+                    navigate("/notifications");
                   }}
-                  className="w-full text-center text-xs font-semibold text-gray-600 hover:text-[#346870] transition-colors"
+                  className="w-full text-center text-xs font-semibold text-gray-600 hover:text-primary transition-colors"
                 >
                   View all notifications
                 </button>

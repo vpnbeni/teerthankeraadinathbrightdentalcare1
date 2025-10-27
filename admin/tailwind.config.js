@@ -70,6 +70,7 @@ export default {
         "fade-in": "fadeIn 0.3s ease-in-out",
         "slide-in": "slideIn 0.3s ease-in-out",
         "bounce-in": "bounceIn 0.5s ease-in-out",
+        "wave-pulse": "wavePulse 2s cubic-bezier(0, 0, 0.2, 1) infinite",
       },
       keyframes: {
         fadeIn: {
@@ -85,6 +86,20 @@ export default {
           "50%": { opacity: "1", transform: "scale(1.05)" },
           "70%": { transform: "scale(0.9)" },
           "100%": { opacity: "1", transform: "scale(1)" },
+        },
+        wavePulse: {
+          "0%": { 
+            transform: "scale(0.8)", 
+            opacity: "0.8" 
+          },
+          "50%": { 
+            transform: "scale(1.2)", 
+            opacity: "0.3" 
+          },
+          "100%": { 
+            transform: "scale(1.6)", 
+            opacity: "0" 
+          },
         },
       },
       screens: {

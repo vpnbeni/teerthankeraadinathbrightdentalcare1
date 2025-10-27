@@ -1,5 +1,5 @@
 /**
- * Enhanced loading spinner component with multiple variants and states
+ * Enhanced loading spinner component with logo-centered circular wave animation
  * Provides consistent loading indicators across the admin panel
  */
 
@@ -13,6 +13,7 @@ export const SPINNER_VARIANTS = {
   PULSE: "pulse",
   BOUNCE: "bounce",
   WAVE: "wave",
+  LOGO_WAVE: "logo-wave", // New variant with logo and circular waves
 };
 
 // Loading spinner sizes
@@ -27,7 +28,7 @@ export const SPINNER_SIZES = {
 const LoadingSpinner = ({
   variant = SPINNER_VARIANTS.CIRCLE,
   size = SPINNER_SIZES.MD,
-  color = "blue",
+  color = "primary",
   message,
   overlay = false,
   fullScreen = false,
@@ -35,6 +36,10 @@ const LoadingSpinner = ({
   ariaLabel,
   ...rest
 }) => {
+  // Allow variant to be passed as string or from SPINNER_VARIANTS
+  const normalizedVariant = typeof variant === 'string'
+    ? variant
+    : variant;
   // Size configurations
   const sizeConfig = {
     [SPINNER_SIZES.XS]: {
@@ -66,6 +71,7 @@ const LoadingSpinner = ({
 
   // Color configurations
   const colorConfig = {
+    primary: '#7DA4AA',
     blue: "text-blue-600",
     gray: "text-gray-600",
     red: "text-red-600",
@@ -78,11 +84,54 @@ const LoadingSpinner = ({
   };
 
   const config = sizeConfig[size] || sizeConfig[SPINNER_SIZES.MD];
-  const colorClass = colorConfig[color] || colorConfig.blue;
+  const colorClass = colorConfig[color] || colorConfig.primary;
 
   // Render different spinner variants
   const renderSpinner = () => {
-    switch (variant) {
+    switch (normalizedVariant) {
+      case SPINNER_VARIANTS.LOGO_WAVE:
+      case 'logo-wave':
+        return (
+          <div className="relative flex items-center justify-center w-[200px] h-[200px] lg:w-[400px] lg:h-[400px]">
+            {/* Three animated circular waves with gradient - responsive with staggered delays */}
+            <div className="absolute inset-0 flex items-center justify-center">
+              {[0, 1, 2].map((wave) => (
+                <div
+                  key={wave}
+                  className="absolute rounded-full animate-wave-pulse w-20 h-20 lg:w-40 lg:h-40"
+                  style={{
+                    background: `radial-gradient(circle, transparent 65%, rgba(52, 104, 112, 0.5) 70%, rgba(52, 104, 112, 0.3) 80%, transparent 90%)`,
+                    animationDuration: '2s',
+                    animationDelay: `${wave * 0.4}s`,
+                  }}
+                />
+              ))}
+            </div>
+
+            {/* Logo in center - responsive */}
+            <div className="relative z-10 flex flex-col items-center justify-center">
+              <img
+                src="https://res.cloudinary.com/dvqvxu0b1/image/upload/v1753662373/2_uuolcb.webp"
+                alt="Loading"
+                className="w-24 h-24 lg:w-48 lg:h-48 object-contain animate-pulse"
+                style={{
+                  animationDuration: "2s",
+                  filter: 'drop-shadow(0 0 20px rgba(52, 104, 112, 0.4))'
+                }}
+              />
+
+              {/* Gradient glow under logo */}
+              <div
+                className="absolute -bottom-4 lg:-bottom-8 w-32 h-16 lg:w-64 lg:h-32 blur-2xl opacity-60 animate-pulse"
+                style={{
+                  background: 'radial-gradient(ellipse at center, rgba(125, 164, 170, 0.8) 0%, rgba(52, 104, 112, 0.6) 30%, transparent 70%)',
+                  animationDuration: "2s",
+                }}
+              />
+            </div>
+          </div>
+        );
+
       case SPINNER_VARIANTS.DOTS:
         return (
           <div className={`flex space-x-1 ${colorClass}`}>
@@ -126,27 +175,23 @@ const LoadingSpinner = ({
         return (
           <div className={`flex space-x-1 ${colorClass}`}>
             <div
-              className={`w-1 ${
-                config.spinner.split(" ")[1]
-              } bg-current animate-pulse`}
+              className={`w-1 ${config.spinner.split(" ")[1]
+                } bg-current animate-pulse`}
               style={{ animationDelay: "0ms" }}
             ></div>
             <div
-              className={`w-1 ${
-                config.spinner.split(" ")[1]
-              } bg-current animate-pulse`}
+              className={`w-1 ${config.spinner.split(" ")[1]
+                } bg-current animate-pulse`}
               style={{ animationDelay: "150ms" }}
             ></div>
             <div
-              className={`w-1 ${
-                config.spinner.split(" ")[1]
-              } bg-current animate-pulse`}
+              className={`w-1 ${config.spinner.split(" ")[1]
+                } bg-current animate-pulse`}
               style={{ animationDelay: "300ms" }}
             ></div>
             <div
-              className={`w-1 ${
-                config.spinner.split(" ")[1]
-              } bg-current animate-pulse`}
+              className={`w-1 ${config.spinner.split(" ")[1]
+                } bg-current animate-pulse`}
               style={{ animationDelay: "450ms" }}
             ></div>
           </div>
@@ -172,9 +217,8 @@ const LoadingSpinner = ({
             {[0, 1, 2, 3, 4].map((i) => (
               <div
                 key={i}
-                className={`w-1 ${
-                  config.spinner.split(" ")[1]
-                } bg-current animate-pulse`}
+                className={`w-1 ${config.spinner.split(" ")[1]
+                  } bg-current animate-pulse`}
                 style={{
                   animationDelay: `${i * 100}ms`,
                   animationDuration: "1s",
@@ -257,9 +301,9 @@ export const ButtonSpinner = ({
 
 export const PageSpinner = ({ message = "Loading...", ...props }) => (
   <LoadingSpinner
-    variant={SPINNER_VARIANTS.CIRCLE}
+    variant={SPINNER_VARIANTS.LOGO_WAVE}
     size={SPINNER_SIZES.LG}
-    color="blue"
+    color="primary"
     message={message}
     fullScreen
     {...props}
@@ -270,7 +314,7 @@ export const OverlaySpinner = ({ message, ...props }) => (
   <LoadingSpinner
     variant={SPINNER_VARIANTS.CIRCLE}
     size={SPINNER_SIZES.MD}
-    color="blue"
+    color="primary"
     message={message}
     overlay
     {...props}
@@ -281,7 +325,7 @@ export const InlineSpinner = ({ size = SPINNER_SIZES.SM, ...props }) => (
   <LoadingSpinner
     variant={SPINNER_VARIANTS.CIRCLE}
     size={size}
-    color="blue"
+    color="primary"
     {...props}
   />
 );
@@ -291,7 +335,7 @@ export const TableSpinner = ({ message = "Loading data...", ...props }) => (
     <LoadingSpinner
       variant={SPINNER_VARIANTS.CIRCLE}
       size={SPINNER_SIZES.MD}
-      color="blue"
+      color="primary"
       message={message}
       {...props}
     />
@@ -303,7 +347,7 @@ export const CardSpinner = ({ message, ...props }) => (
     <LoadingSpinner
       variant={SPINNER_VARIANTS.CIRCLE}
       size={SPINNER_SIZES.MD}
-      color="blue"
+      color="primary"
       message={message}
       {...props}
     />

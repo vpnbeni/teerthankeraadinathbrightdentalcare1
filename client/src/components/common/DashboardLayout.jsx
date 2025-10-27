@@ -87,16 +87,11 @@ const DashboardLayout = ({ children }) => {
                     : "text-gray-700 hover:bg-gray-100/80 hover:text-gray-900"
                     }`}
                 >
-                  <div className={`relative w-9 h-9 flex items-center justify-center rounded-lg transition-all ${isActive
+                  <div className={`w-9 h-9 flex items-center justify-center rounded-lg transition-all ${isActive
                     ? "bg-white/10"
                     : "bg-gray-100 group-hover:bg-gray-200"
                     }`}>
                     <item.icon className={`h-5 w-5 ${isActive ? "text-white" : "text-gray-600 group-hover:text-gray-900"}`} />
-                    {showBadge && (
-                      <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 bg-gradient-to-r from-red-500 to-pink-600 rounded-full flex items-center justify-center text-[10px] font-bold text-white shadow-lg">
-                        {unreadCount > 99 ? "99+" : unreadCount}
-                      </span>
-                    )}
                   </div>
                   <span className="flex-1">{item.name}</span>
                   {showBadge && (
@@ -150,16 +145,11 @@ const DashboardLayout = ({ children }) => {
                     : "text-gray-700 hover:bg-gray-100/80 hover:text-gray-900"
                     }`}
                 >
-                  <div className={`relative w-9 h-9 flex items-center justify-center rounded-lg transition-all ${isActive
+                  <div className={`w-9 h-9 flex items-center justify-center rounded-lg transition-all ${isActive
                     ? "bg-white/10"
                     : "bg-gray-100 group-hover:bg-gray-200"
                     }`}>
                     <item.icon className={`h-5 w-5 ${isActive ? "text-white" : "text-gray-600 group-hover:text-gray-900"}`} />
-                    {showBadge && (
-                      <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 bg-gradient-to-r from-red-500 to-pink-600 rounded-full flex items-center justify-center text-[10px] font-bold text-white shadow-lg">
-                        {unreadCount > 99 ? "99+" : unreadCount}
-                      </span>
-                    )}
                   </div>
                   <span className="flex-1">{item.name}</span>
                   {showBadge && (
@@ -270,7 +260,7 @@ const DashboardLayout = ({ children }) => {
                 onClick={() => navigate("/profile")}
                 className="lg:hidden cursor-pointer"
               >
-                <div className="h-10 w-10 bg-gradient-to-br from-[#346870] to-[#5fa8b5] rounded-xl flex items-center justify-center overflow-hidden shadow-lg shadow-[#346870]/20">
+                <div className="h-12 w-12 bg-gradient-to-br from-[#346870] to-[#5fa8b5] rounded-xl flex items-center justify-center overflow-hidden shadow-lg shadow-[#346870]/20">
                   {user?.profilePhoto ? (
                     <img
                       src={user.profilePhoto}
