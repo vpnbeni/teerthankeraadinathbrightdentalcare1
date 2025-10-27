@@ -1,6 +1,5 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from "react";
 import { useSelector } from "react-redux";
-import { io } from "socket.io-client";
 
 const NotificationContext = createContext();
 
@@ -15,136 +14,110 @@ export const useNotifications = () => {
 export const NotificationProvider = ({ children }) => {
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
-  const [socket, setSocket] = useState(null);
   const [loading, setLoading] = useState(true);
   const { isAuthenticated, user } = useSelector((state) => state.auth);
-  const socketRef = React.useRef(null);
-  const isConnecting = React.useRef(false);
+  const pollingIntervalRef = useRef(null);
+  const lastFetchTimeRef = useRef(0);
 
-  // Fetch notifications from API on mount
-  useEffect(() => {
-    const fetchNotifications = async () => {
-      if (!isAuthenticated || !user) {
-        setLoading(false);
-        return;
-      }
+  // Fetch notifications from API
+  const fetchNotifications = useCallback(async (showNewNotification = false) => {
+    if (!isAuthenticated || !user) {
+      setLoading(false);
+      return;
+    }
 
-      try {
-        const token = localStorage.getItem("adminToken");
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/notifications`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+    try {
+      const token = localStorage.getItem("adminToken");
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/notifications`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
-        if (response.ok) {
-          const data = await response.json();
-          const formattedNotifications = data.data.notifications.map((notif) => ({
-            id: notif._id,
-            type: notif.type,
-            title: notif.title,
-            message: notif.message,
-            priority: notif.priority,
-            read: notif.read,
-            timestamp: notif.createdAt,
-            metadata: notif.metadata,
-          }));
-          setNotifications(formattedNotifications);
-          setUnreadCount(data.data.unreadCount);
+      if (response.ok) {
+        const data = await response.json();
+        const formattedNotifications = data.data.notifications.map((notif) => ({
+          id: notif._id,
+          type: notif.type,
+          title: notif.title,
+          message: notif.message,
+          priority: notif.priority,
+          read: notif.read,
+          timestamp: notif.createdAt,
+          metadata: notif.metadata,
+        }));
+
+        // Check for new notifications
+        if (showNewNotification && notifications.length > 0) {
+          const newNotifs = formattedNotifications.filter(
+            (notif) => !notifications.some((n) => n.id === notif.id)
+          );
+          if (newNotifs.length > 0) {
+            console.log(`📬 ${newNotifs.length} new notification(s) received`);
+            playNotificationSound();
+          }
         }
-      } catch (error) {
-        console.error("Error fetching notifications:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
 
-    fetchNotifications();
+        setNotifications(formattedNotifications);
+        setUnreadCount(data.data.unreadCount);
+      }
+    } catch (error) {
+      console.error("Error fetching notifications:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, [isAuthenticated, user, notifications]);
+
+  // Initial fetch on mount
+  useEffect(() => {
+    fetchNotifications(false);
   }, [isAuthenticated, user]);
 
-  // Initialize socket connection
+  // Poll for new notifications when window gets focus
   useEffect(() => {
-    // Only proceed if authenticated
-    if (!isAuthenticated || !user) {
-      if (socketRef.current) {
-        console.log("🔌 Disconnecting socket - user not authenticated");
-        socketRef.current.disconnect();
-        socketRef.current = null;
-        setSocket(null);
-        isConnecting.current = false;
-      }
-      return;
-    }
+    if (!isAuthenticated || !user) return;
 
-    // Don't reconnect if we already have a socket or are currently connecting
-    if (socketRef.current || isConnecting.current) {
-      console.log("🔌 Socket already exists or connecting, skipping");
-      return;
-    }
-
-    // Get token from localStorage
-    const token = localStorage.getItem("adminToken");
-    if (!token) {
-      console.log("⚠️ No admin token found in localStorage");
-      return;
-    }
-
-    isConnecting.current = true;
-    console.log("🔌 Initializing WebSocket connection...");
-    // Remove /api suffix if present for Socket.IO connection
-    let serverUrl = import.meta.env.VITE_API_URL || "http://localhost:5000";
-    serverUrl = serverUrl.replace(/\/api$/, ""); // Remove trailing /api
-    console.log("🔌 Connecting to:", serverUrl);
-    
-    const newSocket = io(serverUrl, {
-      auth: { token },
-      reconnection: true,
-      reconnectionDelay: 1000,
-      reconnectionAttempts: 5,
-      transports: ["websocket", "polling"], // Try websocket first, fallback to polling
-    });
-
-    newSocket.on("connect", () => {
-      console.log("✅ Connected to notification server");
-      console.log("🔌 Socket ID:", newSocket.id);
-      isConnecting.current = false;
-    });
-
-    newSocket.on("notification", (notification) => {
-      console.log("📬 New notification received:", notification);
-      setNotifications((prev) => [notification, ...prev]);
-      setUnreadCount((prev) => prev + 1);
-      
-      // Play notification sound (optional)
-      playNotificationSound();
-    });
-
-    newSocket.on("disconnect", (reason) => {
-      console.log("❌ Disconnected from notification server. Reason:", reason);
-      isConnecting.current = false;
-    });
-
-    newSocket.on("connect_error", (error) => {
-      console.error("❌ Connection error:", error.message);
-      console.error("Error details:", error);
-      isConnecting.current = false;
-    });
-
-    socketRef.current = newSocket;
-    setSocket(newSocket);
-  }, [isAuthenticated, user?._id]); // Depend on user ID, not the whole user object
-  
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      if (socketRef.current) {
-        console.log("🔌 Component unmounting - disconnecting socket");
-        socketRef.current.disconnect();
-        socketRef.current = null;
-        isConnecting.current = false;
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        console.log("👁️ Window focused - checking for new notifications");
+        fetchNotifications(true);
       }
     };
-  }, []);
+
+    const handleFocus = () => {
+      console.log("👁️ Window focused - checking for new notifications");
+      fetchNotifications(true);
+    };
+
+    // Poll every 30 seconds when tab is active
+    const startPolling = () => {
+      if (pollingIntervalRef.current) return;
+      
+      pollingIntervalRef.current = setInterval(() => {
+        if (!document.hidden) {
+          console.log("🔄 Polling for new notifications");
+          fetchNotifications(true);
+        }
+      }, 30000); // 30 seconds
+    };
+
+    const stopPolling = () => {
+      if (pollingIntervalRef.current) {
+        clearInterval(pollingIntervalRef.current);
+        pollingIntervalRef.current = null;
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    window.addEventListener("focus", handleFocus);
+    startPolling();
+
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener("focus", handleFocus);
+      stopPolling();
+    };
+  }, [isAuthenticated, user, fetchNotifications]);
 
   const playNotificationSound = () => {
     try {

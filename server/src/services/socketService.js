@@ -4,8 +4,14 @@ import { config } from "../config/environment.js";
 
 let io = null;
 
-// Initialize Socket.IO
+// Initialize Socket.IO (only for local development)
 export const initializeSocket = (server) => {
+  // Skip Socket.IO initialization in production (Vercel doesn't support WebSockets)
+  if (config.NODE_ENV === "production") {
+    console.log("⚠️ Socket.IO disabled in production - using database polling instead");
+    return null;
+  }
+
   const allowedOrigins = config.NODE_ENV === "production"
     ? config.CORS_ORIGINS.production
     : config.CORS_ORIGINS.development;
@@ -75,7 +81,7 @@ export const initializeSocket = (server) => {
 // Get Socket.IO instance
 export const getIO = () => {
   if (!io) {
-    throw new Error("Socket.IO not initialized");
+    return null; // Return null instead of throwing error
   }
   return io;
 };
@@ -94,6 +100,8 @@ export const sendNotificationToUser = async (userId, notification) => {
       metadata: notification.metadata || {},
     });
 
+    console.log(`💾 Notification saved to database for user: ${userId}`);
+
     const notificationData = {
       id: savedNotification._id.toString(),
       userId: savedNotification.userId.toString(),
@@ -106,11 +114,13 @@ export const sendNotificationToUser = async (userId, notification) => {
       metadata: savedNotification.metadata,
     };
 
-    // Send via Socket.IO if user is connected
+    // Send via Socket.IO if available (development only)
     if (io) {
       console.log(`📤 Sending notification to user room: user:${userId}`, notificationData);
       io.to(`user:${userId}`).emit("notification", notificationData);
       console.log(`✅ Notification sent to user room: user:${userId}`);
+    } else {
+      console.log(`📬 Notification saved to DB - will be fetched on next poll`);
     }
 
     return savedNotification;
@@ -149,7 +159,7 @@ export const sendNotificationToAdmins = async (notification) => {
     const savedNotifications = await Promise.all(notificationPromises);
     console.log(`💾 Saved ${savedNotifications.length} notifications for admins`);
 
-    // Send via Socket.IO to connected admins
+    // Send via Socket.IO to connected admins (development only)
     if (io) {
       const notificationData = {
         id: savedNotifications[0]._id.toString(),
@@ -174,6 +184,8 @@ export const sendNotificationToAdmins = async (notification) => {
       
       io.to("admin").emit("notification", notificationData);
       console.log("✅ Notification sent to admin room");
+    } else {
+      console.log(`📬 ${savedNotifications.length} notifications saved to DB - will be fetched on next poll`);
     }
 
     return savedNotifications;
