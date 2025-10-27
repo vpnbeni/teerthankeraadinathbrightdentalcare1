@@ -160,11 +160,8 @@ const startServer = async () => {
           config.APPOINTMENT_EXPIRY.ENABLED ? "enabled" : "disabled"
         }`
       );
+      console.log(`📬 Notifications: Using polling-based system (refocus detection)`);
     });
-
-    // Initialize Socket.IO
-    const { initializeSocket } = await import("./src/services/socketService.js");
-    initializeSocket(server);
   } catch (error) {
     console.error("Failed to start server:", error);
     process.exit(1);

@@ -303,10 +303,10 @@ class AppointmentAutoCancelService {
         }
       }
 
-      // Send WebSocket notification to the user
+      // Send notification to the user
       if (this.config.NOTIFY_PATIENTS) {
         try {
-          const { sendNotificationToUser } = await import("./socketService.js");
+          const { sendNotificationToUser } = await import("./notificationService.js");
           sendNotificationToUser(appointment.userId._id.toString(), {
             type: "appointment_cancelled",
             title: "Appointment Auto-Cancelled",
@@ -357,8 +357,8 @@ class AppointmentAutoCancelService {
    */
   async notifyAdminOfAutoCancellation(appointment, sessionRestored) {
     try {
-      // Send WebSocket notification to admins
-      const { sendNotificationToAdmins } = await import("./socketService.js");
+      // Send notification to admins
+      const { sendNotificationToAdmins } = await import("./notificationService.js");
       sendNotificationToAdmins({
         type: "appointment_auto_cancelled",
         title: "Appointment Auto-Cancelled",

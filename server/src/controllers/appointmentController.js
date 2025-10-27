@@ -4,7 +4,7 @@ import emailService from "../services/emailService.js";
 import smsService from "../services/smsService.js";
 import AvailabilityService from "../services/availabilityService.js";
 import { config } from "../config/environment.js";
-import { sendNotificationToUser, sendNotificationToAdmins } from "../services/socketService.js";
+import { sendNotificationToUser, sendNotificationToAdmins } from "../services/notificationService.js";
 
 const availabilityService = new AvailabilityService();
 
