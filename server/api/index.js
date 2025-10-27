@@ -288,6 +288,22 @@ app.use("/api/session-limits", async (req, res, next) => {
   }
 });
 
+app.use("/api/notifications", async (req, res, next) => {
+  try {
+    await connectDB();
+    const { default: notificationRoutes } = await import(
+      "../src/routes/notifications.js"
+    );
+    notificationRoutes(req, res, next);
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Notifications route loading failed",
+      error: error.message,
+    });
+  }
+});
+
 // Handle 404 - Route not found
 app.use("*", (req, res) => {
   res.status(404).json({
@@ -307,6 +323,7 @@ app.use("*", (req, res) => {
       "GET /api/analytics/* - Analytics endpoints",
       "GET /api/availability/* - Availability endpoints",
       "GET /api/session-limits/* - Session limits endpoints",
+      "GET /api/notifications - Notifications endpoints",
     ],
     timestamp: new Date().toISOString(),
   });
