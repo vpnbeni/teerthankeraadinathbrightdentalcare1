@@ -77,7 +77,7 @@ const LoginPage = () => {
             {/* Form Card */}
             <div className="relative bg-white/80 backdrop-blur-xl rounded-2xl lg:rounded-3xl shadow-2xl border border-gray-200/50 p-4 sm:p-6 lg:p-8 transition-all duration-500 hover:shadow-primary/10 overflow-hidden">
               {/* Background Logo - Watermark in Form */}
-              <div className="absolute inset-0 flex items-center justify-center pointer-events-none overflow-hidden">
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none overflow-hidden z-0">
                 <img
                   src="https://res.cloudinary.com/dvqvxu0b1/image/upload/v1753662373/2_uuolcb.webp"
                   alt="Teerthanker Aadinath Bright Dental Care Background"
@@ -86,9 +86,9 @@ const LoginPage = () => {
               </div>
 
               {/* Subtle Top Border Accent */}
-              <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-24 h-1 bg-gradient-to-r from-transparent via-primary to-transparent rounded-full z-10"></div>
+              <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-24 h-1 bg-gradient-to-r from-transparent via-primary to-transparent rounded-full z-0"></div>
 
-              <div className="relative z-10">
+              <div className="relative z-20">
                 <AdminLoginForm />
               </div>
             </div>
