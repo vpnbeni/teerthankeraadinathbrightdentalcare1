@@ -19,6 +19,7 @@
     "test:auto-cancel": "node src/test/autoCancelTest.js",
     "generate-key": "node src/scripts/generateEncryptionKey.js",
     "create-admin": "node scripts/createAdmin.js",
+    "create-user": "node scripts/createUser.js",
     "seed-plans": "node src/scripts/seedPlans.js",
     "seed-availability": "node src/scripts/seedAvailabilityData.js",
     "init-db": "node scripts/init-fresh-database.js"
