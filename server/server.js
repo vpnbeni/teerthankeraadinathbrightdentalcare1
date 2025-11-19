@@ -122,7 +122,7 @@ app.use((req, res) => {
         "GET /api/session-limits/can-book - Check if user can book appointments",
       ],
     },
-  });
+  }); 
 });
 
 // Error handling

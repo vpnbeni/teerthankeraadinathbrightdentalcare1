@@ -1,0 +1,93 @@
+name: 🔐 Deploy Admin to Hostinger (STAGE)
+
+on:
+  push:
+    branches:
+      - stage
+    paths:
+      - "admin/**"
+      - "shared/**"
+      - ".github/workflows/deploy-admin-stage.yml"
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: 🔄 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: 📚 Cache dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-stage-admin-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: 🔧 Install shared dependencies
+        working-directory: ./shared
+        run: |
+          npm config set fetch-timeout 60000
+          npm config set fetch-retry-mintimeout 20000
+          npm config set fetch-retry-maxtimeout 120000
+          npm install --prefer-offline --no-audit
+        timeout-minutes: 10
+
+      - name: 🔧 Install admin dependencies
+        working-directory: ./admin
+        run: |
+          npm config set fetch-timeout 60000
+          npm config set fetch-retry-mintimeout 20000
+          npm config set fetch-retry-maxtimeout 120000
+          npm ci --prefer-offline --no-audit
+        timeout-minutes: 10
+
+      - name: 🏗️ Build admin application
+        working-directory: ./admin
+        run: npm run build
+        env:
+          VITE_API_URL: ${{ secrets.STAGE_VITE_API_URL }}
+          VITE_API_BASE_URL: https://stage-tabdc-server.vercel.app
+          VITE_APP_NAME: Dental Care Admin (STAGE)
+
+      - name: 📄 Copy .htaccess to dist
+        working-directory: ./admin
+        run: |
+          if [ -f .htaccess ]; then
+            cp .htaccess dist/
+            echo "✅ .htaccess copied to dist/"
+          else
+            echo "⚠️ .htaccess not found"
+          fi
+
+      - name: 📤 Deploy to Hostinger via FTP (STAGE)
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          port: ${{ secrets.FTP_PORT || 21 }}
+          protocol: ${{ secrets.FTP_PROTOCOL || 'ftp' }}
+          local-dir: ./admin/dist/
+          server-dir: ${{ secrets.FTP_STAGE_ADMIN_PATH }}
+          dangerous-clean-slate: false
+          exclude: |
+            **/.git*
+            **/.git*/**
+            **/node_modules/**
+            **/.DS_Store
+
+      - name: ✅ Deployment complete
+        run: |
+          echo "🎉 Admin STAGE deployed successfully!"
+          echo "🔐 URL: https://admin-stage.teerthankeraadinathbrightdentalcare.in/"
+

@@ -8,10 +8,10 @@ const AppointmentCard = ({ appointment }) => {
       weekday: "long",
       year: "numeric",
       month: "long",
-      day: "numeric",
+      day: "numeric", 
     });
   };
-
+ 
   const formatTime = (timeString) => {
     const [start, end] = timeString.split("-");
     const formatSingleTime = (time) => {
