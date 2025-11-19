@@ -1,0 +1,26 @@
+# Stage Environment Variables for Production Builds
+# These are used by GitHub Actions during stage deployments
+
+## CLIENT STAGE ENVIRONMENT (.env.production for client)
+VITE_API_URL=https://stage-tabdc-server.vercel.app/api
+VITE_API_BASE_URL=https://stage-tabdc-server.vercel.app
+VITE_APP_NAME=Teerthanker Dental Care (STAGE)
+
+## ADMIN STAGE ENVIRONMENT (.env.production for admin)
+VITE_API_URL=https://stage-tabdc-server.vercel.app/api
+VITE_API_BASE_URL=https://stage-tabdc-server.vercel.app
+VITE_APP_NAME=Dental Care Admin (STAGE)
+
+## DEPLOYMENT URLs
+# Client: https://stage.teerthankeraadinathbrightdentalcare.in/
+# Admin: https://admin-stage.teerthankeraadinathbrightdentalcare.in/
+
+## BACKEND API
+# Stage API: https://stage-tabdc-server.vercel.app/
+# API Endpoint: https://stage-tabdc-server.vercel.app/api
+
+## NOTES
+# - These variables are injected during GitHub Actions build
+# - The API URL points to the Vercel STAGE deployment
+# - Make sure CORS is configured on Vercel to allow these stage domains
+
