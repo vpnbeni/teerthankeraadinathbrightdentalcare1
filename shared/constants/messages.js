@@ -23,7 +23,7 @@ export const SUCCESS_MESSAGES = {
   LOGIN_SUCCESS: "Login successful!",
   OTP_SENT: "OTP sent successfully",
   OTP_VERIFIED: "Phone number verified successfully",
-  APPOINTMENT_BOOKED: "Appointment booked successfully!",
+  APPOINTMENT_BOOKED: "Consultation booked successfully!",
   APPOINTMENT_CANCELLED: "Appointment cancelled successfully",
   PAYMENT_SUCCESS: "Payment completed successfully!",
   PROFILE_UPDATED: "Profile updated successfully",

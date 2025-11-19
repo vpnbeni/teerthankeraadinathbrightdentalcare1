@@ -322,7 +322,7 @@ class AppointmentExpiryService {
           <p>We wanted to inform you that your scheduled appointment has expired as the appointment time has passed without confirmation from our staff.</p>
           
           <div style="background-color: #fef3c7; padding: 15px; border-radius: 5px; margin: 20px 0;">
-            <h3 style="color: #92400e; margin-top: 0;">Appointment Details:</h3>
+            <h3 style="color: #92400e; margin-top: 0;">Consultation Details:</h3>
             <p><strong>Date:</strong> ${appointment.date.toLocaleDateString()}</p>
             <p><strong>Time:</strong> ${appointment.timeSlot}</p>
             <p><strong>Status:</strong> Expired</p>
@@ -349,7 +349,7 @@ Dear ${user.name},
 
 We wanted to inform you that your scheduled appointment has expired as the appointment time has passed without confirmation from our staff.
 
-Appointment Details:
+Consultation Details:
 Date: ${appointment.date.toLocaleDateString()}
 Time: ${appointment.timeSlot}
 Status: Expired

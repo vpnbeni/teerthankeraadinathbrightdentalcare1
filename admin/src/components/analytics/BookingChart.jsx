@@ -53,7 +53,7 @@ const BookingChart = ({ data, dateRange, loading }) => {
           className="bg-gradient-to-br from-teal-50 to-teal-100/50 backdrop-blur-xl border border-teal-200/50 rounded-xl md:rounded-2xl p-4 md:p-6 shadow-lg hover:shadow-xl transition-all"
         >
           <h3 className="text-xs md:text-sm font-semibold text-teal-700 mb-2">
-            Total Appointments
+            Total Consultation
           </h3>
           <p className="text-2xl md:text-3xl font-bold text-[#346870] tracking-tight">
             {overview.totalAppointments || 0}
@@ -137,7 +137,7 @@ const BookingChart = ({ data, dateRange, loading }) => {
                 dataKey="total"
                 stroke="#346870"
                 strokeWidth={2}
-                name="Total Appointments"
+                name="Total Consultation"
               />
               <Line
                 type="monotone"

@@ -191,13 +191,13 @@ const AppointmentCard = ({ appointment }) => {
               </div>
             </div>
 
-            {/* Appointment Details */}
+            {/* Consultation Details */}
             <div className="flex-1 min-w-0">
               <div className="flex flex-wrap items-center gap-2 mb-3">
                 <h3 className="font-bold text-gray-900 text-lg">
                   {appointment.isFollowUp 
                     ? `Follow-up #${appointment.followUpNumber}` 
-                    : "Dental Appointment"}
+                    : "Dental Consultation"}
                 </h3>
                 <div
                   className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold shadow-sm ${getStatusColor(
@@ -580,7 +580,7 @@ const AppointmentCard = ({ appointment }) => {
                       <div className="flex items-start gap-3">
                         <div className="w-2 h-2 bg-green-500 rounded-full mt-1.5 flex-shrink-0"></div>
                         <p className="text-sm text-green-800 leading-relaxed">
-                          No session deduction - this appointment is complimentary
+                          No session deduction - this consultation is complimentary
                         </p>
                       </div>
                       <div className="flex items-start gap-3">

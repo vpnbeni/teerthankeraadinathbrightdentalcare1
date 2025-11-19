@@ -87,7 +87,7 @@ const AppointmentReminders = () => {
                   : "📅"}
               </div>
               <div>
-                <h4 className="font-medium">Appointment Reminder</h4>
+                <h4 className="font-medium">Consultation Reminder</h4>
                 <p className="text-sm mt-1">
                   {getTimeUntilAppointment(appointment.date)} at{" "}
                   {appointment.timeSlot}

@@ -89,7 +89,7 @@ const NotificationBell = () => {
       markAsRead(notification.id);
     }
     
-    // Navigate to appointments if it's an appointment notification
+    // Navigate to consultancy if it's a consultancy notification
     if (notification.type === "new_appointment" || notification.type === "appointment_created") {
       setIsOpen(false);
       navigate("/appointments");

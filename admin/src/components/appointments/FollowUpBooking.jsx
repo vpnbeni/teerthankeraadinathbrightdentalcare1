@@ -70,7 +70,7 @@ const FollowUpBooking = ({ appointment, onFollowUpAdded }) => {
       });
 
       if (response.data.success) {
-        toast.success("Follow-up appointment scheduled successfully");
+        toast.success("Follow-up consultancy scheduled successfully");
         // Reset form
         setSelectedDate("");
         setSelectedTimeSlot("");
@@ -134,7 +134,7 @@ const FollowUpBooking = ({ appointment, onFollowUpAdded }) => {
           Follow-ups Not Available
         </h4>
         <p className="text-gray-600">
-          Follow-up appointments can only be scheduled for completed appointments.
+          Follow-up consultations can only be scheduled for completed consultations.
         </p>
       </div>
     );
@@ -184,7 +184,7 @@ const FollowUpBooking = ({ appointment, onFollowUpAdded }) => {
                 Select Follow-up Date *
               </h3>
               <p className="text-xs text-gray-600">
-                Choose a date for the follow-up appointment
+                Choose a date for the follow-up consultancy
               </p>
             </div>
           </div>
@@ -364,7 +364,7 @@ const FollowUpBooking = ({ appointment, onFollowUpAdded }) => {
                 Follow-up Notes
               </label>
               <p className="text-xs text-gray-600">
-                Optional: Add notes about this follow-up appointment
+                Optional: Add notes about this follow-up consultancy
               </p>
             </div>
           </div>
@@ -426,7 +426,7 @@ const FollowUpBooking = ({ appointment, onFollowUpAdded }) => {
                 <div className="flex items-center gap-2">
                   <div className="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
                   <p className="text-xs text-green-800 font-medium">
-                    Follow-up will appear under this appointment in patient dashboard
+                    Follow-up will appear under this consultancy in patient dashboard
                   </p>
                 </div>
               </div>

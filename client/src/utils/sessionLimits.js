@@ -1,10 +1,10 @@
 /**
  * Session Limits Utility
- * Provides functions to check and validate user session limits for appointment booking
+ * Provides functions to check and validate user session limits for consultancy booking
  */
 
 /**
- * Check if user can book appointments based on their subscription and session limits
+ * Check if user can book consultations based on their subscription and session limits
  * @param {Object} user - User object with subscription details
  * @param {Array} appointments - Array of user's appointments (optional, for more accurate checking)
  * @returns {Object} - Object with canBook boolean and reason string
@@ -48,7 +48,7 @@ export const canUserBookAppointment = (user, appointments = []) => {
       return {
         canBook: false,
         reason:
-          "You have already booked the maximum number of appointments allowed by your current plan",
+          "You have already booked the maximum number of consultations allowed by your current plan",
         requiresUpgrade: true,
       };
     }
@@ -117,9 +117,9 @@ export const getSessionLimitMessage = (user, appointments = []) => {
     const availableBookings = sessionsRemaining - confirmedAppointments;
 
     if (availableBookings === 1) {
-      return "You can book 1 more appointment";
+      return "You can book 1 more consultancy";
     } else {
-      return `You can book ${availableBookings} more appointments`;
+      return `You can book ${availableBookings} more consultations`;
     }
   }
 

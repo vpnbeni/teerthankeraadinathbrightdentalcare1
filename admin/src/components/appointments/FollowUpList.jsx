@@ -91,7 +91,7 @@ const FollowUpList = ({ followUps = [], appointmentId, onUpdate }) => {
           No Follow-ups Scheduled
         </h4>
         <p className="text-gray-600">
-          Schedule follow-up appointments using the form above.
+          Schedule follow-up consultations using the form above.
         </p>
       </div>
     );
@@ -346,7 +346,7 @@ const FollowUpList = ({ followUps = [], appointmentId, onUpdate }) => {
           onClose={() => setShowCancelConfirm(null)}
           onConfirm={(reason) => handleCancelFollowUp(showCancelConfirm, reason)}
           title="Cancel Follow-up"
-          message="Are you sure you want to cancel this follow-up appointment?"
+          message="Are you sure you want to cancel this follow-up consultancy?"
           confirmText="Cancel Follow-up"
           confirmButtonClass="bg-red-600 hover:bg-red-700 text-white"
           showReasonInput={true}

@@ -74,11 +74,11 @@ const AppointmentDetails = ({
       if (newStatus === "confirmed") {
         // Use the dedicated confirm endpoint for admin confirmation
         await dispatch(confirmAppointment(currentAppointment._id)).unwrap();
-        toast.success("Appointment confirmed successfully");
+        toast.success("Consultation confirmed successfully");
       } else if (newStatus === "completed") {
         // Use the dedicated complete endpoint for admin completion
         await dispatch(completeAppointment(currentAppointment._id)).unwrap();
-        toast.success("Appointment completed successfully");
+        toast.success("Consultation completed successfully");
       } else {
         // Use generic update for other status changes
         await dispatch(
@@ -87,7 +87,7 @@ const AppointmentDetails = ({
             updateData: { status: newStatus },
           })
         ).unwrap();
-        toast.success(`Appointment ${newStatus} successfully`);
+        toast.success(`Consultation ${newStatus} successfully`);
       }
 
       // Notify parent component about the update
@@ -95,7 +95,7 @@ const AppointmentDetails = ({
         onAppointmentUpdated();
       }
     } catch (error) {
-      toast.error(error || `Failed to ${newStatus} appointment`);
+      toast.error(error || `Failed to ${newStatus} consultation`);
     } finally {
       setLoading(false);
     }
@@ -160,7 +160,7 @@ const AppointmentDetails = ({
           ...rescheduleData,
         })
       ).unwrap();
-      toast.success("Appointment rescheduled successfully");
+      toast.success("Consultation rescheduled successfully");
       setShowRescheduleModal(false);
 
       // Notify parent component about the update
@@ -168,7 +168,7 @@ const AppointmentDetails = ({
         onAppointmentUpdated();
       }
     } catch (error) {
-      toast.error(error || "Failed to reschedule appointment");
+      toast.error(error || "Failed to reschedule consultation");
     } finally {
       setLoading(false);
     }
@@ -183,7 +183,7 @@ const AppointmentDetails = ({
           ...cancellationData,
         })
       ).unwrap();
-      toast.success("Appointment cancelled successfully");
+      toast.success("Consultation cancelled successfully");
       setShowCancellationModal(false);
 
       // Notify parent component about the update
@@ -193,7 +193,7 @@ const AppointmentDetails = ({
 
       onClose();
     } catch (error) {
-      toast.error(error || "Failed to cancel appointment");
+      toast.error(error || "Failed to cancel consultation");
     } finally {
       setLoading(false);
     }
@@ -389,7 +389,7 @@ const AppointmentDetails = ({
               transition={{ duration: 0.3 }}
               className="space-y-4 sm:space-y-6"
             >
-              {/* Appointment Details Cards - Mobile Optimized */}
+              {/* Consultation Details Cards - Mobile Optimized */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
                 <motion.div 
                   whileHover={{ y: -2 }}
@@ -403,7 +403,7 @@ const AppointmentDetails = ({
                       </svg>
                     </div>
                     <h3 className="text-base sm:text-xl font-bold text-gray-900">
-                      Appointment Info
+                      Consultation Info
                     </h3>
                   </div>
                   <div className="space-y-3 sm:space-y-4">
@@ -506,7 +506,7 @@ const AppointmentDetails = ({
                   <textarea
                     value={newComment}
                     onChange={(e) => setNewComment(e.target.value)}
-                    placeholder="Add a comment about this appointment..."
+                    placeholder="Add a comment about this consultation..."
                     rows={3}
                     className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-blue-200 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none bg-white/70 placeholder-gray-500 text-gray-900 text-sm sm:text-base"
                     maxLength={500}
@@ -571,7 +571,7 @@ const AppointmentDetails = ({
                     No Comments Yet
                   </h4>
                   <p className="text-sm sm:text-base text-gray-600">
-                    Add the first comment about this appointment.
+                    Add the first comment about this consultation.
                   </p>
                 </div>
               )}
@@ -592,7 +592,7 @@ const AppointmentDetails = ({
                   <textarea
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
-                    placeholder="Add notes about this appointment, treatment details, patient concerns, or any other relevant information..."
+                    placeholder="Add notes about this consultation, treatment details, patient concerns, or any other relevant information..."
                     rows={6}
                     className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-purple-200 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none bg-white/70 placeholder-gray-500 text-gray-900 text-sm sm:text-base"
                     maxLength={1000}

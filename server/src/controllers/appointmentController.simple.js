@@ -412,7 +412,7 @@ export const completeAppointment = async (req, res) => {
     res.json({
       success: true,
       data: { appointment: updatedAppointment },
-      message: "Appointment completed successfully",
+      message: "Consultation completed successfully",
     });
   } catch (error) {
     res.status(400).json({
@@ -606,7 +606,7 @@ export const bulkUpdateAppointments = async (req, res) => {
     ) {
       return res.status(400).json({
         success: false,
-        message: "Appointment IDs array is required",
+        message: "Consultation IDs array is required",
       });
     }
 

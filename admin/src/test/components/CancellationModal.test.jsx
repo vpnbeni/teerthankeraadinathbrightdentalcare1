@@ -29,7 +29,7 @@ describe("CancellationModal", () => {
     render(<CancellationModal {...defaultProps} />);
 
     expect(
-      screen.getByRole("heading", { name: "Cancel Appointment" })
+      screen.getByRole("heading", { name: "Cancel Consultation" })
     ).toBeInTheDocument();
     expect(screen.getByText("John Doe")).toBeInTheDocument();
   });
@@ -38,7 +38,7 @@ describe("CancellationModal", () => {
     render(<CancellationModal {...defaultProps} isOpen={false} />);
 
     expect(
-      screen.queryByRole("heading", { name: "Cancel Appointment" })
+      screen.queryByRole("heading", { name: "Cancel Consultation" })
     ).not.toBeInTheDocument();
   });
 });

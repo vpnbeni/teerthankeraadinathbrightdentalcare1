@@ -130,7 +130,7 @@ const AnalyticsDashboard = ({ data, paymentData, bookingData, dateRange }) => {
           </div>
         </motion.div>
 
-        {/* Total Appointments */}
+        {/* Total Consultation */}
         <motion.div
           whileHover={{ y: -4, scale: 1.02 }}
           transition={{ type: "spring", stiffness: 300, damping: 20 }}
@@ -147,7 +147,7 @@ const AnalyticsDashboard = ({ data, paymentData, bookingData, dateRange }) => {
               </div>
             </div>
             <div>
-              <p className="text-xs md:text-sm font-medium text-gray-600 mb-1">Total Appointments</p>
+              <p className="text-xs md:text-sm font-medium text-gray-600 mb-1">Total Consultation</p>
               <p className="text-2xl md:text-3xl font-bold text-gray-900 tracking-tight">
                 {metrics.totalAppointments}
               </p>
@@ -243,7 +243,7 @@ const AnalyticsDashboard = ({ data, paymentData, bookingData, dateRange }) => {
           </div>
         </motion.div>
 
-        {/* Appointment Overview */}
+        {/* Consultation Overview */}
         <motion.div
           whileHover={{ y: -2 }}
           className="bg-white/80 backdrop-blur-xl border border-gray-200/50 rounded-xl md:rounded-2xl p-5 md:p-6 shadow-lg shadow-gray-200/50 hover:shadow-xl transition-all"
@@ -251,17 +251,17 @@ const AnalyticsDashboard = ({ data, paymentData, bookingData, dateRange }) => {
           <div className="flex items-center gap-3 mb-4 md:mb-6">
             <div className="w-1 md:w-1.5 h-6 md:h-8 bg-gradient-to-b from-purple-500 to-pink-500 rounded-full"></div>
             <h3 className="text-base md:text-lg font-bold text-gray-900 tracking-tight">
-              Appointment Overview
+              Consultation Overview
             </h3>
             <SparklesIcon className="h-4 w-4 md:h-5 md:w-5 text-purple-500 ml-auto" />
           </div>
           <div className="space-y-3 md:space-y-4">
             <div className="flex justify-between items-center p-3 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg">
-              <span className="text-sm text-gray-700 font-medium">Total Appointments</span>
+              <span className="text-sm text-gray-700 font-medium">Total Consultation</span>
               <span className="font-bold text-purple-600">{metrics.totalAppointments}</span>
             </div>
             <div className="flex justify-between items-center p-3 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-lg">
-              <span className="text-sm text-gray-700 font-medium">Today's Appointments</span>
+              <span className="text-sm text-gray-700 font-medium">Today's Consultation</span>
               <span className="font-bold text-blue-600">
                 {metrics.todayAppointments}
               </span>

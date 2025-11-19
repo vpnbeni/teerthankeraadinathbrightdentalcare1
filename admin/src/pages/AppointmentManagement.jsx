@@ -246,10 +246,10 @@ const AppointmentManagement = () => {
               </motion.div>
               <div className="flex-1 min-w-0">
                 <h1 className="text-base md:text-5xl font-bold text-white tracking-tight truncate">
-                  Appointments
+                  Consultation
                 </h1>
                 <p className="hidden md:block text-slate-300 text-lg leading-relaxed max-w-2xl mt-3">
-                  Schedule and manage patient appointments efficiently across your clinic.
+                  Schedule and manage patient consultations efficiently across your clinic.
                 </p>
               </div>
             </div>
@@ -360,7 +360,7 @@ const AppointmentManagement = () => {
               <div className="bg-white/80 backdrop-blur-xl border border-gray-200/50 rounded-3xl shadow-lg shadow-gray-200/50 p-8">
                 <div className="flex items-center gap-3 mb-6">
                   <div className="w-1.5 h-8 bg-gradient-to-b from-green-500 to-emerald-500 rounded-full"></div>
-                  <h2 className="text-xl font-bold text-gray-900 tracking-tight">Filter Appointments</h2>
+                  <h2 className="text-xl font-bold text-gray-900 tracking-tight">Filter Consultations</h2>
                 </div>
                 <AppointmentFilters
                   filters={filters}
@@ -389,7 +389,7 @@ const AppointmentManagement = () => {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
                 </svg>
               </motion.div>
-              <p className="text-red-600 font-semibold mb-2">Error loading appointments</p>
+              <p className="text-red-600 font-semibold mb-2">Error loading consultations</p>
               <p className="text-gray-600 text-sm mb-4">{error}</p>
               <motion.button
                 whileHover={{ scale: 1.05 }}
@@ -404,8 +404,8 @@ const AppointmentManagement = () => {
           ) : loading ? (
             <div className="flex items-center justify-center h-96">
               <div className="text-center">
-                <LoadingSpinner size="large" ariaLabel="Loading appointments" />
-                <p className="text-gray-600 font-medium mt-4">Loading appointments...</p>
+                <LoadingSpinner size="large" ariaLabel="Loading consultations" />
+                <p className="text-gray-600 font-medium mt-4">Loading consultations...</p>
               </div>
             </div>
           ) : (
@@ -414,7 +414,7 @@ const AppointmentManagement = () => {
                 <div className="flex items-center gap-1.5 md:gap-3 mb-3 md:mb-6">
                   <div className="w-1 md:w-1.5 h-5 md:h-8 bg-gradient-to-b from-green-500 to-emerald-500 rounded-full"></div>
                   <h2 className="text-sm md:text-2xl font-bold text-gray-900 tracking-tight">
-                    {viewMode === "calendar" ? "Calendar" : "All Appointments"}
+                    {viewMode === "calendar" ? "Calendar" : "All Consultations"}
                   </h2>
                   <div className="ml-auto px-2 md:px-3 py-0.5 md:py-1 bg-gray-100 text-gray-700 text-[10px] md:text-sm font-semibold rounded-full">
                     {totalAppointments}
@@ -450,7 +450,7 @@ const AppointmentManagement = () => {
         </motion.div>
       </motion.div>
 
-      {/* Appointment Details Modal */}
+      {/* Consultation Details Modal */}
       {showAppointmentDetails && selectedAppointment && (
         <AppointmentDetails
           appointment={selectedAppointment}

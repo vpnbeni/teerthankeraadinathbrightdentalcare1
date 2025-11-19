@@ -37,14 +37,14 @@ export const VALIDATION_RULES = {
     MIN_ADVANCE_HOURS: 24,
     MAX_ADVANCE_DAYS: 90,
     MESSAGE:
-      "Appointments must be booked 24 hours in advance and within 90 days",
+      "Consultations must be booked 24 hours in advance and within 90 days",
   },
 
   APPOINTMENT_TIME: {
     START_HOUR: 9,
     END_HOUR: 18,
     SLOT_DURATION: 60, // minutes
-    MESSAGE: "Appointments available between 9 AM to 6 PM",
+    MESSAGE: "Consultations available between 9 AM to 6 PM",
   },
 
   // Payment

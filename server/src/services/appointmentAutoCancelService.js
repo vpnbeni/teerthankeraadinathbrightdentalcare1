@@ -373,7 +373,7 @@ class AppointmentAutoCancelService {
       const message = `
 Appointment Auto-Cancellation Notification
 
-Appointment Details:
+Consultation Details:
 - ID: ${appointment._id}
 - Patient: ${appointment.userId.name}
 - Phone: ${appointment.userId.phone}

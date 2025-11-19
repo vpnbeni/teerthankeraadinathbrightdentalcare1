@@ -24,7 +24,7 @@ const DUPLICATE_WINDOW = 5000; // 5 seconds
 
 export const createAppointment = async (req, res) => {
   const requestId = Math.random().toString(36).substr(2, 9);
-  console.log(`🎯 REQUEST ${requestId}: Starting appointment creation`);
+  console.log(`🎯 REQUEST ${requestId}: Starting consultation creation`);
 
   try {
     const { date, timeSlot, notes, personalDetails, medicalInfo } = req.body;
@@ -196,7 +196,7 @@ export const createAppointment = async (req, res) => {
       console.log(`📤 Sending new appointment notification to admins`);
       sendNotificationToAdmins({
         type: "new_appointment",
-        title: "New Appointment Booked",
+        title: "New Consultation Booked",
         message: `${populatedAppointment.userId.name} booked an appointment for ${new Date(populatedAppointment.date).toLocaleDateString("en-IN", { month: "short", day: "numeric" })} at ${populatedAppointment.timeSlot}`,
         appointmentId: appointment._id.toString(),
         userId: req.user._id.toString(),
@@ -215,7 +215,7 @@ export const createAppointment = async (req, res) => {
         appointment: populatedAppointment,
         profileUpdated: !!(personalDetails || medicalInfo),
       },
-      message: "Appointment booked successfully",
+      message: "Consultation booked successfully",
     });
   } catch (error) {
     console.error("Create appointment error:", error);
@@ -290,7 +290,7 @@ export const getAppointmentDetails = async (req, res) => {
       });
     }
 
-    // Check if user owns this appointment or is admin
+    // Check if user owns this consultation or is admin
     if (
       req.user.role !== "admin" &&
       appointment.userId._id.toString() !== req.user._id.toString()
@@ -338,7 +338,7 @@ export const updateAppointment = async (req, res) => {
       });
     }
 
-    // Check if user owns this appointment
+    // Check if user owns this consultation
     if (appointment.userId._id.toString() !== req.user._id.toString()) {
       return res.status(403).json({
         success: false,
@@ -467,7 +467,7 @@ export const cancelAppointment = async (req, res) => {
       });
     }
 
-    // Check if user owns this appointment
+    // Check if user owns this consultation
     if (appointment.userId._id.toString() !== req.user._id.toString()) {
       return res.status(403).json({
         success: false,
@@ -866,7 +866,7 @@ export const rescheduleAppointment = async (req, res) => {
       console.log(`📤 Sending reschedule notification to user: ${updatedAppointment.userId._id}`);
       sendNotificationToUser(updatedAppointment.userId._id.toString(), {
         type: "appointment_rescheduled",
-        title: "Appointment Rescheduled",
+        title: "Consultation Rescheduled ",
         message: `Your appointment has been rescheduled from ${new Date(originalDate).toLocaleDateString("en-IN", { month: "short", day: "numeric", year: "numeric" })} at ${originalTimeSlot} to ${new Date(updatedAppointment.date).toLocaleDateString("en-IN", { month: "short", day: "numeric", year: "numeric" })} at ${updatedAppointment.timeSlot}${reason ? `. Reason: ${reason}` : "."}`,
         appointmentId: updatedAppointment._id.toString(),
         icon: "calendar",
@@ -878,7 +878,7 @@ export const rescheduleAppointment = async (req, res) => {
       console.log(`📤 Sending reschedule notification to admins`);
       sendNotificationToAdmins({
         type: "appointment_rescheduled",
-        title: "Appointment Rescheduled",
+        title: "Consultation Rescheduled ",
         message: `${updatedAppointment.userId.name}'s appointment rescheduled from ${new Date(originalDate).toLocaleDateString("en-IN", { month: "short", day: "numeric" })} at ${originalTimeSlot} to ${new Date(updatedAppointment.date).toLocaleDateString("en-IN", { month: "short", day: "numeric" })} at ${updatedAppointment.timeSlot}`,
         appointmentId: updatedAppointment._id.toString(),
         userId: updatedAppointment.userId._id.toString(),
@@ -1006,7 +1006,7 @@ export const confirmAppointment = async (req, res) => {
       data: {
         appointment: updatedAppointment,
       },
-      message: "Appointment confirmed successfully",
+      message: "Consultation confirmed successfully",
     });
   } catch (error) {
     console.error("Confirm appointment error:", error);
@@ -1078,7 +1078,7 @@ export const completeAppointment = async (req, res) => {
           updatedAppointment.timeSlot
         )
         .catch((error) => {
-          console.error("Failed to send appointment completion email:", error);
+          console.error("Failed to send consultation completion email:", error);
         });
     }
 
@@ -1087,7 +1087,7 @@ export const completeAppointment = async (req, res) => {
       data: {
         appointment: updatedAppointment,
       },
-      message: "Appointment completed successfully",
+      message: "Consultation completed successfully",
     });
   } catch (error) {
     console.error("Complete appointment error:", error);
@@ -1116,7 +1116,7 @@ export const adminCancelAppointment = async (req, res) => {
     if (!appointment) {
       return res.status(404).json({
         success: false,
-        message: "Appointment not found",
+        message: "Consultation not found",
       });
     }
 
@@ -1124,7 +1124,7 @@ export const adminCancelAppointment = async (req, res) => {
     if (appointment.status === "cancelled") {
       return res.status(400).json({
         success: false,
-        message: "Appointment is already cancelled",
+        message: "Consultation is already cancelled",
       });
     }
 
@@ -1176,7 +1176,7 @@ export const adminCancelAppointment = async (req, res) => {
       data: {
         appointment: updatedAppointment,
       },
-      message: "Appointment cancelled successfully",
+      message: "Consultation cancelled successfully",
     });
   } catch (error) {
     console.error("Admin cancel appointment error:", error);
@@ -1208,7 +1208,7 @@ export const bulkCancelAppointments = async (req, res) => {
     ) {
       return res.status(400).json({
         success: false,
-        message: "Appointment IDs array is required",
+        message: "Consultation IDs array is required",
       });
     }
 
@@ -1257,7 +1257,7 @@ export const bulkCancelAppointments = async (req, res) => {
             );
           } catch (error) {
             console.error(
-              `Email notification failed for appointment ${appointmentId}:`,
+              `Email notification failed for consultation ${appointmentId}:`,
               error.message
             );
           }
@@ -1269,14 +1269,14 @@ export const bulkCancelAppointments = async (req, res) => {
             sendNotificationToUser(appointment.userId._id.toString(), {
               type: "appointment_cancelled",
               title: "Appointment Cancelled",
-              message: `Your appointment scheduled for ${new Date(appointment.date).toLocaleDateString("en-IN", { month: "short", day: "numeric", year: "numeric" })} at ${appointment.timeSlot} has been cancelled${reason ? `: ${reason}` : "."}`,
+              message: `Your Consultation scheduled for ${new Date(appointment.date).toLocaleDateString("en-IN", { month: "short", day: "numeric", year: "numeric" })} at ${appointment.timeSlot} has been cancelled${reason ? `: ${reason}` : "."}`,
               appointmentId: appointment._id.toString(),
               icon: "calendar",
               priority: "high",
             });
           } catch (error) {
             console.error(
-              `WebSocket notification failed for appointment ${appointmentId}:`,
+              `WebSocket notification failed for Consultation ${appointmentId}:`,
               error.message
             );
           }
@@ -1331,7 +1331,7 @@ export const adminUpdateAppointment = async (req, res) => {
     if (!appointment) {
       return res.status(404).json({
         success: false,
-        message: "Appointment not found",
+        message: "Consultation not found",
       });
     }
 
@@ -1358,13 +1358,13 @@ export const adminUpdateAppointment = async (req, res) => {
     res.status(200).json({
       success: true,
       data: { appointment: updatedAppointment },
-      message: "Appointment updated successfully",
+      message: "Consultation updated successfully",
     });
   } catch (error) {
     console.error("Admin update appointment error:", error);
     res.status(400).json({
       success: false,
-      message: error.message || "Failed to update appointment",
+      message: error.message || "Failed to update Consultation",
     });
   }
 };
@@ -1380,7 +1380,7 @@ export const bulkUpdateAppointments = async (req, res) => {
     ) {
       return res.status(400).json({
         success: false,
-        message: "Appointment IDs array is required",
+        message: "Consultation IDs array is required",
       });
     }
 
@@ -1493,7 +1493,7 @@ export const bulkUpdateAppointments = async (req, res) => {
           appointment: populatedAppointment,
         });
       } catch (error) {
-        console.error(`Error processing appointment ${appointmentId}:`, error);
+        console.error(`Error processing Consultation ${appointmentId}:`, error);
         results.failed.push({
           appointmentId,
           error: error.message,
@@ -1507,7 +1507,7 @@ export const bulkUpdateAppointments = async (req, res) => {
       message: `Bulk ${action} completed. ${results.successful.length} successful, ${results.failed.length} failed.`,
     });
   } catch (error) {
-    console.error("Bulk update appointments error:", error);
+    console.error("Bulk update Consultation error:", error);
     res.status(400).json({
       success: false,
       message: error.message,
@@ -1576,7 +1576,7 @@ export const getAppointmentStatistics = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Get appointment statistics error:", error);
+    console.error("Get Consultation statistics error:", error);
     res.status(400).json({
       success: false,
       message: error.message,
@@ -1607,7 +1607,7 @@ export const addFollowUp = async (req, res) => {
     if (!appointment) {
       return res.status(404).json({
         success: false,
-        message: "Appointment not found",
+        message: "Consultation not found",
       });
     }
 
@@ -1615,7 +1615,7 @@ export const addFollowUp = async (req, res) => {
     if (appointment.status !== "completed") {
       return res.status(400).json({
         success: false,
-        message: "Follow-ups can only be scheduled for completed appointments",
+        message: "Follow-ups can only be scheduled for completed Consultation",
       });
     }
 
@@ -1691,8 +1691,8 @@ export const addFollowUp = async (req, res) => {
       console.log(`📤 Sending follow-up notification to user: ${appointment.userId._id}`);
       sendNotificationToUser(appointment.userId._id.toString(), {
         type: "followup_scheduled",
-        title: "Follow-up Appointment Scheduled",
-        message: `A follow-up appointment has been scheduled for ${new Date(date).toLocaleDateString("en-IN", { month: "short", day: "numeric", year: "numeric" })} at ${timeSlot}${notes ? `. Note: ${notes}` : "."}`,
+        title: "Follow-up Consultation Scheduled",
+        message: `A follow-up consultation has been scheduled for ${new Date(date).toLocaleDateString("en-IN", { month: "short", day: "numeric", year: "numeric" })} at ${timeSlot}${notes ? `. Note: ${notes}` : "."}`,
         appointmentId: appointment._id.toString(),
         followUpId: newFollowUp._id.toString(),
         icon: "calendar",
@@ -1721,7 +1721,7 @@ export const addFollowUp = async (req, res) => {
     res.status(201).json({
       success: true,
       data: newFollowUp,
-      message: "Follow-up appointment scheduled successfully",
+      message: "Follow-up Consultation scheduled successfully",
     });
   } catch (error) {
     console.error("Add follow-up error:", error);
@@ -1756,7 +1756,7 @@ export const updateFollowUpStatus = async (req, res) => {
     if (!appointment) {
       return res.status(404).json({
         success: false,
-        message: "Appointment not found",
+        message: "Consultation not found",
       });
     }
 
@@ -1804,7 +1804,7 @@ export const updateFollowUpStatus = async (req, res) => {
         sendNotificationToUser(appointment.userId._id.toString(), {
           type: "followup_completed",
           title: "Follow-up Completed",
-          message: `Your follow-up appointment on ${new Date(updatedFollowUp.date).toLocaleDateString("en-IN", { month: "short", day: "numeric", year: "numeric" })} at ${updatedFollowUp.timeSlot} has been completed.`,
+          message: `Your follow-up consultation on ${new Date(updatedFollowUp.date).toLocaleDateString("en-IN", { month: "short", day: "numeric", year: "numeric" })} at ${updatedFollowUp.timeSlot} has been completed.`,
           appointmentId: appointment._id.toString(),
           followUpId: followupId,
           icon: "check-circle",
@@ -1817,7 +1817,7 @@ export const updateFollowUpStatus = async (req, res) => {
         sendNotificationToUser(appointment.userId._id.toString(), {
           type: "followup_cancelled",
           title: "Follow-up Cancelled",
-          message: `Your follow-up appointment scheduled for ${new Date(updatedFollowUp.date).toLocaleDateString("en-IN", { month: "short", day: "numeric", year: "numeric" })} at ${updatedFollowUp.timeSlot} has been cancelled${cancellationReason ? `: ${cancellationReason}` : "."}`,
+          message: `Your follow-up consultation scheduled for ${new Date(updatedFollowUp.date).toLocaleDateString("en-IN", { month: "short", day: "numeric", year: "numeric" })} at ${updatedFollowUp.timeSlot} has been cancelled${cancellationReason ? `: ${cancellationReason}` : "."}`,
           appointmentId: appointment._id.toString(),
           followUpId: followupId,
           icon: "calendar",
@@ -1830,7 +1830,7 @@ export const updateFollowUpStatus = async (req, res) => {
         sendNotificationToUser(appointment.userId._id.toString(), {
           type: "followup_confirmed",
           title: "Follow-up Confirmed",
-          message: `Your follow-up appointment for ${new Date(updatedFollowUp.date).toLocaleDateString("en-IN", { month: "short", day: "numeric", year: "numeric" })} at ${updatedFollowUp.timeSlot} has been confirmed.`,
+          message: `Your follow-up consultation for ${new Date(updatedFollowUp.date).toLocaleDateString("en-IN", { month: "short", day: "numeric", year: "numeric" })} at ${updatedFollowUp.timeSlot} has been confirmed.`,
           appointmentId: appointment._id.toString(),
           followUpId: followupId,
           icon: "check-circle",
@@ -1873,7 +1873,7 @@ export const getFollowUps = async (req, res) => {
     if (!appointment) {
       return res.status(404).json({
         success: false,
-        message: "Appointment not found",
+        message: "Consultation not found",
       });
     }
 

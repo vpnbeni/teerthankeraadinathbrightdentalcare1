@@ -8,7 +8,7 @@ const appointmentSchema = new mongoose.Schema(
       required: [true, "User ID is required"],
     },
 
-    // Appointment Details
+    // Consultation Details
     date: {
       type: Date,
       required: [true, "Appointment date is required"],

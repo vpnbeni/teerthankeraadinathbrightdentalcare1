@@ -371,7 +371,7 @@ class SMSService {
     
     if (this.smsProvider === "twilio") {
       const formattedDate = this.formatDate(date);
-      let message = `New Appointment Booked!\nPatient: ${userName}\nPhone: ${userPhone}\nDate: ${formattedDate}\nTime: ${timeSlot}`;
+      let message = `New Consultation Booked!\nPatient: ${userName}\nPhone: ${userPhone}\nDate: ${formattedDate}\nTime: ${timeSlot}`;
       
       if (notes) {
         message += `\nNotes: ${notes}`;

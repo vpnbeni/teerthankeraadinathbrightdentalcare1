@@ -22,7 +22,7 @@ const StatsCards = ({ stats, loading }) => {
           change: stats?.subscriptionGrowth || 0,
         },
         {
-          title: "Total Appointments",
+          title: "Total Consultation",
           value: stats?.totalAppointments || 0,
           icon: "📅",
           color: "bg-purple-500",

@@ -121,16 +121,16 @@ const BookingModal = ({ isOpen, onClose, onSuccess, refreshTrigger }) => {
 
     // Final validation before booking
     if (!canBookAppointment()) {
-      let errorMessage = "You cannot book this appointment.";
+      let errorMessage = "You cannot book this consultancy.";
 
       if (sessionInfo) {
         if (sessionInfo.sessionsRemaining <= 0) {
           errorMessage =
             "No sessions remaining in your current plan. Please upgrade your plan.";
         } else if (!sessionInfo.canBookMore) {
-          errorMessage = `You have already booked ${sessionInfo.confirmedAppointments} appointment(s). Complete or cancel existing appointments to book new ones.`;
+          errorMessage = `You have already booked ${sessionInfo.confirmedAppointments} consultation(s). Complete or cancel existing consultations to book new ones.`;
         } else if (sessionInfo.availableBookings <= 0) {
-          errorMessage = `You can book ${sessionInfo.sessionsRemaining} sessions total, but you already have ${sessionInfo.confirmedAppointments} confirmed appointments.`;
+          errorMessage = `You can book ${sessionInfo.sessionsRemaining} sessions total, but you already have ${sessionInfo.confirmedAppointments} confirmed consultations.`;
         }
       } else {
         errorMessage = "Unable to verify session limits. Please try again.";
@@ -195,7 +195,7 @@ const BookingModal = ({ isOpen, onClose, onSuccess, refreshTrigger }) => {
         await fetchSessionInfo();
         onSuccess(response.data.data);
         toast.success(
-          response.data.message || "Appointment booked successfully"
+          response.data.message || "Consultation booked successfully"
         );
         handleClose();
       }
@@ -205,7 +205,7 @@ const BookingModal = ({ isOpen, onClose, onSuccess, refreshTrigger }) => {
         const msg =
           (error.response.data.message ||
             "Booking requires an upgrade.") +
-          " Please upgrade your plan to book more appointments.";
+          " Please upgrade your plan to book more consultations.";
         setError(msg);
         toast.error(msg);
       } else if (error.response?.status === 400) {
@@ -222,7 +222,7 @@ const BookingModal = ({ isOpen, onClose, onSuccess, refreshTrigger }) => {
       } else {
         const msg =
           error.response?.data?.message ||
-          "Failed to book appointment. Please try again.";
+          "Failed to book consultancy. Please try again.";
         setError(msg);
         toast.error(msg);
         console.error("Booking error:", error);
@@ -287,7 +287,7 @@ const BookingModal = ({ isOpen, onClose, onSuccess, refreshTrigger }) => {
               </svg>
             </div>
             <div>
-              <h2 className="text-xl font-bold text-gray-900">Book Appointment</h2>
+              <h2 className="text-xl font-bold text-gray-900">Book Consultation</h2>
               <p className="text-xs text-gray-600">Step {currentStep} of {steps.length}</p>
             </div>
           </div>
@@ -412,7 +412,7 @@ const BookingModal = ({ isOpen, onClose, onSuccess, refreshTrigger }) => {
                     <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                     </svg>
-                    <span>Confirm Appointment</span>
+                    <span>Confirm Consultation</span>
                   </>
                 )}
               </button>

@@ -28,7 +28,7 @@ const DashboardLayout = ({ children }) => {
 
   const navigation = [
     { name: "Dashboard", href: "/dashboard", icon: HomeIcon },
-    { name: "Appointments", href: "/appointments", icon: CalendarIcon },
+    { name: "Consultation", href: "/appointments", icon: CalendarIcon },
     { name: "Notifications", href: "/notifications", icon: BellIcon },
     { name: "Profile", href: "/profile", icon: UserIcon },
     { name: "Payments", href: "/payments", icon: CreditCardIcon },

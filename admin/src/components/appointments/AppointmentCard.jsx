@@ -254,7 +254,7 @@ const AppointmentCard = ({
                 )}
               </div>
 
-              {/* Appointment Info */}
+              {/* Consultation Info */}
               <div className="flex-1 min-w-0">
                 <div className="flex items-start justify-between mb-3">
                   <div>
@@ -329,7 +329,7 @@ const AppointmentCard = ({
             </div>
           </div>
 
-          {/* Appointment Details & Actions */}
+          {/* Consultation Details & Actions */}
           <div className="flex flex-col items-end gap-4 ml-4">
             {/* Date & Time */}
             <div className="text-right">

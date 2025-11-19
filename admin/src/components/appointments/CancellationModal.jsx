@@ -85,10 +85,10 @@ const CancellationModal = ({
 
                 <div className="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left w-full">
                   <h3 className="text-xl font-semibold leading-6 text-gray-900 mb-2">
-                    Cancel Appointment
+                    Cancel Consultation
                   </h3>
 
-                  {/* Appointment Info */}
+                  {/* Consultation Info */}
                   <div className="mt-4 p-4 bg-gradient-to-r from-gray-50 to-blue-50 rounded-xl border border-gray-200">
                     <div className="space-y-2 text-sm">
                       <div className="flex justify-between">
@@ -146,7 +146,7 @@ const CancellationModal = ({
                       className={`block w-full rounded-xl border-0 py-3 px-4 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 transition-all duration-200 ${
                         errors.reason ? "ring-red-300 focus:ring-red-500" : ""
                       }`}
-                      placeholder="Please provide a reason for cancelling this appointment..."
+                      placeholder="Please provide a reason for cancelling this consultation..."
                       disabled={loading}
                     />
                     {errors.reason && (
@@ -254,7 +254,7 @@ const CancellationModal = ({
                     Cancelling...
                   </>
                 ) : (
-                  "Cancel Appointment"
+                  "Cancel Consultation"
                 )}
               </button>
               <button
@@ -263,7 +263,7 @@ const CancellationModal = ({
                 disabled={loading}
                 className="mt-3 inline-flex w-full justify-center rounded-xl bg-white px-4 py-2.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed sm:mt-0 sm:w-auto transition-all duration-200"
               >
-                Keep Appointment
+                Keep Consultation
               </button>
             </div>
           </form>

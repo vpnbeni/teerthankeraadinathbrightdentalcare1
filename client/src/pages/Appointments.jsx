@@ -153,10 +153,10 @@ const Appointments = () => {
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
             <h1 className="text-3xl md:text-4xl font-bold text-gray-900 tracking-tight mb-2">
-              My Appointments
+              My Consultation
             </h1>
             <p className="text-gray-600 text-base">
-              Manage your dental appointments and schedule new visits
+              Manage your dental consultations and schedule new visits
             </p>
           </div>
 
@@ -167,10 +167,10 @@ const Appointments = () => {
             title={
               !canBookAppointment()
                 ? user?.subscription?.status !== "active"
-                  ? "Active subscription required to book appointments"
+                  ? "Active subscription required to book consultancy"
                   : user?.subscription?.sessionsRemaining <= 0
                   ? "No sessions remaining in your current plan"
-                  : "You have already booked the maximum number of appointments allowed"
+                  : "You have already booked the maximum number of consultations allowed"
                 : ""
             }
           >
@@ -187,7 +187,7 @@ const Appointments = () => {
                 d="M12 6v6m0 0v6m0-6h6m-6 0H6"
               />
             </svg>
-            Book Appointment
+            Book Consultation
           </button>
         </div>
 
@@ -310,14 +310,14 @@ const Appointments = () => {
                 </svg>
               </div>
               <h3 className="text-xl font-bold text-gray-900 mb-2">
-                No {activeTab} appointments
+                No {activeTab} consultations
               </h3>
               <p className="text-gray-600 mb-6 max-w-md mx-auto">
                 {activeTab === "upcoming"
-                  ? "You don't have any upcoming appointments. Book your first visit to get started."
+                  ? "You don't have any upcoming consultations. Book your first visit to get started."
                   : activeTab === "past"
-                  ? "You don't have any past appointments yet."
-                  : "You don't have any cancelled appointments."}
+                  ? "You don't have any past consultations yet."
+                  : "You don't have any cancelled consultations."}
               </p>
               {activeTab === "upcoming" && canBookAppointment() && (
                 <button
@@ -327,7 +327,7 @@ const Appointments = () => {
                   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                   </svg>
-                  Book Your First Appointment
+                  Book Your First Consultation
                 </button>
               )}
             </div>

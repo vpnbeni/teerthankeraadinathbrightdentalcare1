@@ -106,7 +106,7 @@ const AdminDashboard = () => {
       change: dashboardStats?.userGrowth || 0,
     },
     {
-      title: "Today's Appointments",
+      title: "Today's Consultation",
       value: dashboardStats?.todayAppointments || 0,
       icon: CalendarIcon,
       color: "bg-green-500",
@@ -171,7 +171,7 @@ const AdminDashboard = () => {
               {getTimeBasedGreeting()}, {user?.name?.split(' ')[0] || "Admin"}
             </h1>
             <p className="text-slate-300 text-sm md:text-lg lg:text-xl max-w-2xl leading-relaxed mb-3 md:mb-6">
-              Welcome to your admin dashboard. Monitor clinic performance, manage appointments, and track key metrics.
+              Welcome to your admin dashboard. Monitor clinic performance, manage consultations, and track key metrics.
             </p>
             <div className="flex flex-wrap items-center gap-2 md:gap-4 text-slate-300">
               <div className="flex items-center gap-1.5 md:gap-2 px-2.5 py-1.5 md:px-4 md:py-2 bg-white/10 backdrop-blur-sm rounded-lg md:rounded-xl border border-white/10">
@@ -200,7 +200,7 @@ const AdminDashboard = () => {
           />
           <StatCard
             value={statsData[1].value}
-            label="Today's Appointments"
+            label="Today's Consultation"
             icon={CalendarIcon}
             iconColor="from-green-500 to-emerald-500"
             hoverColor="green-200"
@@ -316,7 +316,7 @@ const AdminDashboard = () => {
               <div className="flex items-center gap-2 md:gap-3">
                 <div className="w-1 md:w-1.5 h-6 md:h-8 bg-gradient-to-b from-green-500 to-emerald-500 rounded-full"></div>
                 <h2 className="text-lg md:text-2xl font-bold text-gray-900 tracking-tight">
-                  Recent Appointments
+                  Recent Consultation
                 </h2>
               </div>
               <Link
@@ -393,8 +393,8 @@ const AdminDashboard = () => {
                   >
                     <CalendarIcon className="w-6 h-6 md:w-8 md:h-8 text-gray-400" />
                   </motion.div>
-                  <p className="text-gray-600 font-medium text-xs md:text-sm">No recent appointments</p>
-                  <p className="text-gray-400 text-[10px] md:text-xs mt-1">Appointments will appear here</p>
+                  <p className="text-gray-600 font-medium text-xs md:text-sm">No recent consultations</p>
+                  <p className="text-gray-400 text-[10px] md:text-xs mt-1">Consultations will appear here</p>
                 </div>
               )}
             </div>
@@ -434,7 +434,7 @@ const AdminDashboard = () => {
                 <div className="relative w-9 h-9 md:w-12 md:h-12 bg-white/10 backdrop-blur-sm rounded-lg md:rounded-xl flex items-center justify-center mb-2 md:mb-4 group-hover:scale-110 transition-transform">
                   <CalendarIcon className="w-5 h-5 md:w-6 md:h-6 text-white" />
                 </div>
-                <h3 className="relative text-sm md:text-base font-semibold text-white text-center mb-0.5 md:mb-1.5">Appointments</h3>
+                <h3 className="relative text-sm md:text-base font-semibold text-white text-center mb-0.5 md:mb-1.5">Consultation</h3>
                 <p className="relative text-[10px] md:text-xs text-green-100 text-center">Schedule & manage</p>
               </Link>
             </motion.div>

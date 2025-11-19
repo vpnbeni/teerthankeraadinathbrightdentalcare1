@@ -7,7 +7,7 @@ beforeAll(setup);
 afterAll(teardown);
 
 describe("completeAppointment", () => {
-  it("should complete an appointment and decrement the user's sessionsRemaining", async () => {
+  it("should complete an consultation and decrement the user's sessionsRemaining", async () => {
     // 1. Create a user with a subscription
     const user = await User.create({
       name: "Test User",
@@ -54,7 +54,7 @@ describe("completeAppointment", () => {
     expect(res.json).toHaveBeenCalledWith(
       expect.objectContaining({
         success: true,
-        message: "Appointment completed successfully",
+        message: "Consultation completed successfully",
       })
     );
   });

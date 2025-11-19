@@ -76,11 +76,11 @@ const RescheduleModal = ({ appointment, onClose, onReschedule }) => {
         reason: reason || "Rescheduled by admin",
       });
 
-      toast.success("Appointment rescheduled successfully");
+      toast.success("Consultation rescheduled successfully");
       onClose(); // Close the modal on success
     } catch (error) {
       console.error("Reschedule error:", error);
-      toast.error(error.message || "Failed to reschedule appointment");
+      toast.error(error.message || "Failed to reschedule consultancy");
     } finally {
       setLoading(false);
     }
@@ -176,7 +176,7 @@ const RescheduleModal = ({ appointment, onClose, onReschedule }) => {
                           transition={{ delay: 0.2 }}
                           className="text-lg sm:text-2xl md:text-3xl font-bold text-slate-900 mb-1 sm:mb-2 tracking-tight leading-tight"
                         >
-                          Reschedule Appointment
+                          Reschedule Consultation
                         </motion.h2>
                         <motion.p
                           initial={{ opacity: 0, x: -20 }}
@@ -229,7 +229,7 @@ const RescheduleModal = ({ appointment, onClose, onReschedule }) => {
                         </div>
                       </div>
                       
-                      {/* Appointment Details */}
+                      {/* Consultation Details */}
                       <div className="flex-1 min-w-0">
                         <h3 className="text-base sm:text-lg font-bold text-slate-900 mb-2 sm:mb-3 truncate">
                           {appointment.userId?.name || "Unknown Patient"}
@@ -312,7 +312,7 @@ const RescheduleModal = ({ appointment, onClose, onReschedule }) => {
                         }}
                         minDate={getMinDate()}
                         maxDate={getMaxDate()}
-                        placeholder="Click to select a new appointment date"
+                        placeholder="Click to select a new consultancy date"
                         required
                         className="w-full"
                       />
@@ -515,7 +515,7 @@ const RescheduleModal = ({ appointment, onClose, onReschedule }) => {
                               <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-600 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                               </svg>
-                              <p className="text-xs sm:text-sm text-slate-700 leading-relaxed">Original appointment will be <span className="font-semibold">automatically cancelled</span></p>
+                              <p className="text-xs sm:text-sm text-slate-700 leading-relaxed">Original consultancy will be <span className="font-semibold">automatically cancelled</span></p>
                             </div>
                           </div>
                         </div>
@@ -566,7 +566,7 @@ const RescheduleModal = ({ appointment, onClose, onReschedule }) => {
                           <svg className="w-4 h-4 sm:w-5 sm:h-5 mr-1.5 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
                           </svg>
-                          <span>Reschedule Appointment</span>
+                          <span>Reschedule Consultation</span>
                         </>
                       )}
                     </motion.button>

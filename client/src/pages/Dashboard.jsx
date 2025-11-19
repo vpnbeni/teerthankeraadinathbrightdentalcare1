@@ -72,17 +72,17 @@ const Dashboard = () => {
           
           switch (appointment.status) {
             case "completed":
-              message = `Appointment completed on ${date}`;
+              message = `Consultation completed on ${date}`;
               break;
             case "scheduled":
             case "confirmed":
-              message = `Appointment scheduled for ${date} at ${appointment.timeSlot}`;
+              message = `Consultation scheduled for ${date} at ${appointment.timeSlot}`;
               break;
             case "cancelled":
-              message = `Appointment cancelled for ${date}`;
+              message = `Consultation cancelled for ${date}`;
               break;
             default:
-              message = `Appointment ${appointment.status} for ${date}`;
+              message = `Consultation ${appointment.status} for ${date}`;
           }
           
           return {
@@ -251,7 +251,7 @@ const Dashboard = () => {
               {currentGreeting}
             </h1>
             <p className="text-slate-300 text-lg md:text-xl max-w-2xl leading-relaxed">
-              {currentMessage} Manage your dental appointments and track your care journey with ease.
+              {currentMessage} Manage your dental consultations and track your care journey with ease.
             </p>
           </div>
         </motion.div>
@@ -328,7 +328,7 @@ const Dashboard = () => {
                     apt.status === "scheduled" || apt.status === "confirmed"
                 ).length || 0}
               </div>
-              <p className="text-gray-600 font-medium text-sm">Upcoming Appointments</p>
+              <p className="text-gray-600 font-medium text-sm">Upcoming Consultation</p>
             </div>
           </motion.div>
 
@@ -353,7 +353,7 @@ const Dashboard = () => {
               <div className="text-5xl font-bold text-gray-900 mb-2 tracking-tight">
                 {appointments?.filter(apt => apt.status === "completed").length || 0}
               </div>
-              <p className="text-gray-600 font-medium text-sm">Completed Appointments</p>
+              <p className="text-gray-600 font-medium text-sm">Completed Consultation</p>
             </div>
           </motion.div>
         </div>
@@ -376,7 +376,7 @@ const Dashboard = () => {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                   </svg>
                 </div>
-                <h3 className="relative font-semibold text-white text-center mb-1.5">Book Appointment</h3>
+                <h3 className="relative font-semibold text-white text-center mb-1.5">Book Consultation</h3>
                 <p className="relative text-xs text-slate-300 text-center">Schedule your next visit</p>
               </Link>
             </motion.div>

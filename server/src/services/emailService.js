@@ -77,7 +77,7 @@ class EmailService {
         confirmation: "Appointment Confirmed",
         cancellation: "Appointment Cancelled",
         completion: "Appointment Completed",
-        reschedule: "Appointment Rescheduled",
+        reschedule: "Consultation Rescheduled ",
       };
 
       const subject = `${typeMap[type] || "Appointment Update"} - ${clinicName}`;
@@ -116,7 +116,7 @@ class EmailService {
             </div>
             
             <div class="notification-details">
-              <h3>Appointment Details</h3>
+              <h3>Consultation Details</h3>
               <p><strong>Date:</strong> ${appointmentDate}</p>
               <p><strong>Time:</strong> ${appointmentTime}</p>
               <p><strong>Action:</strong> ${typeMap[type] || "Updated"}</p>
@@ -145,7 +145,7 @@ class EmailService {
       - Name: ${patientName}
       - Email: ${patientEmail}
 
-      Appointment Details:
+      Consultation Details:
       - Date: ${appointmentDate}
       - Time: ${appointmentTime}
       - Action: ${typeMap[type] || "Updated"}
@@ -533,7 +533,7 @@ class EmailService {
           <h2>Dear ${name},</h2>
           <p>Your appointment with <strong>${clinicName}</strong> has been scheduled and is pending approval. We will notify you once it's confirmed.</p>
           <div class="appointment-details">
-            <h3>Appointment Details</h3>
+            <h3>Consultation Details</h3>
             <p><strong>Date:</strong> ${formattedDate}</p>
             <p><strong>Time:</strong> ${timeSlot}</p>
             <p><strong>Status:</strong> Pending Approval</p>
@@ -554,7 +554,7 @@ class EmailService {
 
     Your appointment with ${clinicName} has been scheduled and is pending approval.
 
-    Appointment Details:
+    Consultation Details:
     - Date: ${formattedDate}
     - Time: ${timeSlot}
     - Status: Pending Approval
@@ -626,7 +626,7 @@ class EmailService {
           <h2>Dear ${name},</h2>
           <p>Great news! Your appointment with <strong>${clinicName}</strong> has been confirmed by our team. We look forward to seeing you!</p>
           <div class="appointment-details">
-            <h3>Confirmed Appointment Details</h3>
+            <h3>Confirmed Consultation Details</h3>
             <p><strong>Date:</strong> ${formattedDate}</p>
             <p><strong>Time:</strong> ${timeSlot}</p>
             <p><strong>Status:</strong> Confirmed</p>
@@ -647,7 +647,7 @@ class EmailService {
 
     Great news! Your appointment with ${clinicName} has been confirmed by our team.
 
-    Confirmed Appointment Details:
+    Confirmed Consultation Details:
     - Date: ${formattedDate}
     - Time: ${timeSlot}
     - Status: Confirmed
@@ -720,7 +720,7 @@ class EmailService {
           <h2>Dear ${name},</h2>
           <p>We regret to inform you that your appointment with <strong>${clinicName}</strong> has been cancelled.</p>
           <div class="appointment-details">
-            <h3>Cancelled Appointment Details</h3>
+            <h3>Cancelled Consultation Details</h3>
             <p><strong>Date:</strong> ${formattedDate}</p>
             <p><strong>Time:</strong> ${timeSlot}</p>
             ${reason ? `<p><strong>Reason:</strong> ${reason}</p>` : ""}
@@ -741,7 +741,7 @@ class EmailService {
 
     We regret to inform you that your appointment with ${clinicName} has been cancelled.
 
-    Cancelled Appointment Details:
+    Cancelled Consultation Details:
     - Date: ${formattedDate}
     - Time: ${timeSlot}
     ${reason ? `- Reason: ${reason}` : ""}
@@ -813,7 +813,7 @@ class EmailService {
           <h2>Dear ${name},</h2>
           <p>Thank you for visiting <strong>${clinicName}</strong>! Your appointment has been successfully completed.</p>
           <div class="appointment-details">
-            <h3>Completed Appointment Details</h3>
+            <h3>Completed Consultation Details</h3>
             <p><strong>Date:</strong> ${formattedDate}</p>
             <p><strong>Time:</strong> ${timeSlot}</p>
             <p><strong>Status:</strong> Completed</p>
@@ -845,7 +845,7 @@ class EmailService {
 
     Thank you for visiting ${clinicName}! Your appointment has been successfully completed.
 
-    Completed Appointment Details:
+    Completed Consultation Details:
     - Date: ${formattedDate}
     - Time: ${timeSlot}
     - Status: Completed
@@ -888,7 +888,7 @@ class EmailService {
     appointmentData,
     clinicName = "Teerthanker Dental Care"
   ) {
-    const subject = `New Appointment Booked - ${clinicName}`;
+    const subject = `New Consultation Booked - ${clinicName}`;
     const formattedDate = new Date(appointmentData.date).toLocaleDateString(
       "en-IN",
       {
@@ -919,13 +919,13 @@ class EmailService {
     <body>
       <div class="container">
         <div class="header">
-          <h1>New Appointment Booked</h1>
+          <h1>New Consultation Booked</h1>
         </div>
         <div class="content">
           <h2>New Appointment Alert</h2>
           <p>A new appointment has been booked in the system.</p>
           <div class="appointment-details">
-            <h3>Appointment Details</h3>
+            <h3>Consultation Details</h3>
             <p><strong>Date:</strong> ${formattedDate}</p>
             <p><strong>Time:</strong> ${appointmentData.timeSlot}</p>
             ${
@@ -952,11 +952,11 @@ class EmailService {
     `;
 
     const text = `
-    New Appointment Booked - ${clinicName}
+    New Consultation Booked - ${clinicName}
 
     A new appointment has been booked in the system.
 
-    Appointment Details:
+    Consultation Details:
     - Date: ${formattedDate}
     - Time: ${appointmentData.timeSlot}
     ${appointmentData.notes ? `- Notes: ${appointmentData.notes}` : ""}
@@ -991,7 +991,7 @@ class EmailService {
     reason = null,
     clinicName = "Teerthanker Dental Care"
   ) {
-    const subject = `Appointment Rescheduled - ${clinicName}`;
+    const subject = `Consultation Rescheduled  - ${clinicName}`;
     const formattedOldDate = new Date(oldDate).toLocaleDateString("en-IN", {
       weekday: "long",
       year: "numeric",
@@ -1026,7 +1026,7 @@ class EmailService {
     <body>
       <div class="container">
         <div class="header">
-          <h1>Appointment Rescheduled</h1>
+          <h1>Consultation Rescheduled </h1>
         </div>
         <div class="content">
           <h2>Dear ${name},</h2>
@@ -1106,7 +1106,7 @@ class EmailService {
     clinicName = "Teerthanker Dental Care"
   ) {
     const adminEmail = "support@teerthankeraadinathbrightdentalcare.in";
-    const subject = `Appointment Rescheduled - ${clinicName}`;
+    const subject = `Consultation Rescheduled  - ${clinicName}`;
     const formattedOldDate = new Date(oldDate).toLocaleDateString("en-IN", {
       weekday: "long",
       year: "numeric",
@@ -1144,7 +1144,7 @@ class EmailService {
     <body>
       <div class="container">
         <div class="header">
-          <h1>Appointment Rescheduled</h1>
+          <h1>Consultation Rescheduled </h1>
         </div>
         <div class="content">
           <h2>Appointment Reschedule Alert</h2>
@@ -1192,7 +1192,7 @@ class EmailService {
     `;
 
     const text = `
-    Appointment Rescheduled - ${clinicName}
+    Consultation Rescheduled  - ${clinicName}
 
     An appointment has been rescheduled in the system.
 
@@ -1579,7 +1579,7 @@ class EmailService {
           <p>A follow-up appointment has been scheduled for you at <strong>${clinicName}</strong>. This is to ensure your continued care and monitor your progress.</p>
           
           <div class="followup-details">
-            <h3>📅 Follow-up Appointment Details</h3>
+            <h3>📅 Follow-up Consultation Details</h3>
             <p><strong>Date:</strong> ${formattedDate}</p>
             <p><strong>Time:</strong> ${timeSlot}</p>
             <p><strong>Type:</strong> Follow-up Consultation</p>
@@ -1618,7 +1618,7 @@ Dear ${name},
 
 A follow-up appointment has been scheduled for you at ${clinicName}. This is to ensure your continued care and monitor your progress.
 
-Follow-up Appointment Details:
+Follow-up Consultation Details:
 Date: ${formattedDate}
 Time: ${timeSlot}
 Type: Follow-up Consultation

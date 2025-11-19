@@ -418,7 +418,7 @@ const TimeSlotStep = ({ data, onDataChange }) => {
 						</svg>
 					</div>
 					<div>
-						<h4 className="text-sm font-semibold text-blue-900 mb-1">Appointment Duration</h4>
+						<h4 className="text-sm font-semibold text-blue-900 mb-1">Consultation Duration</h4>
 						<p className="text-xs text-blue-800">
 							Each appointment slot is 1 hour long. Please arrive 10 minutes early for check-in and registration.
 						</p>

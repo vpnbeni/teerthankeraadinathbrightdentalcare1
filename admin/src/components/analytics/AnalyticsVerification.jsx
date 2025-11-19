@@ -148,7 +148,7 @@ const AnalyticsVerification = () => {
               </span>
             </div>
             <div className="flex justify-between">
-              <span>Total Appointments:</span>
+              <span>Total Consultation:</span>
               <span className="font-medium">
                 {bookingAnalytics?.overview?.totalAppointments || 0}
               </span>

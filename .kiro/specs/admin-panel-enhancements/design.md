@@ -199,7 +199,7 @@ const userDetailSlice = {
 
 1. **New Booking Notification** (to admin)
 2. **Appointment Cancellation** (to patient)
-3. **Appointment Rescheduled** (to patient)
+3. **Consultation Rescheduled ** (to patient)
 4. **Subscription Changes** (to patient)
 
 **Implementation**:

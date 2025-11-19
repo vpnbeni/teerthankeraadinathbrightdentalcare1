@@ -55,7 +55,7 @@ const AdminLayout = ({ children }) => {
   const navigation = [
     { name: "Dashboard", href: "/dashboard", icon: HomeIcon },
     { name: "Users", href: "/users", icon: UsersIcon },
-    { name: "Appointments", href: "/appointments", icon: CalendarIcon },
+    { name: "Consultation", href: "/appointments", icon: CalendarIcon },
     { name: "Availability", href: "/availability", icon: ClockIcon },
     { name: "Notifications", href: "/notifications", icon: BellIcon },
     { name: "Analytics", href: "/analytics", icon: ChartBarIcon },

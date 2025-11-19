@@ -318,7 +318,7 @@ export const isTimeSlotAvailable = (date, timeSlot, templates, holidays, bookedS
   if (targetDate < today) {
     return {
       available: false,
-      reason: "Cannot book appointments for past dates",
+      reason: "Cannot book consultations for past dates",
       type: "past_date",
     };
   }
