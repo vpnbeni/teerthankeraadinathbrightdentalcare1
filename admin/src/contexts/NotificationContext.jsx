@@ -9,7 +9,7 @@ export const useNotifications = () => {
     throw new Error("useNotifications must be used within NotificationProvider");
   }
   return context;
-};
+}; 
 
 export const NotificationProvider = ({ children }) => {
   const [notifications, setNotifications] = useState([]);
