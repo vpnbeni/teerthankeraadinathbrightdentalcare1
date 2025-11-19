@@ -32,22 +32,12 @@ jobs:
         path: ~/.npm
         key: ${{ runner.os }}-node-client-stage-${{ hashFiles('**/package-lock.json') }}
         
-    - name: 🔧 Install shared dependencies
-      working-directory: ./shared
+    - name: 🔧 Install all dependencies (workspaces)
       run: |
         npm config set fetch-timeout 60000
         npm config set fetch-retry-mintimeout 20000
         npm config set fetch-retry-maxtimeout 120000
-        npm install --prefer-offline --no-audit
-      timeout-minutes: 10
-      
-    - name: 🔧 Install client dependencies
-      working-directory: ./client
-      run: |
-        npm config set fetch-timeout 60000
-        npm config set fetch-retry-mintimeout 20000
-        npm config set fetch-retry-maxtimeout 120000
-        npm ci --prefer-offline --no-audit
+        npm install --workspace=shared --workspace=client --prefer-offline --no-audit
       timeout-minutes: 10
       
     - name: 🏗️ Build client
@@ -102,22 +92,12 @@ jobs:
         path: ~/.npm
         key: ${{ runner.os }}-node-admin-stage-${{ hashFiles('**/package-lock.json') }}
         
-    - name: 🔧 Install shared dependencies
-      working-directory: ./shared
+    - name: 🔧 Install all dependencies (workspaces)
       run: |
         npm config set fetch-timeout 60000
         npm config set fetch-retry-mintimeout 20000
         npm config set fetch-retry-maxtimeout 120000
-        npm install --prefer-offline --no-audit
-      timeout-minutes: 10
-      
-    - name: 🔧 Install admin dependencies
-      working-directory: ./admin
-      run: |
-        npm config set fetch-timeout 60000
-        npm config set fetch-retry-mintimeout 20000
-        npm config set fetch-retry-maxtimeout 120000
-        npm ci --prefer-offline --no-audit
+        npm install --workspace=shared --workspace=admin --prefer-offline --no-audit
       timeout-minutes: 10
       
     - name: 🏗️ Build admin
