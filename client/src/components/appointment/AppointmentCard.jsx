@@ -8,7 +8,7 @@ const AppointmentCard = ({ appointment }) => {
       weekday: "long",
       year: "numeric",
       month: "long",
-      day: "numeric",
+      day: "numeric", 
     });
   };
  
