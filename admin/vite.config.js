@@ -103,10 +103,13 @@ export default defineConfig(({ mode }) => {
     },
     define: {
       // Define environment variables for production builds
+      // Priority: 1) Process env, 2) .env file, 3) Default
       'import.meta.env.VITE_API_URL': JSON.stringify(
-        mode === 'production' 
+        process.env.VITE_API_URL || 
+        env.VITE_API_URL || 
+        (mode === 'production' 
           ? 'https://teerthanker-server.vercel.app/api'
-          : (env.VITE_API_URL || 'http://localhost:5000/api')
+          : 'http://localhost:5000/api')
       ),
       'import.meta.env.VITE_NODE_ENV': JSON.stringify(mode || 'development'),
     },
