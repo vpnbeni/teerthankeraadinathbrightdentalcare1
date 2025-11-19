@@ -9,6 +9,7 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
   
   return {
+    base: '/', // Root path for subdomain
     plugins: [
       react(),
       VitePWA({

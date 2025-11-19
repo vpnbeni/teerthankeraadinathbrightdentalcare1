@@ -13,7 +13,12 @@ const PlanSelector = ({ onPlanSelect, selectedPlan }) => {
   const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showKidsPlans, setShowKidsPlans] = useState(false);
   const { announce } = useAccessibility();
+
+  // Separate adult and kids plans
+  const adultPlans = plans.filter(plan => plan.category === 'adult' || !plan.category);
+  const kidsPlans = plans.filter(plan => plan.category === 'kids');
 
   useEffect(() => {
     const fetchPlans = async () => {
@@ -158,13 +163,13 @@ const PlanSelector = ({ onPlanSelect, selectedPlan }) => {
         </div>
       </div>
 
-      {/* Plans Grid - Enhanced Layout */}
+      {/* Adult Plans Grid - Enhanced Layout */}
       <div className="relative max-w-7xl mx-auto mb-16">
         {/* Background decoration */}
         <div className="absolute inset-0 bg-gradient-to-r from-[#346870]/5 via-transparent to-[#BDCFD1]/5 rounded-3xl blur-3xl"></div>
         
         <div className="relative grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {plans.map((plan, index) => (
+          {adultPlans.map((plan, index) => (
             <div
               key={plan._id}
               className="animate-fade-in-up transform hover:scale-105 transition-all duration-500"
@@ -183,6 +188,82 @@ const PlanSelector = ({ onPlanSelect, selectedPlan }) => {
         <div className="absolute -top-10 -left-10 w-20 h-20 bg-[#346870]/10 rounded-full animate-pulse"></div>
         <div className="absolute -bottom-10 -right-10 w-24 h-24 bg-[#BDCFD1]/20 rounded-full animate-pulse" style={{ animationDelay: '1s' }}></div>
       </div>
+
+      {/* Kids Plans Section - Accordion */}
+      {kidsPlans.length > 0 && (
+        <div className="relative max-w-7xl mx-auto mb-16">
+          <div className="bg-gradient-to-br from-blue-50 via-cyan-50 to-blue-50 rounded-3xl p-6 md:p-8 shadow-2xl border-2 border-blue-300/50">
+            {/* Kids Plans Header Button */}
+            <button
+              onClick={() => {
+                setShowKidsPlans(!showKidsPlans);
+                announce(showKidsPlans ? "Kids plans collapsed" : "Kids plans expanded");
+              }}
+              className="w-full flex items-center justify-between p-5 md:p-6 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white rounded-2xl transition-all duration-300 shadow-xl hover:shadow-2xl"
+              aria-expanded={showKidsPlans}
+              aria-controls="kids-plans-content"
+            >
+              <div className="flex items-center space-x-3 md:space-x-4">
+                <div className="bg-white/20 backdrop-blur-sm p-2 md:p-3 rounded-xl flex-shrink-0">
+                  <svg className="w-6 h-6 md:w-8 md:h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <div className="text-left">
+                  <h3 className="text-xl md:text-2xl font-bold">Kids Dental Plans</h3>
+                  <p className="text-blue-100 text-xs md:text-sm mt-0.5">For children aged 3-14 years • {kidsPlans.length} special plans</p>
+                </div>
+              </div>
+              <div className={`transform transition-transform duration-300 flex-shrink-0 ${showKidsPlans ? 'rotate-180' : ''}`}>
+                <svg className="w-6 h-6 md:w-8 md:h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
+            </button>
+
+            {/* Kids Plans Grid - Collapsible */}
+            <div 
+              id="kids-plans-content"
+              className={`transition-all duration-500 ease-in-out ${
+                showKidsPlans ? 'max-h-[3000px] opacity-100 mt-6 md:mt-8' : 'max-h-0 opacity-0 overflow-hidden'
+              }`}
+            >
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8 mb-6">
+                {kidsPlans.map((plan, index) => (
+                  <div
+                    key={plan._id}
+                    className="transform transition-all duration-300"
+                  >
+                    <PlanCard
+                      plan={plan}
+                      onSelect={onPlanSelect}
+                      isSelected={selectedPlan?._id === plan._id}
+                    />
+                  </div>
+                ))}
+              </div>
+              
+              {/* Kids Plans Info Banner */}
+              <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-5 md:p-6 border-2 border-blue-200 shadow-lg">
+                <div className="flex items-start space-x-3 md:space-x-4">
+                  <div className="bg-gradient-to-br from-blue-500 to-cyan-500 text-white p-2.5 md:p-3 rounded-xl flex-shrink-0 shadow-lg">
+                    <svg className="w-5 h-5 md:w-6 md:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="font-bold text-gray-900 mb-2 text-base md:text-lg">Special Care for Growing Smiles</h4>
+                    <p className="text-sm md:text-base text-gray-700 leading-relaxed">
+                      Our kids dental plans are specifically designed for children aged 3-14 years, 
+                      providing comprehensive preventive and restorative care to ensure healthy dental development.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Enhanced Value Proposition Section */}
       <div className="relative mt-20 overflow-hidden">

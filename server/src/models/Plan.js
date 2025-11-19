@@ -36,6 +36,15 @@ const planSchema = new mongoose.Schema(
       type: [String],
       default: [],
     },
+    category: {
+      type: String,
+      enum: ["adult", "kids"],
+      default: "adult",
+    },
+    ageRange: {
+      type: String,
+      trim: true,
+    },
     isActive: {
       type: Boolean,
       default: true,

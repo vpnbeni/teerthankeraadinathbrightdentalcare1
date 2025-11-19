@@ -1,0 +1,122 @@
+name: Deploy All to Hostinger
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - 'client/**'
+      - 'admin/**'
+      - 'shared/**'
+
+jobs:
+  build-and-deploy-client:
+    name: Build & Deploy Client
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: 🔄 Checkout code
+      uses: actions/checkout@v4
+      
+    - name: 📦 Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        
+    - name: 📚 Cache dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.npm
+        key: ${{ runner.os }}-node-client-${{ hashFiles('**/package-lock.json') }}
+        
+    - name: 🔧 Install shared dependencies
+      working-directory: ./shared
+      run: npm ci
+      
+    - name: 🔧 Install client dependencies
+      working-directory: ./client
+      run: npm ci
+      
+    - name: 🏗️ Build client
+      working-directory: ./client
+      run: npm run build
+      env:
+        VITE_API_URL: ${{ secrets.CLIENT_VITE_API_URL }}
+        
+    - name: 📤 Deploy client to Hostinger
+      uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+      with:
+        server: ${{ secrets.FTP_SERVER }}
+        username: ${{ secrets.FTP_USERNAME }}
+        password: ${{ secrets.FTP_PASSWORD }}
+        port: ${{ secrets.FTP_PORT || 21 }}
+        protocol: ${{ secrets.FTP_PROTOCOL || 'ftp' }}
+        local-dir: ./client/dist/
+        server-dir: ${{ secrets.FTP_CLIENT_PATH }}
+        dangerous-clean-slate: false
+        
+    - name: ✅ Client deployment complete
+      run: echo "✅ Client deployed successfully!"
+
+  build-and-deploy-admin:
+    name: Build & Deploy Admin
+    runs-on: ubuntu-latest
+    needs: build-and-deploy-client
+    
+    steps:
+    - name: 🔄 Checkout code
+      uses: actions/checkout@v4
+      
+    - name: 📦 Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        
+    - name: 📚 Cache dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.npm
+        key: ${{ runner.os }}-node-admin-${{ hashFiles('**/package-lock.json') }}
+        
+    - name: 🔧 Install shared dependencies
+      working-directory: ./shared
+      run: npm ci
+      
+    - name: 🔧 Install admin dependencies
+      working-directory: ./admin
+      run: npm ci
+      
+    - name: 🏗️ Build admin
+      working-directory: ./admin
+      run: npm run build
+      env:
+        VITE_API_URL: ${{ secrets.ADMIN_VITE_API_URL }}
+        
+    - name: 📤 Deploy admin to Hostinger
+      uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+      with:
+        server: ${{ secrets.FTP_SERVER }}
+        username: ${{ secrets.FTP_USERNAME }}
+        password: ${{ secrets.FTP_PASSWORD }}
+        port: ${{ secrets.FTP_PORT || 21 }}
+        protocol: ${{ secrets.FTP_PROTOCOL || 'ftp' }}
+        local-dir: ./admin/dist/
+        server-dir: ${{ secrets.FTP_ADMIN_PATH }}
+        dangerous-clean-slate: false
+        
+    - name: ✅ Admin deployment complete
+      run: echo "✅ Admin deployed successfully!"
+      
+    - name: 🎉 All deployments complete
+      run: |
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo "🎉 All applications deployed successfully!"
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo "🌐 Client: https://yourdomain.com"
+        echo "🔧 Admin: https://yourdomain.com/admin"
+        echo "⏰ Time: $(date)"
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+

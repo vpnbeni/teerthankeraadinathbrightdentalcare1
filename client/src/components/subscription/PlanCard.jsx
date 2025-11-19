@@ -53,10 +53,26 @@ const PlanCard = ({ plan, onSelect, isSelected = false }) => {
   const displayFeatures =
     features.length > 0 ? features : getDefaultFeatures(plan.name);
 
-  // Get plan icon based on plan name
-  const getPlanIcon = (planName) => {
+  // Check if this is a kids plan
+  const isKidsPlan = plan.category === 'kids';
+
+  // Get plan icon based on plan category and name
+  const getPlanIcon = (planName, category) => {
+    // Kids plan icons
+    if (category === 'kids') {
+      return (
+        <div className="w-16 h-16 bg-gradient-to-br from-blue-400 to-cyan-500 rounded-2xl flex items-center justify-center mb-4 mx-auto shadow-lg">
+          <svg className="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+      );
+    }
+
+    // Adult plan icons
     switch (planName) {
       case "Basic Plan":
+      case "Tooth Protector Plan":
         return (
           <div className="w-16 h-16 bg-gradient-to-br from-blue-400 to-blue-600 rounded-2xl flex items-center justify-center mb-4 mx-auto shadow-lg">
             <svg className="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -65,6 +81,7 @@ const PlanCard = ({ plan, onSelect, isSelected = false }) => {
           </div>
         );
       case "Standard Plan":
+      case "Dental Shield Plan":
         return (
           <div className="w-16 h-16 bg-gradient-to-br from-[#346870] to-[#2a5359] rounded-2xl flex items-center justify-center mb-4 mx-auto shadow-lg">
             <svg className="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -73,6 +90,7 @@ const PlanCard = ({ plan, onSelect, isSelected = false }) => {
           </div>
         );
       case "Premium Plan":
+      case "Smile Saver Plan":
         return (
           <div className="w-16 h-16 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-2xl flex items-center justify-center mb-4 mx-auto shadow-lg">
             <svg className="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -93,16 +111,29 @@ const PlanCard = ({ plan, onSelect, isSelected = false }) => {
 
   return (
     <div
-      className={`plan-card relative border-2 transition-all duration-300 ${
+      className={`plan-card relative border-2 transition-all duration-300 rounded-2xl bg-white ${
         isSelected 
-          ? "plan-card-selected border-[#346870] shadow-2xl scale-105" 
+          ? isKidsPlan
+            ? "border-blue-500 shadow-2xl scale-[1.02] ring-4 ring-blue-200/50"
+            : "plan-card-selected border-[#346870] shadow-2xl scale-[1.02]"
           : isPopular 
           ? "plan-card-popular border-[#346870] shadow-xl" 
-          : "border-gray-200 hover:border-[#346870]/50"
-      }`}
+          : isKidsPlan
+          ? "border-blue-200 hover:border-blue-400 shadow-lg hover:shadow-xl"
+          : "border-gray-200 hover:border-[#346870]/50 shadow-md hover:shadow-lg"
+      } ${isKidsPlan ? 'hover:scale-[1.01]' : ''}`}
       onClick={() => onSelect(plan)}
+      role="button"
+      tabIndex={0}
+      onKeyPress={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onSelect(plan);
+        }
+      }}
+      aria-label={`Select ${plan.name} - ${plan.price} INR per year`}
     >
-      {isPopular && (
+      {isPopular && !isKidsPlan && (
         <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 z-10">
           <div className="bg-gradient-to-r from-[#346870] to-[#2a5359] text-white px-6 py-2 rounded-full text-sm font-bold shadow-lg animate-pulse">
             ⭐ Most Popular
@@ -110,12 +141,33 @@ const PlanCard = ({ plan, onSelect, isSelected = false }) => {
         </div>
       )}
 
+      {isKidsPlan && (
+        <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 z-10">
+          <div className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white px-6 py-2 rounded-full text-sm font-bold shadow-lg">
+            👶 Kids Special
+          </div>
+        </div>
+      )}
+
       {/* Background Pattern */}
-      <div className="absolute inset-0 bg-gradient-to-br from-white via-gray-50 to-white opacity-50 rounded-2xl"></div>
+      <div className={`absolute inset-0 opacity-50 rounded-2xl ${
+        isKidsPlan 
+          ? 'bg-gradient-to-br from-blue-50 via-cyan-50 to-blue-50'
+          : 'bg-gradient-to-br from-white via-gray-50 to-white'
+      }`}></div>
       
       <div className="relative p-8">
         {/* Plan Icon */}
-        {getPlanIcon(plan.name)}
+        {getPlanIcon(plan.name, plan.category)}
+
+        {/* Kids Badge */}
+        {isKidsPlan && plan.ageRange && (
+          <div className="flex justify-center mb-4">
+            <span className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white text-xs font-bold px-4 py-2 rounded-full shadow-lg">
+              🧒 {plan.ageRange}
+            </span>
+          </div>
+        )}
 
         {/* Plan Header */}
         <div className="text-center mb-6">
@@ -127,23 +179,35 @@ const PlanCard = ({ plan, onSelect, isSelected = false }) => {
 
         {/* Price Section */}
         <div className="text-center mb-6">
-          <div className="relative bg-gradient-to-br from-[#346870]/10 via-white to-[#BDCFD1]/10 rounded-2xl p-6 mb-4 border border-[#346870]/20 shadow-lg">
+          <div className={`relative rounded-2xl p-6 mb-4 border shadow-lg ${
+            isKidsPlan
+              ? 'bg-gradient-to-br from-blue-50 via-white to-cyan-50 border-blue-200'
+              : 'bg-gradient-to-br from-[#346870]/10 via-white to-[#BDCFD1]/10 border-[#346870]/20'
+          }`}>
             {/* Decorative elements */}
-            <div className="absolute top-2 right-2 w-8 h-8 bg-[#346870]/10 rounded-full"></div>
-            <div className="absolute bottom-2 left-2 w-6 h-6 bg-[#BDCFD1]/30 rounded-full"></div>
+            <div className={`absolute top-2 right-2 w-8 h-8 rounded-full ${
+              isKidsPlan ? 'bg-blue-200/50' : 'bg-[#346870]/10'
+            }`}></div>
+            <div className={`absolute bottom-2 left-2 w-6 h-6 rounded-full ${
+              isKidsPlan ? 'bg-cyan-200/50' : 'bg-[#BDCFD1]/30'
+            }`}></div>
             
             <div className="relative">
               <div className="flex items-baseline justify-center mb-3">
-                <span className="text-5xl font-black text-[#346870] drop-shadow-sm">
+                <span className={`text-5xl font-black drop-shadow-sm ${
+                  isKidsPlan ? 'text-blue-600' : 'text-[#346870]'
+                }`}>
                   {formatPrice(plan.price)}
                 </span>
               </div>
               
               {/* Plan details with enhanced styling */}
-              <div className="flex items-center justify-center space-x-3 text-sm">
-                <div className="flex items-center bg-white/80 backdrop-blur-sm rounded-full px-4 py-2 shadow-md border border-[#346870]/20">
+              <div className="flex items-center justify-center space-x-3 text-sm flex-wrap gap-2">
+                <div className={`flex items-center bg-white/80 backdrop-blur-sm rounded-full px-4 py-2 shadow-md border ${
+                  isKidsPlan ? 'border-blue-200' : 'border-[#346870]/20'
+                }`}>
                   <svg
-                    className="w-4 h-4 mr-2 text-[#346870]"
+                    className={`w-4 h-4 mr-2 ${isKidsPlan ? 'text-blue-500' : 'text-[#346870]'}`}
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -157,9 +221,11 @@ const PlanCard = ({ plan, onSelect, isSelected = false }) => {
                   </svg>
                   <span className="font-semibold text-gray-700">{plan.duration} months</span>
                 </div>
-                <div className="flex items-center bg-white/80 backdrop-blur-sm rounded-full px-4 py-2 shadow-md border border-[#346870]/20">
+                <div className={`flex items-center bg-white/80 backdrop-blur-sm rounded-full px-4 py-2 shadow-md border ${
+                  isKidsPlan ? 'border-blue-200' : 'border-[#346870]/20'
+                }`}>
                   <svg
-                    className="w-4 h-4 mr-2 text-[#346870]"
+                    className={`w-4 h-4 mr-2 ${isKidsPlan ? 'text-blue-500' : 'text-[#346870]'}`}
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -181,16 +247,28 @@ const PlanCard = ({ plan, onSelect, isSelected = false }) => {
         {/* Features Section */}
         {displayFeatures.length > 0 && (
           <div className="mb-8">
-            <h4 className="text-sm font-bold text-gray-800 mb-4 text-center bg-gradient-to-r from-[#346870] to-[#2a5359] bg-clip-text text-transparent">
+            <h4 className={`text-sm font-bold mb-4 text-center ${
+              isKidsPlan 
+                ? 'bg-gradient-to-r from-blue-500 to-cyan-500 bg-clip-text text-transparent'
+                : 'bg-gradient-to-r from-[#346870] to-[#2a5359] bg-clip-text text-transparent'
+            }`}>
               ✨ What's Included:
             </h4>
-            <div className="space-y-3">
+            <div className="space-y-2.5 max-h-[400px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
               {displayFeatures.map((feature, index) => (
                 <div
                   key={index}
-                  className="flex items-start text-sm text-gray-700 bg-white/50 rounded-lg p-3 border border-gray-100 hover:border-[#346870]/30 transition-colors duration-200"
+                  className={`flex items-start text-sm bg-white/60 rounded-lg p-3 border transition-all duration-200 ${
+                    isKidsPlan
+                      ? 'border-blue-100 hover:border-blue-300 hover:bg-blue-50/50'
+                      : 'border-gray-100 hover:border-[#346870]/30 hover:bg-gray-50'
+                  }`}
                 >
-                  <div className="flex-shrink-0 w-6 h-6 bg-gradient-to-r from-green-400 to-green-500 rounded-full flex items-center justify-center mr-3 mt-0.5">
+                  <div className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center mr-3 mt-0.5 ${
+                    isKidsPlan
+                      ? 'bg-gradient-to-r from-blue-400 to-cyan-400'
+                      : 'bg-gradient-to-r from-green-400 to-green-500'
+                  }`}>
                     <svg
                       className="w-3 h-3 text-white"
                       fill="none"
@@ -205,7 +283,7 @@ const PlanCard = ({ plan, onSelect, isSelected = false }) => {
                       />
                     </svg>
                   </div>
-                  <span className="leading-relaxed font-medium">{feature}</span>
+                  <span className="leading-relaxed font-medium text-gray-700 flex-1">{feature}</span>
                 </div>
               ))}
             </div>
@@ -214,11 +292,15 @@ const PlanCard = ({ plan, onSelect, isSelected = false }) => {
 
         {/* Select Button */}
         <button
-          className={`w-full py-4 px-6 rounded-2xl font-bold text-lg transition-all duration-300 transform hover:scale-105 ${
+          className={`w-full py-4 px-6 rounded-2xl font-bold text-lg transition-all duration-300 transform hover:scale-[1.02] active:scale-95 ${
             isSelected
-              ? "bg-gradient-to-r from-[#346870] to-[#2a5359] text-white shadow-2xl ring-4 ring-[#346870]/30"
+              ? isKidsPlan
+                ? "bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-2xl ring-4 ring-blue-300/50"
+                : "bg-gradient-to-r from-[#346870] to-[#2a5359] text-white shadow-2xl ring-4 ring-[#346870]/30"
               : isPopular
               ? "bg-gradient-to-r from-[#346870] to-[#2a5359] text-white hover:from-[#2a5359] hover:to-[#1e3d42] shadow-xl hover:shadow-2xl"
+              : isKidsPlan
+              ? "bg-gradient-to-r from-blue-50 to-cyan-50 text-gray-800 hover:from-blue-100 hover:to-cyan-100 border-2 border-blue-200 hover:border-blue-400 shadow-md hover:shadow-lg"
               : "bg-gradient-to-r from-gray-50 to-gray-100 text-gray-800 hover:from-[#346870]/10 hover:to-[#BDCFD1]/20 border-2 border-gray-200 hover:border-[#346870]/50 shadow-md hover:shadow-lg"
           }`}
         >

@@ -1,0 +1,72 @@
+name: Deploy Admin to Hostinger
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "admin/**"
+      - "shared/**"
+      - ".github/workflows/deploy-admin.yml"
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 🔄 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          cache: "npm"
+
+      - name: 📚 Cache dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: 🔧 Install shared dependencies
+        working-directory: ./shared
+        run: npm ci
+
+      - name: 🔧 Install admin dependencies
+        working-directory: ./admin
+        run: npm ci
+
+      - name: 🏗️ Build admin application
+        working-directory: ./admin
+        run: npm run build
+        env:
+          VITE_API_URL: ${{ secrets.ADMIN_VITE_API_URL || 'https://yourdomain.com/api' }}
+
+      - name: 📤 Deploy to Hostinger via FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          port: ${{ secrets.FTP_PORT || 21 }}
+          protocol: ${{ secrets.FTP_PROTOCOL || 'ftp' }}
+          local-dir: ./admin/dist/
+          server-dir: ${{ secrets.FTP_ADMIN_PATH || '/public_html/admin/' }}
+          dangerous-clean-slate: false
+          exclude: |
+            **/.git*
+            **/.git*/**
+            **/node_modules/**
+            **/.DS_Store
+
+      - name: ✅ Deployment successful
+        run: |
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "✅ Admin deployed successfully to Hostinger!"
+          echo "🌐 URL: https://yourdomain.com/admin"
+          echo "⏰ Time: $(date)"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
