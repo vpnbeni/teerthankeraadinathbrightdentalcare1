@@ -18,8 +18,10 @@
     "test:payment:coverage": "node src/test/runPaymentTests.js --coverage",
     "test:auto-cancel": "node src/test/autoCancelTest.js",
     "generate-key": "node src/scripts/generateEncryptionKey.js",
+    "create-admin": "node scripts/createAdmin.js",
     "seed-plans": "node src/scripts/seedPlans.js",
-    "seed-availability": "node src/scripts/seedAvailabilityData.js"
+    "seed-availability": "node src/scripts/seedAvailabilityData.js",
+    "init-db": "node scripts/init-fresh-database.js"
   },
   "dependencies": {
     "axios": "^1.6.2",
