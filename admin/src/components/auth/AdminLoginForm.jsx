@@ -38,7 +38,7 @@ const AdminLoginForm = () => {
             Email Address
           </label>
           <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-3 sm:pl-4 flex items-center pointer-events-none">
+            <div className="absolute inset-y-0 left-0 pl-3 sm:pl-4 flex items-center pointer-events-none z-20">
               <svg
                 className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 group-focus-within:text-primary transition-colors"
                 fill="none"
@@ -99,7 +99,7 @@ const AdminLoginForm = () => {
             Password
           </label>
           <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-3 sm:pl-4 flex items-center pointer-events-none">
+            <div className="absolute inset-y-0 left-0 pl-3 sm:pl-4 flex items-center pointer-events-none z-20">
               <svg
                 className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 group-focus-within:text-primary transition-colors"
                 fill="none"
@@ -134,7 +134,7 @@ const AdminLoginForm = () => {
             />
             <button
               type="button"
-              className="absolute inset-y-0 right-0 pr-3 sm:pr-4 flex items-center z-20"
+              className="absolute inset-y-0 right-0 pr-3 sm:pr-4 flex items-center z-30"
               onClick={() => setShowPassword(!showPassword)}
             >
               {showPassword ? (
@@ -166,7 +166,7 @@ const AdminLoginForm = () => {
         <button
           type="submit"
           disabled={loading}
-          className="relative w-full mt-4 sm:mt-6 lg:mt-8 group overflow-hidden"
+          className="relative w-full mt-4 sm:mt-6 lg:mt-8 group overflow-hidden rounded-xl"
         >
           <div className="absolute inset-0 bg-gradient-to-r from-primary via-primary-600 to-primary-700 rounded-xl transition-all duration-300 group-hover:scale-105 group-disabled:scale-100 group-disabled:opacity-50"></div>
           <div className="absolute inset-0 bg-gradient-to-r from-primary-700 via-primary-600 to-primary opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-xl"></div>
