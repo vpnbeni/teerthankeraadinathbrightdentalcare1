@@ -46,6 +46,46 @@ jobs:
       env:
         VITE_API_URL: ${{ secrets.CLIENT_VITE_API_URL }}
         
+    - name: 🧹 Clean up temporary FTP files
+      continue-on-error: true
+      run: |
+        npm install -g basic-ftp
+        node -e "
+        const ftp = require('basic-ftp');
+        const client = new ftp.Client();
+        client.ftp.verbose = true;
+        (async () => {
+          try {
+            await client.access({
+              host: '${{ secrets.FTP_SERVER }}',
+              user: '${{ secrets.FTP_USERNAME }}',
+              password: '${{ secrets.FTP_PASSWORD }}',
+              port: ${{ secrets.FTP_PORT || 21 }},
+              secure: false
+            });
+            await client.cd('${{ secrets.FTP_CLIENT_PATH }}');
+            const list = await client.list();
+            for (const file of list) {
+              if (file.name.startsWith('.in.')) {
+                console.log('Removing temp file:', file.name);
+                await client.remove(file.name);
+              }
+            }
+            const assetsList = await client.list('assets');
+            for (const file of assetsList) {
+              if (file.name.startsWith('.in.')) {
+                console.log('Removing temp file:', 'assets/' + file.name);
+                await client.remove('assets/' + file.name);
+              }
+            }
+          } catch (err) {
+            console.log('Cleanup error (non-critical):', err.message);
+          } finally {
+            client.close();
+          }
+        })();
+        "
+        
     - name: 📤 Deploy client to Hostinger
       uses: SamKirkland/FTP-Deploy-Action@v4.3.4
       with:
@@ -96,6 +136,46 @@ jobs:
       run: npm run build
       env:
         VITE_API_URL: ${{ secrets.ADMIN_VITE_API_URL }}
+        
+    - name: 🧹 Clean up temporary FTP files
+      continue-on-error: true
+      run: |
+        npm install -g basic-ftp
+        node -e "
+        const ftp = require('basic-ftp');
+        const client = new ftp.Client();
+        client.ftp.verbose = true;
+        (async () => {
+          try {
+            await client.access({
+              host: '${{ secrets.FTP_SERVER }}',
+              user: '${{ secrets.FTP_USERNAME }}',
+              password: '${{ secrets.FTP_PASSWORD }}',
+              port: ${{ secrets.FTP_PORT || 21 }},
+              secure: false
+            });
+            await client.cd('${{ secrets.FTP_ADMIN_PATH }}');
+            const list = await client.list();
+            for (const file of list) {
+              if (file.name.startsWith('.in.')) {
+                console.log('Removing temp file:', file.name);
+                await client.remove(file.name);
+              }
+            }
+            const assetsList = await client.list('assets');
+            for (const file of assetsList) {
+              if (file.name.startsWith('.in.')) {
+                console.log('Removing temp file:', 'assets/' + file.name);
+                await client.remove('assets/' + file.name);
+              }
+            }
+          } catch (err) {
+            console.log('Cleanup error (non-critical):', err.message);
+          } finally {
+            client.close();
+          }
+        })();
+        "
         
     - name: 📤 Deploy admin to Hostinger
       uses: SamKirkland/FTP-Deploy-Action@v4.3.4
