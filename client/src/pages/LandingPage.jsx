@@ -63,7 +63,7 @@ const LandingPage = () => {
             {/* Badge */}
             <div className="inline-block mb-6">
               <span className="bg-white/20 backdrop-blur-sm text-white px-6 py-3 rounded-full text-sm font-semibold border border-white/30 shadow-lg">
-                🦷 Premium Dental Care Since 2020
+                🦷 Premium Dental Care Since 2017
               </span>
             </div>
             

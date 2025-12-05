@@ -206,7 +206,7 @@ const kidsPlans = plans.filter(plan => plan.category === 'kids');
 - Plans include senior citizen discounts (where applicable)
 - No warranty on crowns for all plans
 - Ortho aligners & implants not included in any plan
-- Discounts available on dentures/bridges/fillings/RPD
+- Up to 10% Discounts available on dentures/bridges/fillings/RPD
 
 ## Maintenance
 

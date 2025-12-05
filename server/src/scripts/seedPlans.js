@@ -20,7 +20,7 @@ const plans = [
       "1 PFM Crown",
       "Simple extractions",
       "2 routine check-ups",
-      "Discounts available on dentures/bridges/fillings/RPD",
+      "Up to 10% Discounts available on dentures/bridges/fillings/RPD",
       "Senior citizen discount: 10-15%"
     ],
     isActive: true,
@@ -41,7 +41,7 @@ const plans = [
       "4 PFM crowns",
       "1 Zirconia crown",
       "4 routine check-ups",
-      "Discounts available on dentures/bridges/fillings/RPD",
+      "Up to 10% Discounts available on dentures/bridges/fillings/RPD",
       "Senior citizen discount: 10-15%"
     ],
     isActive: true,
@@ -63,7 +63,7 @@ const plans = [
       "Gum treatment",
       "Surgical impaction (partially impacted)",
       "Priority check-ups",
-      "Discounts available on dentures/bridges/fillings/RPD",
+      "Up to 10% Discounts available on dentures/bridges/fillings/RPD",
       "Senior citizen discount: 10-15%"
     ],
     isActive: true,
