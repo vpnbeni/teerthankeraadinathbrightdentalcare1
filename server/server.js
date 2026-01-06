@@ -148,6 +148,9 @@ const startServer = async () => {
 
     // Start server after successful database connection
     const PORT = config.PORT || 5000;
+    console.log(`🔧 Attempting to start server on port ${PORT}...`);
+    
+    // Add error handler for server
     const server = app.listen(PORT, () => {
       console.log(`🚀 Server running on port ${PORT}`);
       console.log(
@@ -161,6 +164,17 @@ const startServer = async () => {
         }`
       );
       console.log(`📬 Notifications: Using polling-based system (refocus detection)`);
+    });
+
+    // Handle server errors (e.g., port already in use)
+    server.on('error', (error) => {
+      if (error.code === 'EADDRINUSE') {
+        console.error(`❌ Port ${PORT} is already in use. Please free the port or use a different one.`);
+        console.error(`   You can kill the process using: lsof -ti:${PORT} | xargs kill`);
+      } else {
+        console.error('❌ Server error:', error);
+      }
+      process.exit(1);
     });
   } catch (error) {
     console.error("Failed to start server:", error);

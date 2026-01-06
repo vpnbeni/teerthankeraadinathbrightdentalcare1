@@ -32,22 +32,12 @@ jobs:
         path: ~/.npm
         key: ${{ runner.os }}-node-client-${{ hashFiles('**/package-lock.json') }}
         
-    - name: 🔧 Install shared dependencies
-      working-directory: ./shared
+    - name: 🔧 Install all dependencies (workspaces)
       run: |
         npm config set fetch-timeout 60000
         npm config set fetch-retry-mintimeout 20000
         npm config set fetch-retry-maxtimeout 120000
-        npm ci --prefer-offline --no-audit
-      timeout-minutes: 10
-      
-    - name: 🔧 Install client dependencies
-      working-directory: ./client
-      run: |
-        npm config set fetch-timeout 60000
-        npm config set fetch-retry-mintimeout 20000
-        npm config set fetch-retry-maxtimeout 120000
-        npm ci --prefer-offline --no-audit
+        npm install --workspace=shared --workspace=client --prefer-offline --no-audit
       timeout-minutes: 10
       
     - name: 🏗️ Build client
@@ -55,6 +45,21 @@ jobs:
       run: npm run build
       env:
         VITE_API_URL: ${{ secrets.CLIENT_VITE_API_URL }}
+        
+    - name: 🧹 Clean up temporary FTP files
+      continue-on-error: true
+      run: |
+        sudo apt-get update -qq
+        sudo apt-get install -y lftp
+        lftp -c "
+        set ftp:ssl-allow no;
+        open -u ${{ secrets.FTP_USERNAME }},${{ secrets.FTP_PASSWORD }} ${{ secrets.FTP_SERVER }};
+        cd ${{ secrets.FTP_CLIENT_PATH }};
+        cls -1 | grep '^\\.in\\.' | xargs -r rm -f;
+        cd assets;
+        cls -1 | grep '^\\.in\\.' | xargs -r rm -f;
+        bye
+        " || echo "Cleanup completed (some files may not exist)"
         
     - name: 📤 Deploy client to Hostinger
       uses: SamKirkland/FTP-Deploy-Action@v4.3.4
@@ -93,22 +98,12 @@ jobs:
         path: ~/.npm
         key: ${{ runner.os }}-node-admin-${{ hashFiles('**/package-lock.json') }}
         
-    - name: 🔧 Install shared dependencies
-      working-directory: ./shared
+    - name: 🔧 Install all dependencies (workspaces)
       run: |
         npm config set fetch-timeout 60000
         npm config set fetch-retry-mintimeout 20000
         npm config set fetch-retry-maxtimeout 120000
-        npm ci --prefer-offline --no-audit
-      timeout-minutes: 10
-      
-    - name: 🔧 Install admin dependencies
-      working-directory: ./admin
-      run: |
-        npm config set fetch-timeout 60000
-        npm config set fetch-retry-mintimeout 20000
-        npm config set fetch-retry-maxtimeout 120000
-        npm ci --prefer-offline --no-audit
+        npm install --workspace=shared --workspace=admin --prefer-offline --no-audit
       timeout-minutes: 10
       
     - name: 🏗️ Build admin
@@ -116,6 +111,21 @@ jobs:
       run: npm run build
       env:
         VITE_API_URL: ${{ secrets.ADMIN_VITE_API_URL }}
+        
+    - name: 🧹 Clean up temporary FTP files
+      continue-on-error: true
+      run: |
+        sudo apt-get update -qq
+        sudo apt-get install -y lftp
+        lftp -c "
+        set ftp:ssl-allow no;
+        open -u ${{ secrets.FTP_USERNAME }},${{ secrets.FTP_PASSWORD }} ${{ secrets.FTP_SERVER }};
+        cd ${{ secrets.FTP_ADMIN_PATH }};
+        cls -1 | grep '^\\.in\\.' | xargs -r rm -f;
+        cd assets;
+        cls -1 | grep '^\\.in\\.' | xargs -r rm -f;
+        bye
+        " || echo "Cleanup completed (some files may not exist)"
         
     - name: 📤 Deploy admin to Hostinger
       uses: SamKirkland/FTP-Deploy-Action@v4.3.4

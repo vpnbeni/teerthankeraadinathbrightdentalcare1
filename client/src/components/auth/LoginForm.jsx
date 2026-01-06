@@ -189,7 +189,7 @@ const LoginForm = ({ onClose, onSwitchToRegister }) => {
               Phone Number
             </label>
             <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 sm:pl-4 flex items-center pointer-events-none z-10">
+              <div className="absolute inset-y-0 left-0 pl-3 sm:pl-4 flex items-center pointer-events-none z-20">
                 <svg className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 group-focus-within:text-primary transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
                 </svg>
@@ -197,7 +197,7 @@ const LoginForm = ({ onClose, onSwitchToRegister }) => {
               <input
                 id="phone"
                 type="tel"
-                className={`relative w-full pl-10 sm:pl-12 pr-3 sm:pr-4 py-2.5 sm:py-3.5 text-sm sm:text-base bg-gray-50 border-2 rounded-xl text-gray-900 placeholder-gray-400 transition-all duration-300 focus:outline-none focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 ${
+                className={`relative w-full pl-10 sm:pl-12 pr-3 sm:pr-4 py-2.5 sm:py-3.5 text-base bg-gray-50 border-2 rounded-xl text-gray-900 placeholder-gray-400 transition-all duration-300 focus:outline-none focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 ${
                   errors.phone ? "border-red-400 focus:border-red-500 focus:ring-red-100" : "border-gray-200 hover:border-gray-300"
                 }`}
                 placeholder="Enter your phone number"
@@ -228,7 +228,7 @@ const LoginForm = ({ onClose, onSwitchToRegister }) => {
               Email Address
             </label>
             <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 sm:pl-4 flex items-center pointer-events-none z-10">
+              <div className="absolute inset-y-0 left-0 pl-3 sm:pl-4 flex items-center pointer-events-none z-20">
                 <svg className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 group-focus-within:text-primary transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                 </svg>
@@ -236,7 +236,7 @@ const LoginForm = ({ onClose, onSwitchToRegister }) => {
               <input
                 id="email"
                 type="email"
-                className={`relative w-full pl-10 sm:pl-12 pr-3 sm:pr-4 py-2.5 sm:py-3.5 text-sm sm:text-base bg-gray-50 border-2 rounded-xl text-gray-900 placeholder-gray-400 transition-all duration-300 focus:outline-none focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 ${
+                className={`relative w-full pl-10 sm:pl-12 pr-3 sm:pr-4 py-2.5 sm:py-3.5 text-base bg-gray-50 border-2 rounded-xl text-gray-900 placeholder-gray-400 transition-all duration-300 focus:outline-none focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 ${
                   errors.email ? "border-red-400 focus:border-red-500 focus:ring-red-100" : "border-gray-200 hover:border-gray-300"
                 }`}
                 placeholder="Enter your email address"
@@ -269,7 +269,7 @@ const LoginForm = ({ onClose, onSwitchToRegister }) => {
           </label>
           <div className="flex gap-2 sm:gap-3">
             <div className="relative flex-1">
-              <div className="absolute inset-y-0 left-0 pl-3 sm:pl-4 flex items-center pointer-events-none z-10">
+              <div className="absolute inset-y-0 left-0 pl-3 sm:pl-4 flex items-center pointer-events-none z-20">
                 <svg className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 group-focus-within:text-primary transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                 </svg>
@@ -361,7 +361,7 @@ const LoginForm = ({ onClose, onSwitchToRegister }) => {
         <button
           type="submit"
           disabled={signingIn || !otpSent}
-          className="relative w-full mt-4 sm:mt-6 lg:mt-8 group overflow-hidden"
+          className="relative w-full mt-4 sm:mt-6 lg:mt-8 group overflow-hidden rounded-xl"
         >
           <div className="absolute inset-0 bg-gradient-to-r from-primary via-primary-600 to-primary-700 rounded-xl transition-all duration-300 group-hover:scale-105 group-disabled:scale-100 group-disabled:opacity-50"></div>
           <div className="absolute inset-0 bg-gradient-to-r from-primary-700 via-primary-600 to-primary opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-xl"></div>

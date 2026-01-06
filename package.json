@@ -32,7 +32,9 @@
     "docker:build": "docker-compose build",
     "docker:up": "docker-compose up -d",
     "docker:down": "docker-compose down",
-    "docker:logs": "docker-compose logs -f"
+    "docker:logs": "docker-compose logs -f",
+    "seed:plans": "cd server && node src/scripts/seedPlans.js",
+    "seed:stage-plans": "cd server && node src/scripts/seedStagePlans.js"
   },
   "devDependencies": {
     "@playwright/test": "^1.54.2",

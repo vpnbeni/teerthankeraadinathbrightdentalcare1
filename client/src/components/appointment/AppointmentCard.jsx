@@ -11,7 +11,7 @@ const AppointmentCard = ({ appointment }) => {
       day: "numeric", 
     });
   };
-  
+    
   const formatTime = (timeString) => {
     const [start, end] = timeString.split("-");
     const formatSingleTime = (time) => {

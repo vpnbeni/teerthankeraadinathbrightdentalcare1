@@ -83,15 +83,44 @@ const validateEnvironment = () => {
 };
 
 /**
+ * Determine if running in staging environment
+ * Checks DEPLOY_ENV or falls back to domain pattern detection
+ */
+const isStageEnvironment = () => {
+  // Explicit deployment environment flag
+  if (process.env.DEPLOY_ENV === "stage") return true;
+
+  // Check if running on stage subdomain (Vercel)
+  if (process.env.VERCEL_URL?.includes("stage")) return true;
+
+  return false;
+};
+
+/**
+ * Get the appropriate MongoDB URI based on environment
+ * Uses STAGE_MONGODB_URI for staging, MONGODB_URI for production
+ */
+const getMongoDbUri = () => {
+  if (isStageEnvironment() && process.env.STAGE_MONGODB_URI) {
+    console.log("📍 Using STAGING MongoDB database");
+    return process.env.STAGE_MONGODB_URI;
+  }
+  console.log("📍 Using PRODUCTION MongoDB database");
+  return process.env.MONGODB_URI;
+};
+
+/**
  * Environment configuration object
  */
 const config = {
   // Server Configuration
   NODE_ENV: process.env.NODE_ENV || "development",
+  DEPLOY_ENV: process.env.DEPLOY_ENV || "production",
+  IS_STAGE: isStageEnvironment(),
   PORT: parseInt(process.env.PORT) || 5001,
 
   // Database Configuration
-  MONGODB_URI: process.env.MONGODB_URI,
+  MONGODB_URI: getMongoDbUri(),
 
   // JWT Configuration
   JWT_SECRET: process.env.JWT_SECRET,
@@ -241,6 +270,7 @@ export {
   getConfig,
   isProduction,
   isDevelopment,
+  isStageEnvironment,
   getCorsOrigins,
   validateEnvironment,
 };

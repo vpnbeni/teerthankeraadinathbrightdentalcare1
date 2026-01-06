@@ -24,3 +24,19 @@ VITE_APP_NAME=Dental Care Admin (STAGE)
 # - The API URL points to the Vercel STAGE deployment
 # - Make sure CORS is configured on Vercel to allow these stage domains
 
+## SERVER STAGE ENVIRONMENT (Vercel Environment Variables)
+# Set these in Vercel Dashboard → stage-tabdc-server → Settings → Environment Variables
+
+# REQUIRED: Separate staging database
+DEPLOY_ENV=stage
+STAGE_MONGODB_URI=mongodb+srv://vpnbenidev:YOUR_PASSWORD@cluster0.agz3j.mongodb.net/teerthanker-dental-care-stage?retryWrites=true&w=majority
+
+# Keep MONGODB_URI as fallback (production database)
+MONGODB_URI=mongodb+srv://vpnbenidev:YOUR_PASSWORD@cluster0.agz3j.mongodb.net/teerthanker-dental-care?retryWrites=true&w=majority
+
+## STAGING DATABASE NOTES
+# - The staging database uses a SEPARATE database from production
+# - All subscription plans in staging are priced at ₹1 for testing
+# - Run: npm run seed:stage-plans (after setting STAGE_MONGODB_URI)
+# - See STAGING_DATABASE_SETUP.md for detailed setup instructions
+

@@ -63,7 +63,7 @@ const LandingPage = () => {
             {/* Badge */}
             <div className="inline-block mb-6">
               <span className="bg-white/20 backdrop-blur-sm text-white px-6 py-3 rounded-full text-sm font-semibold border border-white/30 shadow-lg">
-                🦷 Premium Dental Care Since 2020
+                🦷 Premium Dental Care Since 2017
               </span>
             </div>
             
@@ -89,7 +89,7 @@ const LandingPage = () => {
                 <svg className="w-5 h-5 mr-2 text-green-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                1000+ Happy Patients
+                15000+ Happy Patients
               </div>
               <div className="flex items-center">
                 <svg className="w-5 h-5 mr-2 text-green-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">

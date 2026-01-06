@@ -1,4 +1,4 @@
-VITE_API_URL=https://api.teerthankerdentalcare.com/api
-VITE_API_BASE_URL=https://api.teerthankerdentalcare.com
+VITE_API_URL=https://teerthanker-server.vercel.app/api
+VITE_API_BASE_URL=https://teerthanker-server.vercel.app
 VITE_APP_NAME=Dental Care Admin
 
