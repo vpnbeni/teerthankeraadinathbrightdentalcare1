@@ -108,7 +108,7 @@ const getMongoDbUri = () => {
   console.log("📍 Using PRODUCTION MongoDB database");
   return process.env.MONGODB_URI;
 };
-
+ 
 /**
  * Environment configuration object
  */
