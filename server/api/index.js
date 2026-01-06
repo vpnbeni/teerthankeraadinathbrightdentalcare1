@@ -7,6 +7,33 @@ import mongoose from "mongoose";
 
 const app = express();
 
+// Staging environment detection for Vercel
+const isStageEnvironment = () => {
+  if (process.env.DEPLOY_ENV === "stage") return true;
+  if (process.env.VERCEL_URL?.includes("stage")) return true;
+  return false;
+};
+
+// Get the correct MongoDB URI based on environment
+const getMongoDbUri = () => {
+  const isStage = isStageEnvironment();
+  const hasStageUri = !!process.env.STAGE_MONGODB_URI;
+
+  console.log("🔍 Environment Detection:");
+  console.log(`   DEPLOY_ENV = "${process.env.DEPLOY_ENV}"`);
+  console.log(`   VERCEL_URL = "${process.env.VERCEL_URL}"`);
+  console.log(`   Is Stage: ${isStage}`);
+  console.log(`   Has STAGE_MONGODB_URI: ${hasStageUri}`);
+
+  if (isStage && hasStageUri) {
+    console.log("📍 Using STAGING MongoDB database");
+    return process.env.STAGE_MONGODB_URI;
+  }
+
+  console.log("📍 Using PRODUCTION MongoDB database");
+  return process.env.MONGODB_URI;
+};
+
 // Database connection with caching for serverless
 let cachedDb = null;
 
@@ -25,7 +52,8 @@ const connectDB = async () => {
       w: "majority",
     };
 
-    const conn = await mongoose.connect(process.env.MONGODB_URI, options);
+    const mongoUri = getMongoDbUri();
+    const conn = await mongoose.connect(mongoUri, options);
     cachedDb = conn;
     console.log("✅ Database connected");
     return cachedDb;
@@ -85,6 +113,7 @@ app.get("/", (req, res) => {
     message: "Teerthanker Dental Care API is running on Vercel!",
     timestamp: new Date().toISOString(),
     environment: process.env.NODE_ENV || "production",
+    deploy_env: isStageEnvironment() ? "stage" : "production",
     version: "1.0.0",
   });
 });
@@ -95,6 +124,8 @@ app.get("/api", (req, res) => {
     message: "Teerthanker Dental Care API is running!",
     timestamp: new Date().toISOString(),
     environment: process.env.NODE_ENV || "production",
+    deploy_env: isStageEnvironment() ? "stage" : "production",
+    database: isStageEnvironment() ? "staging" : "production",
     version: "1.0.0",
   });
 });
