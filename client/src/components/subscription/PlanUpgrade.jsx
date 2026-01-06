@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { LoadingSpinner } from "../../shared/components";
 import plansService from "../../services/plans";
 
-const PlanUpgrade = ({ currentPlan, onUpgradeSuccess }) => {
+const PlanUpgrade = ({ currentPlan, subscription, onUpgradeSuccess }) => {
   const { user: authUser, isAuthenticated } = useSelector(
     (state) => state.auth
   );
@@ -17,6 +17,9 @@ const PlanUpgrade = ({ currentPlan, onUpgradeSuccess }) => {
   const [showPayment, setShowPayment] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // Check if subscription is suspended or expired (needs reactivation, not upgrade)
+  const needsReactivation = subscription?.status === "suspended" || subscription?.status === "expired";
 
   // Debug logging for user data
   useEffect(() => {
@@ -31,8 +34,10 @@ const PlanUpgrade = ({ currentPlan, onUpgradeSuccess }) => {
         ? { id: user._id, name: user.name, phone: user.phone }
         : null,
       isAuthenticated,
+      subscription: subscription,
+      needsReactivation,
     });
-  }, [authUser, profile, user, isAuthenticated]);
+  }, [authUser, profile, user, isAuthenticated, subscription, needsReactivation]);
 
   // Simple user data check - let ProtectedRoute handle authentication
   useEffect(() => {
@@ -51,11 +56,23 @@ const PlanUpgrade = ({ currentPlan, onUpgradeSuccess }) => {
         const plans = response.data.data || [];
 
         if (currentPlan) {
-          // Filter out current plan and lower plans for upgrades
-          const upgradePlans = plans.filter(
-            (plan) => plan.sessions > currentPlan.sessions
-          );
-          setAvailablePlans(upgradePlans);
+          // If subscription needs reactivation, show current plan for renewal
+          if (needsReactivation) {
+            // Find the current plan in the list to show it for renewal
+            const currentPlanFromList = plans.find(p => p._id === currentPlan._id || p.sessions === currentPlan.sessions);
+            if (currentPlanFromList) {
+              setAvailablePlans([currentPlanFromList]);
+            } else {
+              // If current plan not found, show the plan with same sessions or all plans
+              setAvailablePlans(plans.filter(p => p.sessions >= currentPlan.sessions));
+            }
+          } else {
+            // Normal upgrade flow - filter out current plan and lower plans
+            const upgradePlans = plans.filter(
+              (plan) => plan.sessions > currentPlan.sessions
+            );
+            setAvailablePlans(upgradePlans);
+          }
         } else {
           // Show all plans if no current plan (new subscription)
           setAvailablePlans(plans);
@@ -69,7 +86,7 @@ const PlanUpgrade = ({ currentPlan, onUpgradeSuccess }) => {
     };
 
     fetchPlans();
-  }, [currentPlan]);
+  }, [currentPlan, needsReactivation]);
 
   const formatPrice = (price) => {
     return new Intl.NumberFormat("en-IN", {
@@ -92,12 +109,12 @@ const PlanUpgrade = ({ currentPlan, onUpgradeSuccess }) => {
     );
     setSelectedPlan(plan);
     setShowPayment(true);
-    
+
     // Immediately initiate payment
     try {
       setLoading(true);
       const paymentService = (await import("../../services/payments")).default;
-      
+
       const isUpgrade = !!currentPlan;
       const result = await paymentService.initializePayment(
         plan._id,
@@ -108,14 +125,14 @@ const PlanUpgrade = ({ currentPlan, onUpgradeSuccess }) => {
         },
         isUpgrade
       );
-      
+
       // Payment successful
       setShowPayment(false);
       onUpgradeSuccess(result);
     } catch (error) {
       console.error("Payment error:", error);
       setShowPayment(false);
-      
+
       if (error.message === "PAYMENT_CANCELLED") {
         setError("Payment was cancelled. Please try again when ready.");
       } else {
@@ -177,8 +194,8 @@ const PlanUpgrade = ({ currentPlan, onUpgradeSuccess }) => {
       typeof error === "string"
         ? error
         : error?.message ||
-          error?.title ||
-          "An error occurred. Please try again.";
+        error?.title ||
+        "An error occurred. Please try again.";
 
     return (
       <div className="text-center py-8">
@@ -218,13 +235,13 @@ const PlanUpgrade = ({ currentPlan, onUpgradeSuccess }) => {
   if (availablePlans.length === 0) {
     if (currentPlan) {
       return (
-        <motion.div 
+        <motion.div
           className="relative overflow-hidden bg-gradient-to-r from-green-50 via-emerald-50 to-green-50 border border-green-100/50 rounded-3xl p-8 shadow-sm"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
         >
           <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-green-200/20 to-emerald-200/20 rounded-full blur-3xl -mr-32 -mt-32"></div>
-          
+
           <div className="relative text-center py-8">
             <div className="w-20 h-20 bg-gradient-to-br from-green-500 to-emerald-600 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-lg shadow-green-500/25">
               <svg className="w-10 h-10 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -242,7 +259,7 @@ const PlanUpgrade = ({ currentPlan, onUpgradeSuccess }) => {
       );
     } else {
       return (
-        <motion.div 
+        <motion.div
           className="relative overflow-hidden bg-gradient-to-r from-red-50 via-pink-50 to-red-50 border border-red-200/50 rounded-3xl p-6 shadow-sm"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -275,36 +292,42 @@ const PlanUpgrade = ({ currentPlan, onUpgradeSuccess }) => {
   };
 
   return (
-    <motion.div 
+    <motion.div
       className="space-y-8"
       variants={containerVariants}
       initial="hidden"
       animate="visible"
     >
       {/* Header */}
-      <motion.div 
+      <motion.div
         className="text-center"
         variants={itemVariants}
       >
         <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-3 tracking-tight">
-          {currentPlan ? "Upgrade Your Plan" : "Choose Your Plan"}
+          {needsReactivation
+            ? "Reactivate Your Plan"
+            : currentPlan
+              ? "Upgrade Your Plan"
+              : "Choose Your Plan"}
         </h2>
         <p className="text-gray-600 text-base md:text-lg max-w-2xl mx-auto leading-relaxed">
-          {currentPlan
-            ? "Get more sessions and additional benefits with our upgraded plans"
-            : "Select a subscription plan that best fits your dental care needs"}
+          {needsReactivation
+            ? "Complete your payment to reactivate your subscription and continue enjoying our dental care services"
+            : currentPlan
+              ? "Get more sessions and additional benefits with our upgraded plans"
+              : "Select a subscription plan that best fits your dental care needs"}
         </p>
       </motion.div>
 
       {/* Current Plan - only show if user has one */}
       {currentPlan && (
-        <motion.div 
+        <motion.div
           className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-3xl p-6 shadow-xl relative overflow-hidden"
           variants={itemVariants}
         >
           <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTM2IDM0djItaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6Ii8+PC9nPjwvZz48L3N2Zz4=')] opacity-30"></div>
           <div className="absolute top-0 right-0 w-48 h-48 bg-gradient-to-br from-blue-500/10 to-purple-500/10 rounded-full blur-3xl"></div>
-          
+
           <div className="relative">
             <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-white/10 backdrop-blur-sm rounded-full text-xs font-semibold text-white border border-white/10 mb-4">
               <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
@@ -328,14 +351,18 @@ const PlanUpgrade = ({ currentPlan, onUpgradeSuccess }) => {
       )}
 
       {/* Available Plans/Upgrades */}
-      <motion.div 
+      <motion.div
         className="space-y-6"
         variants={itemVariants}
       >
         <div className="flex items-center gap-3">
           <div className="w-1.5 h-8 bg-gradient-to-b from-blue-500 to-indigo-600 rounded-full"></div>
           <h3 className="text-2xl font-bold text-gray-900 tracking-tight">
-            {currentPlan ? "Available Upgrades" : "Available Plans"}
+            {needsReactivation
+              ? "Renew Your Plan"
+              : currentPlan
+                ? "Available Upgrades"
+                : "Available Plans"}
           </h3>
         </div>
 
@@ -354,7 +381,7 @@ const PlanUpgrade = ({ currentPlan, onUpgradeSuccess }) => {
                 >
                   {/* Hover overlay */}
                   <div className="absolute inset-0 bg-gradient-to-br from-purple-50/50 to-pink-50/50 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                  
+
                   {isPopular && (
                     <div className="absolute -top-3 -right-3">
                       <div className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-4 py-1.5 rounded-full text-xs font-bold shadow-lg shadow-purple-500/30">
@@ -382,7 +409,7 @@ const PlanUpgrade = ({ currentPlan, onUpgradeSuccess }) => {
                       </div>
 
                       <div className="space-y-2.5">
-                        {currentPlan && (
+                        {currentPlan && !needsReactivation && (
                           <div className="flex items-center gap-2 text-sm font-medium text-green-600">
                             <div className="w-5 h-5 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
                               <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
@@ -390,6 +417,16 @@ const PlanUpgrade = ({ currentPlan, onUpgradeSuccess }) => {
                               </svg>
                             </div>
                             +{plan.sessions - currentPlan.sessions} additional sessions
+                          </div>
+                        )}
+                        {needsReactivation && (
+                          <div className="flex items-center gap-2 text-sm font-medium text-amber-600">
+                            <div className="w-5 h-5 bg-amber-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                              <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                              </svg>
+                            </div>
+                            Reactivates your subscription
                           </div>
                         )}
 
@@ -408,7 +445,7 @@ const PlanUpgrade = ({ currentPlan, onUpgradeSuccess }) => {
 
                     <div className="text-right flex-shrink-0">
                       <div className="text-xs text-gray-500 mb-1 font-medium uppercase tracking-wide">
-                        {currentPlan ? "Upgrade Price" : "Price"}
+                        {needsReactivation ? "Renewal Price" : currentPlan ? "Upgrade Price" : "Price"}
                       </div>
                       <div className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-4">
                         {formatPrice(upgradePrice)}
@@ -420,7 +457,7 @@ const PlanUpgrade = ({ currentPlan, onUpgradeSuccess }) => {
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.98 }}
                       >
-                        {currentPlan ? "Upgrade Now" : "Select Plan"}
+                        {needsReactivation ? "Renew Plan" : currentPlan ? "Upgrade Now" : "Select Plan"}
                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                           <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
                         </svg>
@@ -434,12 +471,12 @@ const PlanUpgrade = ({ currentPlan, onUpgradeSuccess }) => {
       </motion.div>
 
       {/* Upgrade Benefits */}
-      <motion.div 
+      <motion.div
         className="relative overflow-hidden bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 border border-blue-100/50 rounded-3xl p-6 shadow-sm"
         variants={itemVariants}
       >
         <div className="absolute top-0 right-0 w-48 h-48 bg-gradient-to-br from-blue-200/20 to-purple-200/20 rounded-full blur-3xl -mr-24 -mt-24"></div>
-        
+
         <div className="relative flex items-start gap-4">
           <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/20">
             <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>

@@ -25,7 +25,7 @@ const Dashboard = () => {
     const fetchData = async () => {
       if (user) {
         console.log("Dashboard: Fetching data for user:", user);
-        
+
         // Fetch latest profile data to get subscription info
         try {
           const profileResponse = await authService.getProfile();
@@ -35,12 +35,12 @@ const Dashboard = () => {
         } catch (error) {
           console.error("Failed to fetch profile:", error);
         }
-        
+
         // Fetch appointments
         dispatch(fetchAppointments());
       }
     };
-    
+
     fetchData();
   }, [dispatch, user?.id]); // Use user.id to avoid infinite re-renders
 
@@ -69,7 +69,7 @@ const Dashboard = () => {
             month: "short",
             day: "numeric",
           });
-          
+
           switch (appointment.status) {
             case "completed":
               message = `Consultation completed on ${date}`;
@@ -84,7 +84,7 @@ const Dashboard = () => {
             default:
               message = `Consultation ${appointment.status} for ${date}`;
           }
-          
+
           return {
             message,
             date: appointment.createdAt || appointment.date,
@@ -92,7 +92,7 @@ const Dashboard = () => {
           };
         })
         .sort((a, b) => new Date(b.date) - new Date(a.date)); // Sort by most recent
-      
+
       setRecentActivity(activity);
     }
   }, [appointments]);
@@ -179,7 +179,7 @@ const Dashboard = () => {
 
   return (
     <DashboardLayout>
-      <motion.div 
+      <motion.div
         className="space-y-8 max-w-7xl mx-auto"
         variants={containerVariants}
         initial="hidden"
@@ -192,7 +192,7 @@ const Dashboard = () => {
 
         {/* Phone Verification Reminder */}
         {user && !user.phone && (
-          <motion.div 
+          <motion.div
             variants={itemVariants}
             className="relative overflow-hidden bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 border border-blue-100/50 rounded-3xl p-6 shadow-sm hover:shadow-md transition-all"
           >
@@ -225,7 +225,7 @@ const Dashboard = () => {
         )}
 
         {/* Welcome Section - Premium Hero */}
-        <motion.div 
+        <motion.div
           variants={itemVariants}
           className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-3xl p-10 md:p-12 shadow-2xl"
         >
@@ -233,7 +233,7 @@ const Dashboard = () => {
           <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZGVmcz48cGF0dGVybiBpZD0iZ3JpZCIgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiBwYXR0ZXJuVW5pdHM9InVzZXJTcGFjZU9uVXNlIj48cGF0aCBkPSJNIDQwIDAgTCAwIDAgMCA0MCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJyZ2JhKDI1NSwgMjU1LCAyNTUsIDAuMDMpIiBzdHJva2Utd2lkdGg9IjEiLz48L3BhdHRlcm4+PC9kZWZzPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JpZCkiLz48L3N2Zz4=')] opacity-40"></div>
           <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-[#346870]/30 to-[#5fa8b5]/30 rounded-full blur-3xl"></div>
           <div className="absolute bottom-0 left-0 w-80 h-80 bg-gradient-to-tr from-blue-500/20 to-cyan-500/20 rounded-full blur-3xl"></div>
-          
+
           <div className="relative">
             <motion.div
               initial={{ scale: 0, rotate: -180 }}
@@ -258,7 +258,7 @@ const Dashboard = () => {
 
         {/* Quick Stats - Premium Glass Cards */}
         <div className="grid md:grid-cols-3 gap-5">
-          <motion.div 
+          <motion.div
             variants={itemVariants}
             whileHover={{ y: -4 }}
             transition={{ type: "spring", stiffness: 300, damping: 20 }}
@@ -272,8 +272,15 @@ const Dashboard = () => {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 </div>
-                <div className="px-3 py-1 bg-purple-100 text-purple-700 text-xs font-semibold rounded-full">
-                  Active
+                <div className={`px-3 py-1 text-xs font-semibold rounded-full capitalize ${user?.subscription?.status === "active"
+                    ? "bg-green-100 text-green-700"
+                    : user?.subscription?.status === "suspended"
+                      ? "bg-yellow-100 text-yellow-700"
+                      : user?.subscription?.status === "expired"
+                        ? "bg-red-100 text-red-700"
+                        : "bg-gray-100 text-gray-700"
+                  }`}>
+                  {user?.subscription?.status || "No Plan"}
                 </div>
               </div>
               <div className="text-5xl font-bold text-gray-900 mb-2 tracking-tight">
@@ -304,7 +311,7 @@ const Dashboard = () => {
             </div>
           </motion.div>
 
-          <motion.div 
+          <motion.div
             variants={itemVariants}
             whileHover={{ y: -4 }}
             transition={{ type: "spring", stiffness: 300, damping: 20 }}
@@ -332,7 +339,7 @@ const Dashboard = () => {
             </div>
           </motion.div>
 
-          <motion.div 
+          <motion.div
             variants={itemVariants}
             whileHover={{ y: -4 }}
             transition={{ type: "spring", stiffness: 300, damping: 20 }}
@@ -444,11 +451,10 @@ const Dashboard = () => {
                   transition={{ delay: index * 0.05 }}
                   className="group relative flex items-start gap-4 p-4 bg-gray-50/50 hover:bg-white rounded-2xl border border-transparent hover:border-gray-200/50 hover:shadow-md transition-all duration-200"
                 >
-                  <div className={`flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center shadow-sm ${
-                    activity.type === 'completed' ? 'bg-gradient-to-br from-green-500 to-emerald-600' :
-                    activity.type === 'scheduled' || activity.type === 'confirmed' ? 'bg-gradient-to-br from-[#346870] to-[#5fa8b5]' :
-                    activity.type === 'cancelled' ? 'bg-gradient-to-br from-red-500 to-pink-600' : 'bg-gradient-to-br from-gray-500 to-gray-600'
-                  }`}>
+                  <div className={`flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center shadow-sm ${activity.type === 'completed' ? 'bg-gradient-to-br from-green-500 to-emerald-600' :
+                      activity.type === 'scheduled' || activity.type === 'confirmed' ? 'bg-gradient-to-br from-[#346870] to-[#5fa8b5]' :
+                        activity.type === 'cancelled' ? 'bg-gradient-to-br from-red-500 to-pink-600' : 'bg-gradient-to-br from-gray-500 to-gray-600'
+                    }`}>
                     {activity.type === 'completed' ? (
                       <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
@@ -506,7 +512,7 @@ const Dashboard = () => {
             <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSA2MCAwIEwgMCAwIDAgNjAiIGZpbGw9Im5vbmUiIHN0cm9rZT0icmdiYSgyNTUsIDI1NSwgMjU1LCAwLjAzKSIgc3Ryb2tlLXdpZHRoPSIxIi8+PC9wYXR0ZXJuPjwvZGVmcz48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJ1cmwoI2dyaWQpIi8+PC9zdmc+')] opacity-30"></div>
             <div className="absolute top-0 right-0 w-80 h-80 bg-gradient-to-br from-[#5fa8b5]/20 to-[#346870]/20 rounded-full blur-3xl"></div>
             <div className="absolute bottom-0 left-0 w-64 h-64 bg-gradient-to-tr from-blue-500/10 to-cyan-500/10 rounded-full blur-3xl"></div>
-            
+
             <div className="relative grid md:grid-cols-2 gap-8 items-center">
               <div>
                 <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-white/10 backdrop-blur-sm rounded-full text-xs font-semibold text-white mb-4 border border-white/10">
@@ -537,7 +543,7 @@ const Dashboard = () => {
                   )}
                 </div>
               </div>
-              
+
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-3">
                   {user?.subscription?.startDate && (

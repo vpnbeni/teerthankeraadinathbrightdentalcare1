@@ -35,18 +35,18 @@ const Payments = () => {
   };
 
   const tabs = [
-    { 
-      id: "subscription", 
-      label: "Subscription", 
+    {
+      id: "subscription",
+      label: "Subscription",
       icon: (
         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
         </svg>
       )
     },
-    { 
-      id: "history", 
-      label: "Payment History", 
+    {
+      id: "history",
+      label: "Payment History",
       icon: (
         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
@@ -104,6 +104,7 @@ const Payments = () => {
           </motion.button>
           <PlanUpgrade
             currentPlan={plan}
+            subscription={user?.subscription}
             onUpgradeSuccess={handleUpgradeSuccess}
           />
         </motion.div>
@@ -128,20 +129,20 @@ const Payments = () => {
 
   return (
     <DashboardLayout>
-      <motion.div 
+      <motion.div
         className="space-y-8 max-w-7xl mx-auto"
         variants={containerVariants}
         initial="hidden"
         animate="visible"
       >
         {/* Premium Hero Header */}
-        <motion.div 
+        <motion.div
           variants={itemVariants}
           className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-2xl sm:rounded-3xl p-6 sm:p-8 md:p-10 lg:p-12 shadow-2xl"
         >
           {/* Background Pattern */}
           <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTM2IDM0djItaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6Ii8+PC9nPjwvZz48L3N2Zz4=')] opacity-30"></div>
-          
+
           {/* Ambient Blur Effects */}
           <div className="absolute top-0 right-0 w-80 h-80 bg-gradient-to-br from-[#5fa8b5]/20 to-[#346870]/20 rounded-full blur-3xl"></div>
           <div className="absolute bottom-0 left-0 w-64 h-64 bg-gradient-to-tr from-purple-500/10 to-pink-500/10 rounded-full blur-3xl"></div>
@@ -149,7 +150,7 @@ const Payments = () => {
           <div className="relative">
             <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
               <div className="flex-1 min-w-0">
-                <motion.div 
+                <motion.div
                   className="inline-flex items-center gap-2 px-3 py-1.5 bg-white/10 backdrop-blur-sm rounded-full text-xs font-semibold text-white border border-white/10 mb-4"
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
@@ -158,7 +159,7 @@ const Payments = () => {
                   <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse"></div>
                   Billing & Subscriptions
                 </motion.div>
-                
+
                 <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white tracking-tight mb-4">
                   Payments & Subscription
                 </h1>
@@ -168,7 +169,7 @@ const Payments = () => {
               </div>
 
               {/* Quick Stats */}
-              <motion.div 
+              <motion.div
                 className="flex gap-3 sm:gap-4 w-full lg:w-auto"
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -193,7 +194,7 @@ const Payments = () => {
 
         {/* Premium Tabs */}
         {!showUpgrade && (
-          <motion.div 
+          <motion.div
             variants={itemVariants}
             className="bg-white/80 backdrop-blur-xl border border-gray-200/50 rounded-2xl sm:rounded-3xl shadow-lg shadow-gray-200/50 p-2"
           >
@@ -202,11 +203,10 @@ const Payments = () => {
                 <motion.button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`relative flex-1 flex items-center justify-center gap-2 px-4 sm:px-6 py-3 sm:py-4 rounded-xl sm:rounded-2xl font-semibold text-sm transition-all duration-300 ${
-                    activeTab === tab.id
+                  className={`relative flex-1 flex items-center justify-center gap-2 px-4 sm:px-6 py-3 sm:py-4 rounded-xl sm:rounded-2xl font-semibold text-sm transition-all duration-300 ${activeTab === tab.id
                       ? "text-white shadow-lg"
                       : "text-gray-600 hover:text-gray-900 hover:bg-gray-50/50"
-                  }`}
+                    }`}
                   whileHover={{ scale: activeTab === tab.id ? 1 : 1.02 }}
                   whileTap={{ scale: 0.98 }}
                 >
