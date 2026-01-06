@@ -87,12 +87,25 @@ const validateEnvironment = () => {
  * Checks DEPLOY_ENV or falls back to domain pattern detection
  */
 const isStageEnvironment = () => {
+  // Debug logging
+  console.log("🔍 Environment Detection Debug:");
+  console.log(`   DEPLOY_ENV = "${process.env.DEPLOY_ENV}"`);
+  console.log(`   VERCEL_URL = "${process.env.VERCEL_URL}"`);
+  console.log(`   STAGE_MONGODB_URI exists = ${!!process.env.STAGE_MONGODB_URI}`);
+
   // Explicit deployment environment flag
-  if (process.env.DEPLOY_ENV === "stage") return true;
+  if (process.env.DEPLOY_ENV === "stage") {
+    console.log("   ✅ Detected as STAGING (via DEPLOY_ENV)");
+    return true;
+  }
 
   // Check if running on stage subdomain (Vercel)
-  if (process.env.VERCEL_URL?.includes("stage")) return true;
+  if (process.env.VERCEL_URL?.includes("stage")) {
+    console.log("   ✅ Detected as STAGING (via VERCEL_URL)");
+    return true;
+  }
 
+  console.log("   ⚠️ Detected as PRODUCTION");
   return false;
 };
 
@@ -101,14 +114,26 @@ const isStageEnvironment = () => {
  * Uses STAGE_MONGODB_URI for staging, MONGODB_URI for production
  */
 const getMongoDbUri = () => {
-  if (isStageEnvironment() && process.env.STAGE_MONGODB_URI) {
-    console.log("📍 Using STAGING MongoDB database");
-    return process.env.STAGE_MONGODB_URI;
+  const isStage = isStageEnvironment();
+  const hasStageUri = !!process.env.STAGE_MONGODB_URI;
+
+  console.log(`\n� Database Selection:`);
+  console.log(`   Is Stage Environment: ${isStage}`);
+  console.log(`   Has STAGE_MONGODB_URI: ${hasStageUri}`);
+
+  if (isStage && hasStageUri) {
+    const stageUri = process.env.STAGE_MONGODB_URI;
+    console.log(`   📍 Using STAGING MongoDB database`);
+    console.log(`   DB: ${stageUri?.replace(/\/\/[^:]+:[^@]+@/, "//***:***@")}`);
+    return stageUri;
   }
-  console.log("📍 Using PRODUCTION MongoDB database");
-  return process.env.MONGODB_URI;
+
+  const prodUri = process.env.MONGODB_URI;
+  console.log(`   📍 Using PRODUCTION MongoDB database`);
+  console.log(`   DB: ${prodUri?.replace(/\/\/[^:]+:[^@]+@/, "//***:***@")}`);
+  return prodUri;
 };
- 
+
 /**
  * Environment configuration object
  */
