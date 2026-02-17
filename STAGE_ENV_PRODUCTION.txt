@@ -40,3 +40,23 @@ MONGODB_URI=mongodb+srv://vpnbenidev:YOUR_PASSWORD@cluster0.agz3j.mongodb.net/te
 # - Run: npm run seed:stage-plans (after setting STAGE_MONGODB_URI)
 # - See STAGING_DATABASE_SETUP.md for detailed setup instructions
 
+## STAGING ADMIN NOTIFICATIONS
+# Set these in Vercel Dashboard → stage-tabdc-server → Settings → Environment Variables
+# These override production admin contacts for staging environment
+
+# Admin phone numbers for SMS notifications (staging)
+ADMIN_PHONE=+918930232597
+# ADMIN_PHONE_TWO is optional - leave unset to avoid duplicate notifications
+
+# Admin email for email notifications (staging)
+ADMIN_EMAIL=your-staging-admin@email.com
+
+## STAGING vs PRODUCTION COMPARISON
+# | Setting           | Production                  | Staging                     |
+# |-------------------|-----------------------------|-----------------------------|
+# | Database          | teerthanker-dental-care     | teerthanker-dental-care-stage |
+# | Plan Prices       | ₹4,999 - ₹24,999           | ₹1 (all plans)              |
+# | ADMIN_PHONE       | Production admin phone      | +918930232597               |
+# | ADMIN_PHONE_TWO   | Production admin phone 2    | +918930232597               |
+# | ADMIN_EMAIL       | Production admin email      | Staging admin email         |
+

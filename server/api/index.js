@@ -7,6 +7,33 @@ import mongoose from "mongoose";
 
 const app = express();
 
+// Staging environment detection for Vercel
+const isStageEnvironment = () => {
+  if (process.env.DEPLOY_ENV === "stage") return true;
+  if (process.env.VERCEL_URL?.includes("stage")) return true;
+  return false;
+};
+
+// Get the correct MongoDB URI based on environment
+const getMongoDbUri = () => {
+  const isStage = isStageEnvironment();
+  const hasStageUri = !!process.env.STAGE_MONGODB_URI;
+
+  console.log("🔍 Environment Detection:");
+  console.log(`   DEPLOY_ENV = "${process.env.DEPLOY_ENV}"`);
+  console.log(`   VERCEL_URL = "${process.env.VERCEL_URL}"`);
+  console.log(`   Is Stage: ${isStage}`);
+  console.log(`   Has STAGE_MONGODB_URI: ${hasStageUri}`);
+
+  if (isStage && hasStageUri) {
+    console.log("📍 Using STAGING MongoDB database");
+    return process.env.STAGE_MONGODB_URI;
+  }
+
+  console.log("📍 Using PRODUCTION MongoDB database");
+  return process.env.MONGODB_URI;
+};
+
 // Database connection with caching for serverless
 let cachedDb = null;
 
@@ -25,7 +52,8 @@ const connectDB = async () => {
       w: "majority",
     };
 
-    const conn = await mongoose.connect(process.env.MONGODB_URI, options);
+    const mongoUri = getMongoDbUri();
+    const conn = await mongoose.connect(mongoUri, options);
     cachedDb = conn;
     console.log("✅ Database connected");
     return cachedDb;
@@ -49,10 +77,15 @@ const corsOptions = {
       "http://127.0.0.1:5173",
     ];
 
+    // Allow Vercel deployments (*.vercel.app)
+    const isVercelOrigin =
+      origin &&
+      (origin.endsWith(".vercel.app") || origin.includes("vercel.app"));
+
     // Allow requests with no origin (mobile apps, etc.)
     if (!origin) return callback(null, true);
 
-    if (allowedOrigins.includes(origin)) {
+    if (allowedOrigins.includes(origin) || isVercelOrigin) {
       callback(null, true);
     } else {
       callback(null, true); // Allow all origins for now to test
@@ -85,6 +118,7 @@ app.get("/", (req, res) => {
     message: "Teerthanker Dental Care API is running on Vercel!",
     timestamp: new Date().toISOString(),
     environment: process.env.NODE_ENV || "production",
+    deploy_env: isStageEnvironment() ? "stage" : "production",
     version: "1.0.0",
   });
 });
@@ -95,6 +129,8 @@ app.get("/api", (req, res) => {
     message: "Teerthanker Dental Care API is running!",
     timestamp: new Date().toISOString(),
     environment: process.env.NODE_ENV || "production",
+    deploy_env: isStageEnvironment() ? "stage" : "production",
+    database: isStageEnvironment() ? "staging" : "production",
     version: "1.0.0",
   });
 });
@@ -104,9 +140,11 @@ app.get("/api/test", async (req, res) => {
   try {
     // Test database connection
     let dbStatus = "❌ Not connected";
+    let dbName = "unknown";
     try {
       await connectDB();
       dbStatus = "✅ Connected";
+      dbName = mongoose.connection.db?.databaseName || "unknown";
     } catch (error) {
       dbStatus = `❌ Error: ${error.message}`;
     }
@@ -115,12 +153,45 @@ app.get("/api/test", async (req, res) => {
       success: true,
       message: "Test endpoint working!",
       timestamp: new Date().toISOString(),
-      env_check: {
-        mongodb_uri: process.env.MONGODB_URI ? "✅ Set" : "❌ Missing",
-        jwt_secret: process.env.JWT_SECRET ? "✅ Set" : "❌ Missing",
-        razorpay_key: process.env.RAZORPAY_KEY_ID ? "✅ Set" : "❌ Missing",
+      environment: {
         node_env: process.env.NODE_ENV || "development",
-        database_status: dbStatus,
+        deploy_env: process.env.DEPLOY_ENV || "not set",
+        is_stage: isStageEnvironment(),
+      },
+      database: {
+        status: dbStatus,
+        name: dbName,
+        mongodb_uri: process.env.MONGODB_URI ? "✅ Set" : "❌ Missing",
+        stage_mongodb_uri: process.env.STAGE_MONGODB_URI ? "✅ Set" : "❌ Missing",
+      },
+      razorpay: {
+        key_id: process.env.RAZORPAY_KEY_ID ? "✅ Set" : "❌ Missing",
+        key_secret: process.env.RAZORPAY_KEY_SECRET ? "✅ Set" : "❌ Missing",
+        webhook_secret: process.env.RAZORPAY_WEBHOOK_SECRET ? "✅ Set" : "❌ Missing",
+      },
+      jwt: {
+        secret: process.env.JWT_SECRET ? "✅ Set" : "❌ Missing",
+        expire: process.env.JWT_EXPIRE || "7d (default)",
+      },
+      admin: {
+        phone: process.env.ADMIN_PHONE ? "✅ Set" : "❌ Missing",
+        phone_two: process.env.ADMIN_PHONE_TWO ? "✅ Set" : "❌ Missing",
+        email: process.env.ADMIN_EMAIL ? "✅ Set" : "❌ Missing",
+      },
+      sms: {
+        provider: process.env.SMS_PROVIDER || "msg91 (default)",
+        msg91_auth_key: process.env.MSG91_AUTH_KEY ? "✅ Set" : "❌ Missing",
+      },
+      cloudinary: {
+        cloud_name: process.env.CLOUDINARY_CLOUD_NAME ? "✅ Set" : "❌ Missing",
+        api_key: process.env.CLOUDINARY_API_KEY ? "✅ Set" : "❌ Missing",
+        api_secret: process.env.CLOUDINARY_API_SECRET ? "✅ Set" : "❌ Missing",
+      },
+      email: {
+        user: process.env.EMAIL_USER ? "✅ Set" : "❌ Missing",
+        pass: process.env.EMAIL_PASS ? "✅ Set" : "❌ Missing",
+        gmail_user: process.env.GMAIL_USER ? "✅ Set" : "❌ Missing",
+        gmail_pass: process.env.GMAIL_PASS ? "✅ Set" : "❌ Missing",
       },
     });
   } catch (error) {

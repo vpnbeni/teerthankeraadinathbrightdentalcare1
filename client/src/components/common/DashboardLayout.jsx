@@ -127,8 +127,8 @@ const DashboardLayout = ({ children }) => {
       <div className="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-72 lg:flex-col">
         <div className="flex flex-col flex-grow bg-white/80 backdrop-blur-xl border-r border-gray-200/50 shadow-xl">
           {/* Logo Section */}
-          <div class="flex h-32 justify-center items-center px-4 border-b bg-white">
-            <img src="https://res.cloudinary.com/dvqvxu0b1/image/upload/v1753662373/2_uuolcb.webp" alt="Teerthanker Aadinath Bright Dental Care" class="h-54 pt-6 w-auto object-cover object-center" />
+          <div className="flex h-32 justify-center items-center px-4 border-b bg-white">
+            <img src="https://res.cloudinary.com/dvqvxu0b1/image/upload/v1753662373/2_uuolcb.webp" alt="Teerthanker Aadinath Bright Dental Care" className="h-54 pt-6 w-auto object-cover object-center" />
           </div>
 
           {/* Navigation */}

@@ -9,7 +9,9 @@ dotenv.config();
  */
 
 const requiredEnvVars = [
-  "MONGODB_URI",
+  // Note: MONGODB_URI is validated dynamically based on environment
+  // Staging uses STAGE_MONGODB_URI, production uses MONGODB_URI
+  // This is handled by getMongoDbUri() function
   "JWT_SECRET",
   "RAZORPAY_KEY_ID",
   "RAZORPAY_KEY_SECRET",
@@ -55,6 +57,19 @@ const validateEnvironment = () => {
   const missingSecurity = securityEnvVars.filter(
     (envVar) => !process.env[envVar]
   );
+
+  // Validate MongoDB URI based on environment
+  // For staging: STAGE_MONGODB_URI is required
+  // For production: MONGODB_URI is required
+  const isStage = process.env.DEPLOY_ENV === "stage" || process.env.VERCEL_URL?.includes("stage");
+  const hasMongoUri = isStage
+    ? !!process.env.STAGE_MONGODB_URI
+    : !!process.env.MONGODB_URI;
+
+  if (!hasMongoUri) {
+    const requiredVar = isStage ? "STAGE_MONGODB_URI" : "MONGODB_URI";
+    missing.push(requiredVar);
+  }
 
   if (missing.length > 0) {
     console.error("❌ Missing required environment variables:");

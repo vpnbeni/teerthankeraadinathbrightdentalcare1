@@ -16,9 +16,42 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="apple-mobile-web-app-title" content="Dental Care" />
+
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
   </head>
   <body>
     <div id="root"></div>
+    <!-- #region agent log -->
+    <script>
+      // Debug: detect font rendering issues
+      window.addEventListener('load', function() {
+        try {
+          var cs = getComputedStyle(document.body);
+          var fontFamily = cs.fontFamily;
+          var userAgent = navigator.userAgent;
+          var logData = {
+            location: 'index.html:font-debug',
+            message: 'Font rendering diagnostic',
+            data: {
+              computedFontFamily: fontFamily,
+              userAgent: userAgent,
+              documentFonts: document.fonts ? Array.from(document.fonts).map(function(f) { return f.family + ' ' + f.status; }) : 'not supported',
+              interLoaded: document.fonts ? document.fonts.check('16px Inter') : 'unknown'
+            },
+            timestamp: Date.now()
+          };
+          fetch('http://127.0.0.1:7246/ingest/68b7e0d5-30cf-4bad-8524-14ea1fa604ad', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(logData)
+          }).catch(function() {});
+        } catch(e) {}
+      });
+    </script>
+    <!-- #endregion -->
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
