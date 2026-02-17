@@ -77,10 +77,15 @@ const corsOptions = {
       "http://127.0.0.1:5173",
     ];
 
+    // Allow Vercel deployments (*.vercel.app)
+    const isVercelOrigin =
+      origin &&
+      (origin.endsWith(".vercel.app") || origin.includes("vercel.app"));
+
     // Allow requests with no origin (mobile apps, etc.)
     if (!origin) return callback(null, true);
 
-    if (allowedOrigins.includes(origin)) {
+    if (allowedOrigins.includes(origin) || isVercelOrigin) {
       callback(null, true);
     } else {
       callback(null, true); // Allow all origins for now to test
